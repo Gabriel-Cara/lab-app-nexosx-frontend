@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 
 import "./globals.css";
 
-import { App } from '@/pages/app'
+import { App } from './app'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
