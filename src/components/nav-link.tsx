@@ -14,9 +14,8 @@ export function NavLink({ url, title, icon: Icon }: NavLinkProps) {
     <>
       <SidebarMenuButton
         asChild
-        className={` text-muted-foreground font-medium hover:bg-sky-200 hover:text-sky-600 transition duration-300 ${
-          pathname === url &&
-          "bg-sky-200 text-sky-600"
+        className={` text-muted-foreground font-medium hover:bg-sidebar-accent transition duration-300 ${
+          pathname === url && "bg-sky-200 text-sky-600"
         }`}
       >
         <Link to={url} className="flex items-center gap-3 px-4 py-3">
