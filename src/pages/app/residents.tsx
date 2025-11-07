@@ -93,7 +93,9 @@ export function Residents() {
       morador.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  
+  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
+    _setSearchTerm(e.target.value);
+  } 
 
   return (
     
@@ -111,7 +113,7 @@ export function Residents() {
       </div>
 
       <InputGroup>
-        <InputGroupInput placeholder="Buscar morador" />
+        <InputGroupInput onChange={handleSearch} placeholder="Buscar morador" />
         <InputGroupAddon>
           <Search />
         </InputGroupAddon>
