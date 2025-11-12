@@ -1,0 +1,33 @@
+import { api } from "@/lib/axios";
+
+export type VisitorsResponse = {
+  entryTime: string
+  exitTime: string
+  handledBy: {
+    name: string
+  }
+  handledById: string
+  host: {
+    name: string
+    apartment: string
+  }
+  hostId: string
+  notes?: string
+  visitor: {
+    createdAt: string
+    document: string
+    id: string
+    name: string
+    phone?: string
+    status: "pending" | "authorized" | "denied" | "entry" | "left"
+    updatedAt: string
+    visitReason?: string
+  }
+  visitorId: string
+}
+
+export async function getVisitors() {
+  const response = await api.get<VisitorsResponse[]>("/visitors");
+
+  return response.data;
+}
