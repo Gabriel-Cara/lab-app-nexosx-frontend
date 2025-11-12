@@ -11,14 +11,10 @@ import {
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
-const user = {
-    name: "Gabriel Cara",
-    email: "gabriel@email.com",
-    role: "admin",
-  };
-
 export function AccountMenu() {
   const { session, remove } = useAuth();
+
+  const user = session?.user;
 
   return (
     <DropdownMenu>
@@ -30,29 +26,21 @@ export function AccountMenu() {
           <div className="flex items-center gap-3 max-w-fit">
             <div className="w-10 h-10 bg-gradient-to-br from-sky-300 to-blue-600 rounded-full flex items-center justify-center">
               <span className="text-background dark:text-foreground tracking-wide">
-                {/* {
-                  session?.user.name.split(" ").map((n) => n[0]).join("").slice(0, 2)
-                } */}
-                {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .slice(0, 2)}
+                {
+                  user?.name.split(" ").map((n) => n[0]).join("").slice(0, 2)
+                }
               </span>
             </div>
             <div className="flex-1 min-w-0 text-start">
               <p className="text-foreground tracking-tight">
-                {/* {session?.user.name} */}
-                {user.name}
+                {user?.name}
               </p>
               <p className="text-xs text-muted-foreground">
-                {/* {session?.user.role === "admin"
+                {user?.role === "admin"
                   ? "Admin"
-                  : session?.user.role === "staff"
-                  ? "Porteiro"
-                  : "Morador"} */}
-
-                {user.role === "resident" ? "morador" : user.role}
+                  : user?.role === "staff"
+                  ? "Staff"
+                  : "Morador"}
               </p>
             </div>
           </div>
@@ -61,10 +49,11 @@ export function AccountMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="flex flex-col cursor-auto">
-          <span>{/*{session?.user.name}*/}{user.name}</span>
+          <span>
+            {user?.name}
+          </span>
           <span className="text-xs font-normal text-muted-foreground">
-            {/* {session?.user.email} */}
-            {user.email}
+            {user?.email}
           </span>
         </DropdownMenuLabel>
 

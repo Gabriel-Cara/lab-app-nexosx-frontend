@@ -1,6 +1,7 @@
 import { AppLayout } from "@/components/layout/app";
 import { Dashboard } from "@/pages/app/dashboard";
 import { Residents } from "@/pages/app/residents";
+import { Visitors } from "@/pages/app/visitors";
 
 import { Route, Routes } from "react-router";
 
@@ -12,6 +13,7 @@ export function AppRoutes() {
       <Route path="/" element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/residents" element={<Residents />} />
+        <Route path="/visitors" element={<Visitors />} />
       </Route>
     </Routes>
   )

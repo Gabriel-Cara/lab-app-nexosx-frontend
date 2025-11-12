@@ -77,7 +77,11 @@ export function EditModal(props: EditResidentForm) {
           </DialogDescription>
         </DialogHeader>
 
-        <form id="edit-resident" className="overflow-y-scroll md:overflow-y-hidden max-h-[calc(100vh-300px)]" onSubmit={handleSubmit(handleEditResident)}>
+        <form
+          id="edit-resident"
+          className="overflow-y-scroll md:overflow-y-hidden max-h-[calc(100vh-300px)]"
+          onSubmit={handleSubmit(handleEditResident)}
+        >
           <div className="grid grid-cols-2 gap-4">
             <div className="grid col-span-2 sm:col-span-1 gap-3">
               <Label htmlFor="name">Nome</Label>
@@ -214,12 +218,14 @@ export function EditModal(props: EditResidentForm) {
             </div>
           </div>
         </form>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancelar</Button>
-            </DialogClose>
-            <Button form="edit-resident" type="submit">Salvar</Button>
-          </DialogFooter>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancelar</Button>
+          </DialogClose>
+          <Button form="edit-resident" type="submit">
+            Salvar
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

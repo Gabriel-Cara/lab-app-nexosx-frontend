@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 import { Mail, SquareAsterisk } from "lucide-react";
+import { useLogin } from "@/api/login";
+import { useAuth } from "@/hooks/use-auth";
 
 const signInFormSchema = z.object({
   email: z.email(),
@@ -24,15 +26,19 @@ export function SignIn() {
     formState: { isSubmitting },
   } = useForm<SignInForm>();
 
+  const { mutateAsync: authenticate, isPending: isLoggingIn } = useLogin();
+
+  const auth = useAuth();
+
   async function handleLogin(data: SignInForm) {
     try {
       if (!data.email || !data.password) {
         return toast.error("Preencha todos os campos.");
       }
 
-      console.log(data);
+      const response = await authenticate({ email: data.email, password: data.password });
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      auth.save(response);
 
       toast.success("Login efetuado com sucesso.");
     } catch {
@@ -89,7 +95,11 @@ export function SignIn() {
                 </InputGroupAddon>
               </InputGroup>
             </div>
-            <Button className="w-full" type="submit" disabled={isSubmitting}>
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={isSubmitting || isLoggingIn}
+            >
               Acessar painel
             </Button>
           </form>

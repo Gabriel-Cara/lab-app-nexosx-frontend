@@ -17,14 +17,11 @@ import { AccountMenu } from "./account-menu";
 import { NavLink } from "./nav-link";
 
 import { menuItems } from "@/routes/menu-items";
+import { useAuth } from "@/hooks/use-auth";
 
 
 export function AppSidebar() {
-  const sidebarItems = menuItems.map((item) => (
-    <SidebarMenuSubItem key={item.title}>
-      <NavLink url={item.url} title={item.title} icon={item.icon} />
-    </SidebarMenuSubItem>
-  ));
+  const { session } = useAuth(); 
 
   return (
     <Sidebar variant="floating">
@@ -44,7 +41,13 @@ export function AppSidebar() {
             Navegação
           </SidebarGroupLabel>
           <SidebarMenuSub className="gap-2">
-            {sidebarItems}
+            {
+              menuItems.map((item) => (item.role.includes(session?.user.role ?? "resident") && (
+                <SidebarMenuSubItem key={item.title}>
+                  <NavLink url={item.url} title={item.title} icon={item.icon} />
+                </SidebarMenuSubItem>
+              )))
+            }
           </SidebarMenuSub>
         </SidebarGroup>
       </SidebarContent>

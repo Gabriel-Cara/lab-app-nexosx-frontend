@@ -4,6 +4,9 @@ import { ThemeProvider } from "./components/theme/theme-provider";
 import { Routes } from "./routes";
 
 import { Toaster } from "sonner";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/react-query";
+import { AuthProvider } from "./contexts/auth-context";
 
 export function App() {
   return (
@@ -12,9 +15,14 @@ export function App() {
         <Helmet titleTemplate="%s | nexus">
           <title>Nexus</title>
         </Helmet>
-
-        <Routes />
+        
         <Toaster richColors />
+
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <Routes />
+          </AuthProvider>
+        </QueryClientProvider>
       </ThemeProvider>
     </HelmetProvider>
   );
