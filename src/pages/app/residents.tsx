@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   InputGroup,
@@ -10,19 +10,21 @@ import { DetailsCard } from "@/components/residents/details-card";
 import { AddModal } from "@/components/residents/add-modal";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { getResidents } from "@/api/get-residents";
+import { ResidentsPagination } from "@/components/residents/pagination";
 
 export function Residents() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["residents"],
     queryFn: () => getResidents(),
   });
 
-  const residents = data?.data ?? [];
-
   const filteredResidents = useMemo(() => {
     const normalized = searchTerm.trim().toLowerCase();
+    const residents = data?.data ?? [];
 
     if (!normalized) {
       return residents;
@@ -40,10 +42,36 @@ export function Residents() {
 
       return haystack.includes(normalized);
     });
-  }, [residents, searchTerm]);
+  }, [data, searchTerm]);
+
+  const totalItems = filteredResidents.length;
+  const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / perPage);
+
+  useEffect(() => {
+    setPage(1);
+  }, [perPage, searchTerm]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visibleResidents = useMemo(() => {
+    if (filteredResidents.length === 0) {
+      return [];
+    }
+
+    const start = (page - 1) * perPage;
+    return filteredResidents.slice(start, start + perPage);
+  }, [filteredResidents, page, perPage]);
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
     setSearchTerm(e.target.value);
+  }
+
+  function handlePerPageChange(value: number) {
+    setPerPage(value);
   }
 
   return (
@@ -87,21 +115,33 @@ export function Residents() {
             Nenhum morador encontrado.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredResidents.map((resident) => (
-              <DetailsCard
-                key={resident.id}
-                id={resident.id}
-                name={resident.name}
-                apartment={resident.apartment}
-                email={resident.email}
-                phone={resident.phone}
-                role={resident.role}
-                building={resident.building}
-                vehicle={resident.vehicle}
-                emergencyContact={resident.emergencyContact}
-              />
-            ))}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {visibleResidents.map((resident) => (
+                <DetailsCard
+                  key={resident.id}
+                  id={resident.id}
+                  name={resident.name}
+                  apartment={resident.apartment}
+                  email={resident.email}
+                  phone={resident.phone}
+                  role={resident.role}
+                  building={resident.building}
+                  vehicle={resident.vehicle}
+                  emergencyContact={resident.emergencyContact}
+                />
+              ))}
+            </div>
+
+            <ResidentsPagination
+              page={page}
+              perPage={perPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onPerPageChange={handlePerPageChange}
+              perPageOptions={[5, 10, 20, 50]}
+            />
           </div>
         )}
       </main>
