@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { Building, Car, Edit, House, Mail, Phone, User } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,50 +23,90 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+
+import { updateResident } from "@/api/update-resident";
 
 const editResidentFormSchema = z.object({
   name: z.string().optional(),
-  email: z.email().optional(),
+  email: z.string().email().optional(),
   phone: z.string().optional(),
-  role: z.enum(["admin", "staff", "resident"]).optional(),
   apartment: z.string().optional(),
   password: z.string().optional(),
   building: z.string().optional(),
-  vehicle: z.number().optional(),
+  vehicle: z.string().optional(),
   emergencyContact: z.string().optional(),
 });
 
 type EditResidentForm = z.infer<typeof editResidentFormSchema>;
 
-export function EditModal(props: EditResidentForm) {
-  const { control, register, handleSubmit } = useForm<EditResidentForm>({
+type EditModalProps = EditResidentForm & {
+  id: string;
+  role: "admin" | "staff" | "resident";
+};
+
+export function EditModal(props: EditModalProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { register, handleSubmit, reset } = useForm<EditResidentForm>({
     resolver: zodResolver(editResidentFormSchema),
     defaultValues: {
       name: props.name,
       email: props.email,
       phone: props.phone,
-      role: props.role,
       apartment: props.apartment,
-      password: props.password,
-      building: props.building,
-      vehicle: props.vehicle,
-      emergencyContact: props.emergencyContact,
+      password: "",
+      building: props.building ?? "",
+      vehicle: props.vehicle ?? "",
+      emergencyContact: props.emergencyContact ?? "",
     },
   });
 
+  const { mutateAsync: mutateResident, isPending } = useMutation({
+    mutationFn: updateResident,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["residents"] });
+    },
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        name: props.name,
+        email: props.email,
+        phone: props.phone,
+        apartment: props.apartment,
+        password: "",
+        building: props.building ?? "",
+        vehicle: props.vehicle ?? "",
+        emergencyContact: props.emergencyContact ?? "",
+      });
+    }
+  }, [isOpen, props, reset]);
+
   async function handleEditResident(data: EditResidentForm) {
-    console.log(data);
+    try {
+      await mutateResident({
+        id: props.id,
+        name: data.name || undefined,
+        email: data.email || undefined,
+        phone: data.phone || undefined,
+        role: props.role,
+        apartment: data.apartment || undefined,
+        password: data.password || undefined,
+        building: data.building || undefined,
+        vehicle: data.vehicle || undefined,
+        emergencyContact: data.emergencyContact || undefined,
+      });
+
+      toast.success("Morador atualizado com sucesso!");
+      setIsOpen(false);
+    } catch {
+      toast.error("Não foi possível atualizar o morador. Tente novamente.");
+    }
   }
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost">
           <Edit />
@@ -131,7 +174,7 @@ export function EditModal(props: EditResidentForm) {
                   id="vehicle"
                   placeholder="Se tiver veículos incluir quantidade"
                   type="number"
-                  {...register("vehicle", { valueAsNumber: true })}
+                  {...register("vehicle")}
                 />
                 <InputGroupAddon>
                   <Car />
@@ -164,8 +207,8 @@ export function EditModal(props: EditResidentForm) {
                 </InputGroupAddon>
               </InputGroup>
             </div>
-            <div className="grid col-span-2 grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="grid col-span-3 sm:col-span-1 gap-3">
+            <div className="grid col-span-2 grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid col-span-2 lg:col-span-1 gap-3">
                 <Label htmlFor="apartment">Apartamento</Label>
                 <InputGroup>
                   <InputGroupInput
@@ -178,7 +221,7 @@ export function EditModal(props: EditResidentForm) {
                   </InputGroupAddon>
                 </InputGroup>
               </div>
-              <div className="grid col-span-3 sm:col-span-1 gap-3">
+              <div className="grid col-span-2 lg:col-span-1 gap-3">
                 <Label htmlFor="building">Torre</Label>
                 <InputGroup>
                   <InputGroupInput
@@ -191,30 +234,6 @@ export function EditModal(props: EditResidentForm) {
                   </InputGroupAddon>
                 </InputGroup>
               </div>
-              <div className="grid col-span-3 sm:col-span-1 gap-3">
-                <Label htmlFor="role">Tipo</Label>
-                <Controller
-                  name="role"
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Select
-                      value={value ?? undefined}
-                      onValueChange={(v) =>
-                        onChange(v as EditResidentForm["role"])
-                      }
-                    >
-                      <SelectTrigger id="role">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                        <SelectItem value="staff">Funcionário</SelectItem>
-                        <SelectItem value="resident">Morador</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
             </div>
           </div>
         </form>
@@ -222,8 +241,8 @@ export function EditModal(props: EditResidentForm) {
           <DialogClose asChild>
             <Button variant="outline">Cancelar</Button>
           </DialogClose>
-          <Button form="edit-resident" type="submit">
-            Salvar
+          <Button form="edit-resident" type="submit" disabled={isPending}>
+            {isPending ? "Salvando..." : "Salvar"}
           </Button>
         </DialogFooter>
       </DialogContent>

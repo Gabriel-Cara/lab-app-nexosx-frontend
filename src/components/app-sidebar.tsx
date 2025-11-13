@@ -16,7 +16,7 @@ import {
 import { AccountMenu } from "./account-menu";
 import { NavLink } from "./nav-link";
 
-import { menuItems } from "@/routes/menu-items";
+import { sidebarNavigation } from "@/routes/config";
 import { useAuth } from "@/hooks/use-auth";
 
 
@@ -41,13 +41,15 @@ export function AppSidebar() {
             Navegação
           </SidebarGroupLabel>
           <SidebarMenuSub className="gap-2">
-            {
-              menuItems.map((item) => (item.role.includes(session?.user.role ?? "resident") && (
-                <SidebarMenuSubItem key={item.title}>
+            {sidebarNavigation
+              .filter((item) =>
+                item.roles.includes(session?.user.role ?? "resident"),
+              )
+              .map((item) => (
+                <SidebarMenuSubItem key={item.id}>
                   <NavLink url={item.url} title={item.title} icon={item.icon} />
                 </SidebarMenuSubItem>
-              )))
-            }
+              ))}
           </SidebarMenuSub>
         </SidebarGroup>
       </SidebarContent>

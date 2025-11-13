@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   InputGroup,
   InputGroupAddon,
@@ -8,94 +9,69 @@ import {
 import { DetailsCard } from "@/components/residents/details-card";
 import { AddModal } from "@/components/residents/add-modal";
 import { Helmet } from "@dr.pogodin/react-helmet";
-
-interface Morador {
-  id: string;
-  name: string;
-  apartment: string;
-  email: string;
-  phone: string;
-  role: "admin" | "staff" | "resident";
-  password?: string;
-  building?: string;
-  vehicle?: number;
-  emergencyContact?: string;
-}
-
-const initialMoradores: Morador[] = [
-  {
-    id: "1",
-    name: "Maria Santos",
-    apartment: "Apto 101",
-    email: "maria@email.com",
-    phone: "(11) 96666-6666",
-    role: "resident",
-    building: "A",
-    vehicle: 1,
-    emergencyContact: "(11) 95555-5555",
-    password: "123456",
-  },
-  {
-    id: "2",
-    name: "João Silva",
-    apartment: "Apto 102",
-    email: "joao@email.com",
-    phone: "(11) 95555-5555",
-    role: "resident",
-    building: "B",
-    vehicle: 1,
-    emergencyContact: "(11) 94444-4444",
-    password: "123456",
-  },
-  {
-    id: "3",
-    name: "Ana Paula",
-    apartment: "Apto 201",
-    email: "ana@email.com",
-    phone: "(11) 94444-4444",
-    role: "resident",
-    building: "B",
-    vehicle: 1,
-    password: "123456",
-  },
-  {
-    id: "4",
-    name: "Carlos Mendes",
-    apartment: "Apto 203",
-    email: "carlos@email.com",
-    phone: "(11) 93333-3333",
-    role: "resident",
-    building: "A",
-    vehicle: 1,
-    emergencyContact: "(11) 92222-2222",
-    password: "123456",
-  },
-  {
-    id: "5",
-    name: "Pedro Costa",
-    apartment: "Apto 301",
-    email: "pedro@email.com",
-    phone: "(11) 92222-2222",
-    role: "resident",
-    building: "C",
-    vehicle: 1,
-    password: "123456",
-  },
-];
+import { getResidents } from "@/api/get-residents";
+import { ResidentsPagination } from "@/components/residents/pagination";
 
 export function Residents() {
-  const [moradores, _setMoradores] = useState<Morador[]>(initialMoradores);
-  const [searchTerm, _setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
 
-  const filteredMoradores = moradores.filter(
-    (morador) =>
-      morador.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      morador.apartment.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      morador.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["residents"],
+    queryFn: () => getResidents(),
+  });
+
+  const filteredResidents = useMemo(() => {
+    const normalized = searchTerm.trim().toLowerCase();
+    const residents = data?.data ?? [];
+
+    if (!normalized) {
+      return residents;
+    }
+
+    return residents.filter((resident) => {
+      const haystack = [
+        resident.name,
+        resident.apartment ?? "",
+        resident.email ?? "",
+        resident.phone ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(normalized);
+    });
+  }, [data, searchTerm]);
+
+  const totalItems = filteredResidents.length;
+  const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / perPage);
+
+  useEffect(() => {
+    setPage(1);
+  }, [perPage, searchTerm]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visibleResidents = useMemo(() => {
+    if (filteredResidents.length === 0) {
+      return [];
+    }
+
+    const start = (page - 1) * perPage;
+    return filteredResidents.slice(start, start + perPage);
+  }, [filteredResidents, page, perPage]);
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
-    _setSearchTerm(e.target.value);
+    setSearchTerm(e.target.value);
+  }
+
+  function handlePerPageChange(value: number) {
+    setPerPage(value);
   }
 
   return (
@@ -104,7 +80,7 @@ export function Residents() {
         <title>Moradores</title>
       </Helmet>
 
-      <div className="flex min-h-svh flex-col gap-8">
+      <main className="flex min-h-svh flex-col gap-8">
         <div className="flex justify-between">
           <div>
             <h1 className="text-2xl text-foreground font-bold tracking-tight">
@@ -119,6 +95,7 @@ export function Residents() {
 
         <InputGroup>
           <InputGroupInput
+            value={searchTerm}
             onChange={handleSearch}
             placeholder="Buscar morador"
           />
@@ -127,12 +104,47 @@ export function Residents() {
           </InputGroupAddon>
         </InputGroup>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredMoradores.map((morador) => (
-            <DetailsCard key={morador.id} {...morador} />
-          ))}
-        </div>
-      </div>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Carregando moradores...</p>
+        ) : isError ? (
+          <p className="text-sm text-destructive">
+            Não foi possível carregar os moradores. Tente novamente.
+          </p>
+        ) : filteredResidents.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nenhum morador encontrado.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {visibleResidents.map((resident) => (
+                <DetailsCard
+                  key={resident.id}
+                  id={resident.id}
+                  name={resident.name}
+                  apartment={resident.apartment}
+                  email={resident.email}
+                  phone={resident.phone}
+                  role={resident.role}
+                  building={resident.building}
+                  vehicle={resident.vehicle}
+                  emergencyContact={resident.emergencyContact}
+                />
+              ))}
+            </div>
+
+            <ResidentsPagination
+              page={page}
+              perPage={perPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onPerPageChange={handlePerPageChange}
+              perPageOptions={[5, 10, 20, 50]}
+            />
+          </div>
+        )}
+      </main>
     </>
   );
 }

@@ -16,6 +16,7 @@ import { TableRowVisitor } from "./table-row-visitor";
 import { getVisitors } from "@/api/get-visitors";
 import type { VisitorsResponse } from "@/api/get-visitors";
 import { VisitorsPagination } from "./pagination";
+import { useAuth } from "@/hooks/use-auth";
 
 type TableVisitorsProps = {
   filters?: {
@@ -29,6 +30,9 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
     queryKey: ["visitors"],
     queryFn: getVisitors,
   });
+  const { session } = useAuth();
+  const isResident = session?.user.role === "resident";
+  const residentId = session?.user.id;
 
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
@@ -36,10 +40,15 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
   const statusFilter = filters?.status ?? "all";
 
   const filteredVisitors = useMemo(() => {
-    return visitorsData.filter((log) => {
-      const { visitor, host } = log;
+    const scopedVisitors =
+      isResident && residentId
+        ? visitorsData.filter((log) => log.hostId === residentId)
+        : visitorsData;
+
+    return scopedVisitors.filter((log) => {
+      const { visitor, host, status } = log;
       const matchesStatus =
-        statusFilter === "all" ? true : visitor.status === statusFilter;
+        statusFilter === "all" ? true : status === statusFilter;
 
       if (!matchesStatus) {
         return false;
@@ -62,7 +71,7 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
 
       return haystack.includes(normalizedSearch);
     });
-  }, [visitorsData, normalizedSearch, statusFilter]);
+  }, [visitorsData, normalizedSearch, statusFilter, isResident, residentId]);
 
   const totalItems = filteredVisitors.length;
   const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / perPage);
@@ -94,11 +103,11 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
         <TableCaption>Lista de visitantes</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>Documento</TableHead>
-            <TableHead>Morador</TableHead>
-            <TableHead className="text-center">Status</TableHead>
-            <TableHead className="text-center">Ações</TableHead>
+            <TableHead className="font-bold">Nome</TableHead>
+            <TableHead className="font-bold">Documento</TableHead>
+            <TableHead className="font-bold">Morador</TableHead>
+            <TableHead className="text-center font-bold">Status</TableHead>
+            <TableHead className="text-center font-bold">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

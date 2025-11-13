@@ -35,7 +35,7 @@ export function ViewVisitorModal({
   open,
   onOpenChange,
 }: ViewVisitorModalProps) {
-  const { visitor, host, handledBy, entryTime, exitTime } = log;
+  const { visitor, host, handledBy, entryTime, exitTime, status } = log;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,7 +52,7 @@ export function ViewVisitorModal({
                   Visitante
                 </TableHead>
                 <TableHead className="flex justify-end">
-                  <Status variant={visitor.status} />
+                  <Status variant={status} />
                 </TableHead>
               </TableHeader>
               <TableBody>

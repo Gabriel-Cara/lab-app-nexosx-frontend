@@ -1,6 +1,6 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -20,6 +20,8 @@ const signInFormSchema = z.object({
 type SignInForm = z.infer<typeof signInFormSchema>;
 
 export function SignIn() {
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -41,6 +43,8 @@ export function SignIn() {
       auth.save(response);
 
       toast.success("Login efetuado com sucesso.");
+
+      navigate("/");
     } catch {
       toast.error("Erro ao efetuar login. Tente novamente!");
     }
