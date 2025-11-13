@@ -16,6 +16,9 @@ export function AccountMenu() {
 
   const user = session?.user;
 
+  const firstName = user?.name.split(" ")[0]
+  const lastName = user?.name.split(" ")[user?.name.split(" ").length - 1]
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -33,7 +36,9 @@ export function AccountMenu() {
             </div>
             <div className="flex-1 min-w-0 text-start">
               <p className="text-foreground tracking-tight">
-                {user?.name}
+                {
+                  `${firstName} ${lastName === firstName ? "" : lastName}`
+                }
               </p>
               <p className="text-xs text-muted-foreground">
                 {user?.role === "admin"

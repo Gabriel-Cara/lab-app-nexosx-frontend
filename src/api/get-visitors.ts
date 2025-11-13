@@ -1,6 +1,8 @@
 import { api } from "@/lib/axios";
 
 export type VisitorsResponse = {
+  status: "pending" | "authorized" | "denied" | "entry" | "left";
+  createdAt: string;
   entryTime: string
   exitTime: string
   handledBy: {
@@ -12,7 +14,6 @@ export type VisitorsResponse = {
     apartment: string
   }
   hostId: string
-  notes?: string
   visitor: {
     createdAt: string
     document: string

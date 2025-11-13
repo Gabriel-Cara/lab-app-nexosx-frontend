@@ -8,6 +8,7 @@ import { ViewVisitorModal } from "./view-modal";
 
 import type { VisitorsResponse } from "@/api/get-visitors";
 import { patchStatusOfVisitor } from "@/api/patch-status-of-visitor";
+import { useAuth } from "@/hooks/use-auth";
 
 interface TableRowVisitorProps {
   log: VisitorsResponse;
@@ -15,6 +16,9 @@ interface TableRowVisitorProps {
 
 export function TableRowVisitor({ log }: TableRowVisitorProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
+
+  const { session } = useAuth();
+  const isResident = session?.user.role === "resident";
 
   const queryClient = useQueryClient();
   const { mutateAsync: updateStatus, isPending } = useMutation({
@@ -24,9 +28,8 @@ export function TableRowVisitor({ log }: TableRowVisitorProps) {
     },
   });
 
-  const { visitor, host } = log;
+  const { visitor, host, status } = log;
   const visitorId = visitor.id;
-  const status = visitor.status;
 
   const handleRowClick = () => {
     setIsViewOpen(true);
@@ -69,7 +72,7 @@ export function TableRowVisitor({ log }: TableRowVisitorProps) {
                 Negar
               </Button>
             </>
-          ) : status === "authorized" ? (
+          ) : status === "authorized" && !isResident ? (
             <Button
               variant="outline"
               disabled={isPending}
@@ -77,7 +80,7 @@ export function TableRowVisitor({ log }: TableRowVisitorProps) {
             >
               Marcar entrada
             </Button>
-          ) : status === "entry" ? (
+          ) : status === "entry" && !isResident ? (
             <Button
               variant="outline"
               disabled={isPending}

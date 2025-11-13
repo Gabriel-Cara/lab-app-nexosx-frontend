@@ -53,7 +53,7 @@ export function Visitors() {
         <title>Visitantes</title>
       </Helmet>
 
-      <div className="flex min-h-svh flex-col gap-8">
+      <main className="flex min-h-svh flex-col gap-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl text-foreground font-bold tracking-tight">
@@ -72,6 +72,7 @@ export function Visitors() {
               value={searchTerm}
               onChange={handleSearch}
               placeholder="Buscar por nome, documento ou morador"
+              className="placeholder:text-sm"
             />
             <InputGroupAddon>
               <Search />
@@ -106,7 +107,7 @@ export function Visitors() {
         </div>
 
         <TableVisitors filters={filters} />
-      </div>
+      </main>
     </>
   );
 }

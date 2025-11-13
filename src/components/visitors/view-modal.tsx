@@ -35,7 +35,7 @@ export function ViewVisitorModal({
   open,
   onOpenChange,
 }: ViewVisitorModalProps) {
-  const { visitor, host, handledBy, entryTime, exitTime } = log;
+  const { visitor, host, handledBy, entryTime, exitTime, status } = log;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,7 +52,7 @@ export function ViewVisitorModal({
                   Visitante
                 </TableHead>
                 <TableHead className="flex justify-end">
-                  <Status variant={visitor.status} />
+                  <Status variant={status} />
                 </TableHead>
               </TableHeader>
               <TableBody>
@@ -108,14 +108,6 @@ export function ViewVisitorModal({
                   <TableCell>Saída</TableCell>
                   <TableCell className="text-end">
                     <Badge variant="outline">{exitTime === null || exitTime === "" ? "Não saiu" : format(exitTime, "dd/MM/yyyy HH:mm", { locale: ptBR }) }</Badge>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Notas</TableCell>
-                  <TableCell className="text-end">
-                    <Badge variant="outline">
-                      {log.notes === null || log.notes === ""  ? "Sem observações" : log.notes}
-                    </Badge>
                   </TableCell>
                 </TableRow>
                 <TableRow>
