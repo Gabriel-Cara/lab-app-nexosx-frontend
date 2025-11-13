@@ -116,7 +116,7 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
             </TableRow>
           ) : (
             visibleVisitors.map((log) => (
-              <TableRowVisitor key={log.visitor.id} log={log} />
+              <TableRowVisitor key={log.id} log={log} />
             ))
           )}
         </TableBody>

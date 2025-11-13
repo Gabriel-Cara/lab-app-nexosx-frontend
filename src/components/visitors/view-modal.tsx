@@ -111,14 +111,6 @@ export function ViewVisitorModal({
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell>Notas</TableCell>
-                  <TableCell className="text-end">
-                    <Badge variant="outline">
-                      {log.notes === null || log.notes === ""  ? "Sem observações" : log.notes}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
                   <TableCell>Responsável</TableCell>
                   <TableCell className="text-end">
                     <Badge variant="outline">
