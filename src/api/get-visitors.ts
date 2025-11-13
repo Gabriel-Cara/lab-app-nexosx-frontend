@@ -1,10 +1,11 @@
 import { api } from "@/lib/axios";
 
 export type VisitorsResponse = {
+  id: string;
   status: "pending" | "authorized" | "denied" | "entry" | "left";
   createdAt: string;
-  entryTime: string
-  exitTime: string
+  entryTime: string | null;
+  exitTime: string | null;
   handledBy: {
     name: string;
   } | null;
@@ -14,10 +15,6 @@ export type VisitorsResponse = {
     apartment: string | null;
   };
   hostId: string;
-    name: string
-    apartment: string
-  }
-  hostId: string
   visitor: {
     createdAt: string;
     document: string;
