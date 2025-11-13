@@ -3,9 +3,13 @@ import { api } from "@/lib/axios";
 export type Resident = {
   id: string;
   name: string;
-  email?: string;
+  email?: string | null;
   phone?: string | null;
   apartment: string | null;
+  role: "admin" | "staff" | "resident";
+  building?: string | null;
+  vehicle?: string | null;
+  emergencyContact?: string | null;
 };
 
 export type GetResidentsParams = {
@@ -29,10 +33,18 @@ const parseHeaderNumber = (value: unknown, fallback: number) => {
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
+type ResidentApiResponse = Resident & {
+  residents?: {
+    building: string | null;
+    vehicle: string | null;
+    emergencyContact: string | null;
+  } | null;
+};
+
 export async function getResidents(
   params?: GetResidentsParams,
 ): Promise<GetResidentsResponse> {
-  const response = await api.get<Resident[]>("/auth/users", {
+  const response = await api.get<ResidentApiResponse[]>("/auth/users", {
     params: {
       role: "resident",
       limit: params?.limit,
@@ -40,6 +52,18 @@ export async function getResidents(
       search: params?.search,
     },
   });
+
+  const normalizedResidents: Resident[] = response.data.map((resident) => ({
+    id: resident.id,
+    name: resident.name,
+    email: resident.email ?? null,
+    phone: resident.phone ?? null,
+    apartment: resident.apartment ?? null,
+    role: resident.role,
+    building: resident.residents?.building ?? null,
+    vehicle: resident.residents?.vehicle ?? null,
+    emergencyContact: resident.residents?.emergencyContact ?? null,
+  }));
 
   const total = parseHeaderNumber(
     response.headers["total-count"],
@@ -58,10 +82,8 @@ export async function getResidents(
     limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1,
   );
 
-  console.log(response.data);
-
   return {
-    data: response.data,
+    data: normalizedResidents,
     pagination: {
       total,
       totalPages,

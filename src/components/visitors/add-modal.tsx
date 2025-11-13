@@ -1,8 +1,8 @@
+import { useEffect, useState } from "react";
 import { Mail, Phone, Plus, User } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
 
 import {
   InputGroup,
@@ -26,6 +26,7 @@ import { SelectResident } from "./select-resident";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postVisitor } from "@/api/post-visitor";
+import { useAuth } from "@/hooks/use-auth";
 
 const createVisitorFormSchema = z.object({
   name: z.string(),
@@ -40,17 +41,27 @@ type CreateVisitorForm = z.infer<typeof createVisitorFormSchema>;
 export function AddModal() {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { session } = useAuth();
+  const isResident = session?.user.role === "resident";
+  const residentHostId = session?.user.id ?? "";
 
-  const { register, handleSubmit, control, reset } = useForm<CreateVisitorForm>({
-    resolver: zodResolver(createVisitorFormSchema),
-    defaultValues: {
-      name: "",
-      document: "",
-      phone: "",
-      visitReason: "",
-      hostId: "",
-    },
-  });
+  const { register, handleSubmit, control, reset, setValue } =
+    useForm<CreateVisitorForm>({
+      resolver: zodResolver(createVisitorFormSchema),
+      defaultValues: {
+        name: "",
+        document: "",
+        phone: "",
+        visitReason: "",
+        hostId: isResident ? residentHostId : "",
+      },
+    });
+
+  useEffect(() => {
+    if (isResident && residentHostId) {
+      setValue("hostId", residentHostId);
+    }
+  }, [isResident, residentHostId, setValue]);
 
   const { mutateAsync: createVisitor, isPending } = useMutation({
     mutationFn: postVisitor,
@@ -61,23 +72,31 @@ export function AddModal() {
 
   async function handleCreateVisitor(data: CreateVisitorForm) {
     try {
-      if(!data.hostId) {
+      const hostId = isResident ? residentHostId : data.hostId;
+
+      if (!hostId) {
         toast.error("Morador é obrigatório");
         throw new Error("Morador é obrigatório");
       }
 
-      if(!data.name) {
+      if (!data.name) {
         toast.error("Nome é obrigatório");
         throw new Error("Nome é obrigatório");
       }
 
-      if(!data.document) {
+      if (!data.document) {
         toast.error("Documento é obrigatório");
         throw new Error("Documento é obrigatório");
       }
 
-      await createVisitor(data);
-      reset();
+      await createVisitor({ ...data, hostId });
+      reset({
+        name: "",
+        document: "",
+        phone: "",
+        visitReason: "",
+        hostId: isResident ? residentHostId : "",
+      });
       setIsOpen(false);
       toast.success("Visitante criado com sucesso!");
     } catch (error: any) {
@@ -101,22 +120,32 @@ export function AddModal() {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleCreateVisitor)}>
+        <form id="register-visitor-form" onSubmit={handleSubmit(handleCreateVisitor)}>
           <div className="grid gap-4">
-            <div className="grid gap-3">
-              <Label htmlFor="resident">Morador</Label>
-              <Controller
-                name="hostId"
-                control={control}
-                render={({ field }) => (
-                  <SelectResident
-                    inputId="resident"
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
-            </div>
+            {!isResident ? (
+              <div className="grid gap-3">
+                <Label htmlFor="resident">Morador</Label>
+                <Controller
+                  name="hostId"
+                  control={control}
+                  render={({ field }) => (
+                    <SelectResident
+                      inputId="resident"
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+            ) : (
+              <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground bg-muted text-center">
+                Este visitante será vinculado automaticamente ao morador{<br />}
+                <span className="font-semibold text-foreground">
+                  {session?.user.name}
+                </span>
+                .
+              </div>
+            )}
             <div className="grid gap-3">
               <Label
                 className="after:content-['*'] after:text-rose-500 after:text-xl after:-ml-1"
@@ -154,11 +183,7 @@ export function AddModal() {
               </InputGroup>
             </div>
             <div className="grid gap-3">
-              <Label
-                htmlFor="phone"
-              >
-                Telefone
-              </Label>
+              <Label htmlFor="phone">Telefone</Label>
               <InputGroup>
                 <InputGroupInput
                   id="phone"
@@ -171,20 +196,24 @@ export function AddModal() {
               </InputGroup>
             </div>
             <div className="grid gap-3">
-              <Label htmlFor="visitReason" >Motivo da visita</Label>
-              <Textarea id="visitReason" placeholder="Motivo da visita" {...register("visitReason")} />
+              <Label htmlFor="visitReason">Motivo da visita</Label>
+              <Textarea
+                id="visitReason"
+                placeholder="Motivo da visita"
+                {...register("visitReason")}
+              />
             </div>
           </div>
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancelar</Button>
-            </DialogClose>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Salvando..." : "Salvar"}
-            </Button>
-          </DialogFooter>
         </form>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancelar</Button>
+          </DialogClose>
+          <Button form="register-visitor-form" type="submit" disabled={isPending}>
+            {isPending ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

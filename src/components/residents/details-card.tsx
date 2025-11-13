@@ -6,15 +6,16 @@ import { EditModal } from "./edit-modal";
 import { DeleteModal } from "./delete-modal";
 
 interface DetailsCardProps {
-  name: string
-  apartment: string
-  email: string
-  phone: string
-  role: 'admin' | 'staff' | 'resident'
-  password?: string
-  building?: string
-  vehicle?: number
-  emergencyContact?: string
+  id: string;
+  name: string;
+  apartment?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  role: "admin" | "staff" | "resident";
+  password?: string;
+  building?: string | null;
+  vehicle?: string | null;
+  emergencyContact?: string | null;
 }
 
 export function DetailsCard(props: DetailsCardProps) {
@@ -45,23 +46,34 @@ export function DetailsCard(props: DetailsCardProps) {
             </div>
           </div>
           <div className="flex gap-1">
-            <EditModal {...props} />
-            <DeleteModal />
+            <EditModal
+              id={props.id}
+              name={props.name}
+              email={props.email ?? ""}
+              phone={props.phone ?? ""}
+              role={props.role}
+              apartment={props.apartment ?? ""}
+              password=""
+              building={props.building ?? ""}
+              vehicle={props.vehicle ?? ""}
+              emergencyContact={props.emergencyContact ?? ""}
+            />
+            <DeleteModal id={props.id} name={props.name} />
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Home className="w-4 h-4" />
-            {props.apartment}
+            {props.apartment ?? "Sem apartamento"}
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Mail className="w-4 h-4" />
-            {props.email}
+            {props.email ?? "Sem e-mail"}
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Phone className="w-4 h-4" />
-            {props.phone}
+            {props.phone ?? "Sem telefone"}
           </div>
         </div>
       </CardContent>
