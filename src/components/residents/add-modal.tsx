@@ -24,7 +24,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { createResident } from "@/api/create-resident";
+import { postResident } from "@/api/post-resident";
+
 const createResidentFormSchema = z.object({
   name: z.string({ message: "O nome é obrigatório" }),
   email: z.email({ message: "O email é obrigatório" }),
@@ -69,7 +70,7 @@ export function AddModal() {
     });
 
   const { mutateAsync: mutateResident, isPending } = useMutation({
-    mutationFn: createResident,
+    mutationFn: postResident,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["residents"] });
     },

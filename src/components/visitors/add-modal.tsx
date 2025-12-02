@@ -1,16 +1,25 @@
 import { useEffect, useState } from "react";
+
+// Icons
 import { Mail, Phone, Plus, User } from "lucide-react";
+
+// Form
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+
+// Types
 import { z } from "zod";
 
+// Components
+import { SelectResident } from "../select-resident";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "../ui/textarea";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "../ui/input-group";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogClose,
@@ -21,12 +30,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Textarea } from "../ui/textarea";
-import { SelectResident } from "./select-resident";
+
+// Toast
 import { toast } from "sonner";
+
+// Tanstack
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+// API
 import { postVisitor } from "@/api/post-visitor";
 import { useAuth } from "@/hooks/use-auth";
+
+
 
 const createVisitorFormSchema = z.object({
   name: z.string(),
@@ -90,6 +105,7 @@ export function AddModal() {
       }
 
       await createVisitor({ ...data, hostId });
+
       reset({
         name: "",
         document: "",
@@ -97,7 +113,9 @@ export function AddModal() {
         visitReason: "",
         hostId: isResident ? residentHostId : "",
       });
+
       setIsOpen(false);
+
       toast.success("Visitante criado com sucesso!");
     } catch (error: any) {
       toast.error(error.message);
@@ -120,7 +138,10 @@ export function AddModal() {
           </DialogDescription>
         </DialogHeader>
 
-        <form id="register-visitor-form" onSubmit={handleSubmit(handleCreateVisitor)}>
+        <form
+          id="register-visitor-form"
+          onSubmit={handleSubmit(handleCreateVisitor)}
+        >
           <div className="grid gap-4">
             {!isResident ? (
               <div className="grid gap-3">
@@ -210,7 +231,11 @@ export function AddModal() {
           <DialogClose asChild>
             <Button variant="outline">Cancelar</Button>
           </DialogClose>
-          <Button form="register-visitor-form" type="submit" disabled={isPending}>
+          <Button
+            form="register-visitor-form"
+            type="submit"
+            disabled={isPending}
+          >
             {isPending ? "Salvando..." : "Salvar"}
           </Button>
         </DialogFooter>

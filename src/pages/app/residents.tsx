@@ -81,7 +81,7 @@ export function Residents() {
       </Helmet>
 
       <main className="flex min-h-svh flex-col gap-8">
-        <div className="flex justify-between">
+        <header className="flex justify-between">
           <div>
             <h1 className="text-2xl text-foreground font-bold tracking-tight">
               Moradores
@@ -91,7 +91,7 @@ export function Residents() {
             </p>
           </div>
           <AddModal />
-        </div>
+        </header>
 
         <InputGroup>
           <InputGroupInput
@@ -115,7 +115,7 @@ export function Residents() {
             Nenhum morador encontrado.
           </p>
         ) : (
-          <div className="space-y-4">
+          <section className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {visibleResidents.map((resident) => (
                 <DetailsCard
@@ -142,7 +142,7 @@ export function Residents() {
               onPerPageChange={handlePerPageChange}
               perPageOptions={[5, 10, 20, 50]}
             />
-          </div>
+          </section>
         )}
       </main>
     </>

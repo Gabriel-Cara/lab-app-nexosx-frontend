@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { getResidents, type GetResidentsResponse } from "@/api/get-residents";
+// Components
 import {
   Command,
   CommandEmpty,
@@ -9,7 +8,14 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../ui/command";
+} from "./ui/command";
+
+// Tanstack
+import { useInfiniteQuery } from "@tanstack/react-query";
+
+// API
+import { getResidents, type GetResidentsResponse } from "@/api/get-residents";
+
 
 type SelectResidentProps = {
   value?: string;
