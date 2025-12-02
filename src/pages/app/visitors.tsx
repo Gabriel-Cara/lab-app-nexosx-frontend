@@ -54,7 +54,7 @@ export function Visitors() {
       </Helmet>
 
       <main className="flex min-h-svh flex-col gap-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl text-foreground font-bold tracking-tight">
               Visitantes
@@ -64,9 +64,9 @@ export function Visitors() {
             </p>
           </div>
           <AddModal />
-        </div>
+        </header>
 
-        <div className="grid gap-4 md:grid-cols-[4fr_1fr]">
+        <section className="grid gap-4 md:grid-cols-[4fr_1fr]">
           <InputGroup>
             <InputGroupInput
               value={searchTerm}
@@ -104,7 +104,7 @@ export function Visitors() {
               </SelectContent>
             </Select>
           </div>
-        </div>
+        </section>
 
         <TableVisitors filters={filters} />
       </main>

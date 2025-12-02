@@ -1,6 +1,6 @@
 import { api } from "@/lib/axios";
 
-export type CreateResidentPayload = {
+export type PostResidentPayload = {
   name: string;
   email: string;
   phone?: string;
@@ -12,7 +12,7 @@ export type CreateResidentPayload = {
   emergencyContact?: string;
 };
 
-export async function createResident(payload: CreateResidentPayload) {
+export async function postResident(payload: PostResidentPayload) {
   const response = await api.post("/auth/users", {
     ...payload,
     phone: payload.phone ?? null,
