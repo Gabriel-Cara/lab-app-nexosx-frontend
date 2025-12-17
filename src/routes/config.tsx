@@ -1,4 +1,4 @@
-import { CalendarDays, LayoutDashboard, Package, PartyPopper, UserRoundCheck, Users } from "lucide-react";
+import { CalendarDays, LayoutDashboard, Package, PartyPopper, UserRoundCheck, Users, Volleyball } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -7,6 +7,7 @@ import { Residents } from "@/pages/app/residents";
 import { Visitors } from "@/pages/app/visitors";
 import { Packages } from "@/pages/app/packages";
 import { Areas } from "@/pages/app/areas";
+import { Reservations } from "@/pages/app/reservations";
 import { Events } from "@/pages/app/events";
 
 export type Role = "admin" | "staff" | "resident";
@@ -64,6 +65,15 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     element: <Areas />,
     roles: ["admin", "staff", "resident"],
     label: "Áreas de Lazer",
+    icon: Volleyball,
+    showInSidebar: true,
+  },
+  {
+    id: "reservations",
+    path: "reservations",
+    element: <Reservations />,
+    roles: ["admin", "staff"],
+    label: "Agendamentos",
     icon: CalendarDays,
     showInSidebar: true,
   },

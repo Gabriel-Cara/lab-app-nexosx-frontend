@@ -12,9 +12,9 @@ export function AppLayout() {
 
       <div className="flex flex-1 flex-col gap-4">
         <Header className="border-b max-w-screen" />
-        <main className="flex flex-col flex-1 py-2 px-4 max-w-screen">
+        <div className="flex flex-col flex-1 py-2 px-4 max-w-screen">
           <Outlet />
-        </main>
+        </div>
       </div>
     </SidebarProvider>
   );
