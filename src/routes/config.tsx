@@ -15,6 +15,7 @@ import { Visitors } from "@/pages/app/visitors";
 import { Packages } from "@/pages/app/packages";
 import { Areas } from "@/pages/app/areas";
 import { Reservations } from "@/pages/app/reservations";
+import { Profile } from "@/pages/app/profile";
 // import { Events } from "@/pages/app/events";
 
 export type Role = "admin" | "staff" | "resident";
@@ -83,6 +84,13 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     label: "Agendamentos",
     icon: CalendarDays,
     showInSidebar: true,
+  },
+  {
+    id: "profile",
+    path: "profile",
+    element: <Profile />,
+    roles: ["admin", "staff", "resident"],
+    showInSidebar: false,
   },
   // {
   //   id: "events",
