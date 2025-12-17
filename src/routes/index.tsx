@@ -12,6 +12,7 @@ import { SignUp } from "@/pages/auth/sign-up";
 import { Dashboard } from "@/pages/app/dashboard";
 import { useAuth } from "@/hooks/use-auth";
 import { appRouteDefinitions } from "@/routes/config";
+import { NotFound } from "@/pages/not-found";
 
 type Role = "admin" | "staff" | "resident";
 
@@ -68,6 +69,10 @@ export function Routes() {
             })),
           ],
         },
+        {
+          path: "*",
+          element: <NotFound />
+        }
       ]),
     [session],
   );
