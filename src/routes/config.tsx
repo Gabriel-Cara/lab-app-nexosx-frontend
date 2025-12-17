@@ -1,4 +1,4 @@
-import { CalendarDays, LayoutDashboard, Package, PartyPopper, UserRoundCheck, Users, Volleyball } from "lucide-react";
+import { CalendarDays, LayoutDashboard, Package, /*PartyPopper,*/ UserRoundCheck, Users, Volleyball } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -8,7 +8,7 @@ import { Visitors } from "@/pages/app/visitors";
 import { Packages } from "@/pages/app/packages";
 import { Areas } from "@/pages/app/areas";
 import { Reservations } from "@/pages/app/reservations";
-import { Events } from "@/pages/app/events";
+// import { Events } from "@/pages/app/events";
 
 export type Role = "admin" | "staff" | "resident";
 
