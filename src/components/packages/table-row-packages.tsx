@@ -3,13 +3,17 @@ import { StatusPackages } from "./status-packages";
 import { TypePackages } from "./type-packages";
 import type { Package } from "@/api/get-packages";
 import { RetrieveModal } from "./retrieve-modal";
+import { useAuth } from "@/hooks/use-auth";
 
 type TableRowPackagesProps = {
   pkg: Package;
 };
 
 export function TableRowPackages({ pkg }: TableRowPackagesProps) {
+  const { session } = useAuth();
+
   const { resident, carrier, type, status } = pkg;
+  const canRetrieve = status === "pending" || status === "delayed";
 
   return (
     <TableRow>
@@ -23,9 +27,7 @@ export function TableRowPackages({ pkg }: TableRowPackagesProps) {
         <StatusPackages variant={status} />
       </TableCell>
       <TableCell className="text-center">
-        {status === "pending" && (
-          <RetrieveModal id={pkg.id} />
-        )}
+        {canRetrieve && session?.user.role !== "resident" && <RetrieveModal id={pkg.id} />}
       </TableCell>
     </TableRow>
   );

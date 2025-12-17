@@ -2,8 +2,11 @@ import { Helmet } from "@dr.pogodin/react-helmet";
 
 import { TablePackages } from "@/components/packages/table-packages";
 import { AddModal } from "@/components/packages/add-modal";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Packages() {
+  const { session } = useAuth();
+
   return (
     <>
       <Helmet>
@@ -20,7 +23,7 @@ export function Packages() {
           </p>
         </header>
 
-        <AddModal />
+        {session?.user.role !== "resident" && <AddModal />}
 
         <TablePackages />
       </main>

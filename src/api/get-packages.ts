@@ -1,6 +1,6 @@
 import { api } from "@/lib/axios";
 
-export type PackageStatus = "pending" | "retrieved" | "cancelled";
+export type PackageStatus = "pending" | "retrieved" | "cancelled" | "delayed";
 export type PackageType = "box" | "envelope" | "food" | "others";
 
 export type Package = {
