@@ -77,15 +77,15 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     icon: CalendarDays,
     showInSidebar: true,
   },
-  {
-    id: "events",
-    path: "events",
-    element: <Events />,
-    roles: ["admin", "staff", "resident"],
-    label: "Eventos",
-    icon: PartyPopper,
-    showInSidebar: true,
-  },
+  // {
+  //   id: "events",
+  //   path: "events",
+  //   element: <Events />,
+  //   roles: ["admin", "staff", "resident"],
+  //   label: "Eventos",
+  //   icon: PartyPopper,
+  //   showInSidebar: true,
+  // },
 ];
 
 export const sidebarNavigation = appRouteDefinitions
