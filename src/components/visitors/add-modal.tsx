@@ -40,6 +40,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 // API
 import { postVisitor } from "@/api/post-visitor";
 import { useAuth } from "@/hooks/use-auth";
+import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 
 
 
@@ -88,6 +89,7 @@ export function AddModal() {
   async function handleCreateVisitor(data: CreateVisitorForm) {
     try {
       const hostId = isResident ? residentHostId : data.hostId;
+      const phone = sanitizePhone(data.phone);
 
       if (!hostId) {
         toast.error("Morador é obrigatório");
@@ -104,7 +106,11 @@ export function AddModal() {
         throw new Error("Documento é obrigatório");
       }
 
-      await createVisitor({ ...data, hostId });
+      await createVisitor({
+        ...data,
+        phone: phone || undefined,
+        hostId,
+      });
 
       reset({
         name: "",
@@ -209,7 +215,10 @@ export function AddModal() {
                 <InputGroupInput
                   id="phone"
                   placeholder="Insira o telefone"
-                  {...register("phone")}
+                  {...register("phone", {
+                    onChange: (event) =>
+                      setValue("phone", maskPhone(event.target.value)),
+                  })}
                 />
                 <InputGroupAddon>
                   <Phone />

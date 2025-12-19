@@ -23,6 +23,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 
 const profileFormSchema = z.object({
   name: z.string().min(3, "Informe o nome completo"),
@@ -68,7 +69,7 @@ export function Profile() {
       form.reset({
         name: data.name ?? "",
         email: data.email ?? "",
-        phone: data.phone ?? undefined,
+        phone: maskPhone(data.phone),
         document: data.document ?? undefined,
         apartment: data.apartment ?? undefined,
         building: data.building ?? undefined,
@@ -80,7 +81,8 @@ export function Profile() {
 
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
-      console.log(values);
+      const sanitizedPhone = sanitizePhone(values.phone);
+      console.log({ ...values, phone: sanitizedPhone || undefined });
       toast.success("Dados atualizados com sucesso (mock)!");
       setIsEditing(false);
     } catch (error) {
@@ -96,7 +98,7 @@ export function Profile() {
       form.reset({
         name: data.name ?? "",
         email: data.email ?? "",
-        phone: data.phone ?? undefined,
+        phone: maskPhone(data.phone),
         document: data.document ?? undefined,
         apartment: data.apartment ?? undefined,
         building: data.building ?? undefined,
@@ -189,7 +191,13 @@ export function Profile() {
                       id="phone"
                       disabled={!isEditing}
                       placeholder="(00) 00000-0000"
-                      {...form.register("phone")}
+                      {...form.register("phone", {
+                        onChange: (event) =>
+                          form.setValue(
+                            "phone",
+                            maskPhone(event.target.value)
+                          ),
+                      })}
                     />
                   </InputGroup>
                 </div>

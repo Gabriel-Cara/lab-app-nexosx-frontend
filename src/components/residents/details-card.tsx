@@ -4,6 +4,7 @@ import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
 import { EditModal } from "./edit-modal";
 import { DeleteModal } from "./delete-modal";
+import { ResendInviteButton } from "./resend-invite-button";
 
 interface DetailsCardProps {
   id: string;
@@ -59,6 +60,7 @@ export function DetailsCard(props: DetailsCardProps) {
               emergencyContact={props.emergencyContact ?? ""}
             />
             <DeleteModal id={props.id} name={props.name} />
+            <ResendInviteButton userId={props.id} />
           </div>
         </div>
 

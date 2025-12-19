@@ -229,6 +229,15 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
               onSelect={(slot) => setStartSlotId(slot.id)}
               isLoading={isLoading}
               isSlotDisabled={(slot) => !slot.available}
+              isSlotInRange={(slot) => {
+                if (!selectedStartSlot || !selectedEndSlot) return false;
+
+                return isSlotWithinRange(
+                  slot,
+                  selectedStartSlot,
+                  selectedEndSlot
+                );
+              }}
             />
             <Calendar
               mode="single"
@@ -258,6 +267,15 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
                 return (
                   timeToMinutes(slot.endsAt) <=
                   timeToMinutes(selectedStartSlot.startsAt)
+                );
+              }}
+              isSlotInRange={(slot) => {
+                if (!selectedStartSlot || !selectedEndSlot) return false;
+
+                return isSlotWithinRange(
+                  slot,
+                  selectedStartSlot,
+                  selectedEndSlot
                 );
               }}
             />
@@ -309,6 +327,19 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
 function timeToMinutes(time: string) {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
+}
+
+function isSlotWithinRange(
+  slot: AreaSlot,
+  startSlot: AreaSlot,
+  endSlot: AreaSlot
+) {
+  const rangeStart = timeToMinutes(startSlot.startsAt);
+  const rangeEnd = timeToMinutes(endSlot.endsAt);
+  const slotStart = timeToMinutes(slot.startsAt);
+  const slotEnd = timeToMinutes(slot.endsAt);
+
+  return slotStart >= rangeStart && slotEnd <= rangeEnd;
 }
 
 interface ApiError {

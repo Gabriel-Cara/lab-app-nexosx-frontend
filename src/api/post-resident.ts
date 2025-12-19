@@ -6,7 +6,7 @@ export type PostResidentPayload = {
   phone?: string;
   role: "admin" | "staff" | "resident";
   apartment?: string;
-  password: string;
+  password?: string;
   building?: string;
   vehicle?: string;
   emergencyContact?: string;

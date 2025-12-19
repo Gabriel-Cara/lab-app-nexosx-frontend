@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { updateResident } from "@/api/update-resident";
+import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 
 const editResidentFormSchema = z.object({
   name: z.string().optional(),
@@ -47,12 +48,12 @@ type EditModalProps = EditResidentForm & {
 export function EditModal(props: EditModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset } = useForm<EditResidentForm>({
+  const { register, handleSubmit, reset, setValue } = useForm<EditResidentForm>({
     resolver: zodResolver(editResidentFormSchema),
     defaultValues: {
       name: props.name,
       email: props.email,
-      phone: props.phone,
+      phone: maskPhone(props.phone),
       apartment: props.apartment,
       password: "",
       building: props.building ?? "",
@@ -73,7 +74,7 @@ export function EditModal(props: EditModalProps) {
       reset({
         name: props.name,
         email: props.email,
-        phone: props.phone,
+        phone: maskPhone(props.phone),
         apartment: props.apartment,
         password: "",
         building: props.building ?? "",
@@ -85,11 +86,13 @@ export function EditModal(props: EditModalProps) {
 
   async function handleEditResident(data: EditResidentForm) {
     try {
+      const phone = sanitizePhone(data.phone);
+
       await mutateResident({
         id: props.id,
         name: data.name || undefined,
         email: data.email || undefined,
-        phone: data.phone || undefined,
+        phone: phone || undefined,
         role: props.role,
         apartment: data.apartment || undefined,
         password: data.password || undefined,
@@ -184,11 +187,14 @@ export function EditModal(props: EditModalProps) {
             <div className="grid col-span-2 sm:col-span-1 gap-3">
               <Label htmlFor="phone">Telefone</Label>
               <InputGroup>
-                <InputGroupInput
-                  id="phone"
-                  placeholder="Insira o telefone"
-                  {...register("phone")}
-                />
+              <InputGroupInput
+                id="phone"
+                placeholder="Insira o telefone"
+                {...register("phone", {
+                  onChange: (event) =>
+                    setValue("phone", maskPhone(event.target.value)),
+                })}
+              />
                 <InputGroupAddon>
                   <Phone />
                 </InputGroupAddon>

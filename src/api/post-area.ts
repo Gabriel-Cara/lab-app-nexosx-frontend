@@ -5,6 +5,11 @@ interface PostAreaData {
   description: string;
   capacity: number;
   available: boolean;
+  schedule?: {
+    start: string;
+    end: string;
+    stepMinutes?: number;
+  };
 }
 
 interface PostAreaResponse {
@@ -20,12 +25,14 @@ export async function postArea({
   description,
   capacity,
   available,
+  schedule,
 }: PostAreaData) {
   const response = await api.post<PostAreaResponse>("/areas", {
     name,
     description,
     capacity,
     available,
+    schedule,
   });
 
   return response.data;

@@ -13,6 +13,7 @@ interface SlotColumnProps {
   isLoading: boolean;
   hint?: string;
   isSlotDisabled: (slot: AreaSlot) => boolean;
+  isSlotInRange?: (slot: AreaSlot) => boolean;
   variant: "start" | "end";
 }
 
@@ -23,6 +24,7 @@ export function SlotColumn({
   onSelect,
   isLoading,
   isSlotDisabled,
+  isSlotInRange,
   variant,
 }: SlotColumnProps) {
   return (
@@ -45,6 +47,7 @@ export function SlotColumn({
                 key={`${title}-${slot.id}`}
                 disabled={isSlotDisabled(slot)}
                 selected={selectedId === slot.id}
+                inRange={isSlotInRange ? isSlotInRange(slot) : false}
                 label={variant === "start" ? slot.startsAt : slot.endsAt}
                 startsAt={slot.startsAt}
                 endsAt={slot.endsAt}

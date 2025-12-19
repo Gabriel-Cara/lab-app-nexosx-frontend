@@ -25,13 +25,13 @@ import {
 } from "@/components/ui/dialog";
 
 import { postResident } from "@/api/post-resident";
+import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 
 const createResidentFormSchema = z.object({
   name: z.string({ message: "O nome é obrigatório" }),
   email: z.email({ message: "O email é obrigatório" }),
   phone: z.string({ message: "O telefone é obrigatório" }),
   apartment: z.string({ message: "O apartamento é obrigatório" }),
-  password: z.string(),
   building: z.string().optional(),
   vehicle: z.string().optional(),
   emergencyContact: z.string().optional(),
@@ -43,18 +43,7 @@ export function AddModal() {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  function generateRandomPassword() {
-    const characters =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let password = "";
-    for (let i = 0; i < 8; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      password += characters.charAt(randomIndex);
-    }
-    return password;
-  }
-
-  const { register, handleSubmit, reset } =
+  const { register, handleSubmit, reset, setValue } =
     useForm<CreateResidentForm>({
       resolver: zodResolver(createResidentFormSchema),
       defaultValues: {
@@ -62,7 +51,6 @@ export function AddModal() {
         email: "",
         phone: "",
         apartment: "",
-        password: generateRandomPassword(),
         building: "",
         vehicle: "",
         emergencyContact: "",
@@ -78,12 +66,15 @@ export function AddModal() {
 
   async function handleCreateResident(data: CreateResidentForm) {
     try {
+      const phone = sanitizePhone(data.phone);
+
       await mutateResident({
         ...data,
         role: "resident",
-        vehicle: data.vehicle || undefined,
-        building: data.building || undefined,
-        emergencyContact: data.emergencyContact || undefined,
+        phone,
+        vehicle: data.vehicle || "",
+        building: data.building || "",
+        emergencyContact: data.emergencyContact || "",
       });
 
       toast.success("Morador criado com sucesso!");
@@ -92,7 +83,6 @@ export function AddModal() {
         email: "",
         phone: "",
         apartment: "",
-        password: generateRandomPassword(),
         building: "",
         vehicle: "",
         emergencyContact: "",
@@ -172,7 +162,10 @@ export function AddModal() {
               <InputGroupInput
                 id="phone"
                 placeholder="Insira o telefone"
-                {...register("phone")}
+                {...register("phone", {
+                  onChange: (event) =>
+                    setValue("phone", maskPhone(event.target.value)),
+                })}
               />
               <InputGroupAddon>
                 <Phone />

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/input-group";
 
 import { Mail, Phone, SquareAsterisk, User } from "lucide-react";
+import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 
 const signUpFormSchema = z.object({
   name: z.string(),
@@ -29,12 +30,15 @@ export function SignUp() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { isSubmitting },
   } = useForm<SignUpForm>();
 
   async function handleSignUp(data: SignUpForm) {
     try {
-      if (!data.name || !data.phone || !data.email || !data.password) {
+      const phone = sanitizePhone(data.phone);
+
+      if (!data.name || !phone || !data.email || !data.password) {
         return toast.error("Preencha todos os campos.");
       }
 
@@ -112,7 +116,11 @@ export function SignUp() {
                 id="phone"
                 type="text"
                 placeholder="Insira seu número de celular"
-                {...register("phone", { required: true })}
+                {...register("phone", {
+                  required: true,
+                  onChange: (event) =>
+                    setValue("phone", maskPhone(event.target.value)),
+                })}
               />
               <InputGroupAddon>
                 <Phone />

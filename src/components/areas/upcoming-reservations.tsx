@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { getReservations, type Reservation } from "@/api/get-reservations";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 interface UpcomingReservationsProps {
   withContainer?: boolean;
@@ -15,6 +16,7 @@ export function UpcomingReservations({
   withContainer = true,
 }: UpcomingReservationsProps) {
   const [expanded, setExpanded] = useState(false);
+  const { session } = useAuth();
 
   const weekStart = useMemo(() => {
     const date = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -39,8 +41,16 @@ export function UpcomingReservations({
   });
 
   const reservations = data ?? [];
-  const preview = reservations.slice(0, 5);
-  const remaining = reservations.slice(5);
+  const visibleReservations = useMemo(() => {
+    if (!session?.user) return reservations;
+    if (session.user.role !== "resident") return reservations;
+
+    return reservations.filter(
+      (reservation) => reservation.residentId === session.user.id
+    );
+  }, [reservations, session]);
+  const preview = visibleReservations.slice(0, 5);
+  const remaining = visibleReservations.slice(5);
 
   const containerClass = withContainer
     ? "rounded-xl border p-4 space-y-4"
@@ -72,7 +82,7 @@ export function UpcomingReservations({
     );
   }
 
-  if (reservations.length === 0) {
+  if (visibleReservations.length === 0) {
     return (
       <div className={cn(placeholderClass, "text-muted-foreground")}>
         Nenhum agendamento aprovado para esta semana.

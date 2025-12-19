@@ -33,18 +33,24 @@ export function AreasAvailable() {
           Nenhuma área cadastrada até o momento.
         </p>
       ) : (
-        areas.map((area) => (
-          <ScheduleCard
-            key={area.id}
-            id={area.id}
-            name={area.name}
-            status={area.available ? "available" : "denied"}
-            description={area.description ?? "Sem descrição"}
-            capacity={area.capacity ?? 0}
-            openTime="08:00"
-            closeTime="18:00"
-          />
-        ))
+        areas.map((area) => {
+          const slots = area.timeSlots ?? [];
+          const openTime = slots[0]?.startsAt ?? "08:00";
+          const closeTime = slots[slots.length - 1]?.endsAt ?? "18:00";
+
+          return (
+            <ScheduleCard
+              key={area.id}
+              id={area.id}
+              name={area.name}
+              status={area.available ? "available" : "denied"}
+              description={area.description ?? "Sem descrição"}
+              capacity={area.capacity ?? 0}
+              openTime={openTime}
+              closeTime={closeTime}
+            />
+          );
+        })
       )}
     </div>
   );

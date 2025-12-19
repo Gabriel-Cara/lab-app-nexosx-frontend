@@ -9,6 +9,7 @@ import { AuthLayout } from "@/components/layout/auth";
 import { AppLayout } from "@/components/layout/app";
 import { SignIn } from "@/pages/auth/sign-in";
 import { SignUp } from "@/pages/auth/sign-up";
+import { FirstAccess } from "@/pages/auth/first-access";
 import { Dashboard } from "@/pages/app/dashboard";
 import { useAuth } from "@/hooks/use-auth";
 import { appRouteDefinitions } from "@/routes/config";
@@ -51,6 +52,7 @@ export function Routes() {
             { index: true, element: <SignIn /> },
             { path: "sign-in", element: <SignIn /> },
             { path: "sign-up", element: <SignUp /> },
+            { path: "primeiro-acesso", element: <FirstAccess /> },
           ],
         },
         {

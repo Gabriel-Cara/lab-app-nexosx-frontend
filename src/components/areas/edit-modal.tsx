@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -27,6 +27,14 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
+import { SlotColumn } from "./slot-column";
+import type { AreaSlot } from "@/api/get-area-slots";
+import {
+  MAX_TIME,
+  MIN_TIME,
+  TIME_STEP_SECONDS,
+} from "@/utils/time-range";
+import { Separator } from "../ui/separator";
 
 interface EditModalProps {
   areaId: string;
@@ -39,8 +47,12 @@ interface EditAreaFormData {
   available: boolean;
 }
 
+const SLOT_STEP_MINUTES = TIME_STEP_SECONDS / 60;
+
 export function EditModal({ areaId }: EditModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [startSlotId, setStartSlotId] = useState<string | null>(null);
+  const [endSlotId, setEndSlotId] = useState<string | null>(null);
 
   const { handleSubmit, register } = useForm<EditAreaFormData>();
 
@@ -53,6 +65,53 @@ export function EditModal({ areaId }: EditModalProps) {
     mutationFn: patchArea,
   });
 
+  const slots = useMemo(
+    () => buildSlots(MIN_TIME, MAX_TIME, SLOT_STEP_MINUTES),
+    []
+  );
+  const selectedStartSlot =
+    slots.find((slot) => slot.id === startSlotId) ?? null;
+  const selectedEndSlot = slots.find((slot) => slot.id === endSlotId) ?? null;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setStartSlotId(null);
+      setEndSlotId(null);
+      return;
+    }
+
+    if (!areaData?.timeSlots?.length) return;
+
+    const sortedSlots = [...areaData.timeSlots].sort((a, b) => {
+      if (a.sortOrder !== null && b.sortOrder !== null) {
+        return a.sortOrder - b.sortOrder;
+      }
+
+      return a.startsAt.localeCompare(b.startsAt);
+    });
+    const startTime = sortedSlots[0]?.startsAt;
+    const endTime = sortedSlots[sortedSlots.length - 1]?.endsAt;
+
+    if (!startTime || !endTime) return;
+
+    const startSlot = slots.find((slot) => slot.startsAt === startTime) ?? null;
+    const endSlot = slots.find((slot) => slot.endsAt === endTime) ?? null;
+
+    setStartSlotId(startSlot?.id ?? null);
+    setEndSlotId(endSlot?.id ?? null);
+  }, [areaData, isOpen, slots]);
+
+  useEffect(() => {
+    if (!selectedStartSlot || !selectedEndSlot) return;
+
+    if (
+      timeToMinutes(selectedEndSlot.endsAt) <=
+      timeToMinutes(selectedStartSlot.startsAt)
+    ) {
+      setEndSlotId(null);
+    }
+  }, [selectedStartSlot, selectedEndSlot]);
+
   async function handleEditArea({
     name,
     description,
@@ -63,6 +122,19 @@ export function EditModal({ areaId }: EditModalProps) {
       throw toast.error("Não foi possível carregar os dados da área.");
     }
 
+    if (!selectedStartSlot || !selectedEndSlot) {
+      toast.error("Selecione o horário de início e fim.");
+      return;
+    }
+
+    if (
+      timeToMinutes(selectedEndSlot.endsAt) <=
+      timeToMinutes(selectedStartSlot.startsAt)
+    ) {
+      toast.error("O horário final deve ser depois do inicial.");
+      return;
+    }
+
     try {
       await updateArea({
         id: areaId,
@@ -70,6 +142,11 @@ export function EditModal({ areaId }: EditModalProps) {
         description,
         capacity,
         available,
+        schedule: {
+          start: selectedStartSlot.startsAt,
+          end: selectedEndSlot.endsAt,
+          stepMinutes: SLOT_STEP_MINUTES,
+        },
       });
 
       await Promise.all([
@@ -84,12 +161,20 @@ export function EditModal({ areaId }: EditModalProps) {
     }
   }
 
+  const selectionLabel = useMemo(() => {
+    if (!selectedStartSlot || !selectedEndSlot) return null;
+
+    return `${selectedStartSlot.startsAt} às ${selectedEndSlot.endsAt}`;
+  }, [selectedStartSlot, selectedEndSlot]);
+
+  const isSubmitDisabled = isPending || !selectedStartSlot || !selectedEndSlot;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">Editar</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90%] overflow-y-auto no-scrollbar">
         <DialogHeader>
           <DialogTitle>Editar {areaData?.name}</DialogTitle>
           <DialogDescription>
@@ -142,6 +227,60 @@ export function EditModal({ areaId }: EditModalProps) {
           </div>
 
           <div className="space-y-2">
+            <Label>Horário de funcionamento</Label>
+            <div className="flex flex-col md:flex-row border rounded-xl justify-around md:items-center">
+              <SlotColumn
+                title="Início"
+                variant="start"
+                slots={slots}
+                selectedId={startSlotId}
+                onSelect={(slot) => setStartSlotId(slot.id)}
+                isLoading={false}
+                isSlotDisabled={() => false}
+                isSlotInRange={(slot) => {
+                  if (!selectedStartSlot || !selectedEndSlot) return false;
+
+                  return isSlotWithinRange(
+                    slot,
+                    selectedStartSlot,
+                    selectedEndSlot
+                  );
+                }}
+              />
+              <SlotColumn
+                title="Fim"
+                variant="end"
+                slots={slots}
+                selectedId={endSlotId}
+                onSelect={(slot) => setEndSlotId(slot.id)}
+                isLoading={false}
+                isSlotDisabled={(slot) => {
+                  if (!selectedStartSlot) return true;
+
+                  return (
+                    timeToMinutes(slot.endsAt) <=
+                    timeToMinutes(selectedStartSlot.startsAt)
+                  );
+                }}
+                isSlotInRange={(slot) => {
+                  if (!selectedStartSlot || !selectedEndSlot) return false;
+
+                  return isSlotWithinRange(
+                    slot,
+                    selectedStartSlot,
+                    selectedEndSlot
+                  );
+                }}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {selectionLabel
+                ? `Funcionamento: ${selectionLabel}.`
+                : "Selecione o início e o fim do intervalo."}
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="status" className="flex flex-col items-start">
               Disponibilidade
               <div className="relative inline-block h-5 w-10 cursor-pointer rounded-full bg-zinc-900 transition [-webkit-tap-highlight-color:transparent] has-checked:bg-[#1976D2]">
@@ -161,11 +300,63 @@ export function EditModal({ areaId }: EditModalProps) {
           <DialogClose asChild>
             <Button variant="ghost">Cancelar</Button>
           </DialogClose>
-          <Button form="edit-form" type="submit" disabled={isPending}>
+          <Button form="edit-form" type="submit" disabled={isSubmitDisabled}>
             {isPending ? "Salvando..." : "Salvar Alterações"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
+}
+
+function buildSlots(
+  startTime: string,
+  endTime: string,
+  stepMinutes: number
+): AreaSlot[] {
+  const startMinutes = timeToMinutes(startTime);
+  const endMinutes = timeToMinutes(endTime);
+  const slots: AreaSlot[] = [];
+  let sortOrder = 0;
+
+  for (let start = startMinutes; start < endMinutes; start += stepMinutes) {
+    const slotEnd = Math.min(start + stepMinutes, endMinutes);
+    const startsAt = minutesToTime(start);
+    const endsAt = minutesToTime(slotEnd);
+
+    slots.push({
+      id: `${startsAt}-${endsAt}`,
+      label: `${startsAt} - ${endsAt}`,
+      startsAt,
+      endsAt,
+      sortOrder: sortOrder++,
+      available: true,
+    });
+  }
+
+  return slots;
+}
+
+function timeToMinutes(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function isSlotWithinRange(
+  slot: AreaSlot,
+  startSlot: AreaSlot,
+  endSlot: AreaSlot
+) {
+  const rangeStart = timeToMinutes(startSlot.startsAt);
+  const rangeEnd = timeToMinutes(endSlot.endsAt);
+  const slotStart = timeToMinutes(slot.startsAt);
+  const slotEnd = timeToMinutes(slot.endsAt);
+
+  return slotStart >= rangeStart && slotEnd <= rangeEnd;
+}
+
+function minutesToTime(totalMinutes: number) {
+  const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+  const minutes = String(totalMinutes % 60).padStart(2, "0");
+  return `${hours}:${minutes}`;
 }

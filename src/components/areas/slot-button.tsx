@@ -5,6 +5,7 @@ interface SlotButtonProps {
   startsAt: string;
   endsAt: string;
   selected?: boolean;
+  inRange?: boolean;
   disabled?: boolean;
   onClick?: () => void;
 }
@@ -12,9 +13,14 @@ interface SlotButtonProps {
 export function SlotButton({
   label,
   selected = false,
+  inRange = false,
   disabled = false,
   onClick,
 }: SlotButtonProps) {
+  const rangeClass = inRange
+    ? "border-primary/60 bg-primary/10 text-primary"
+    : "bg-background hover:border-primary";
+
   return (
     <button
       type="button"
@@ -25,7 +31,7 @@ export function SlotButton({
         "disabled:cursor-not-allowed disabled:opacity-40",
         selected
           ? "border-primary bg-primary text-primary-foreground"
-          : "bg-background hover:border-primary"
+          : rangeClass
       )}
     >
       <span className="block font-medium">{label}</span>

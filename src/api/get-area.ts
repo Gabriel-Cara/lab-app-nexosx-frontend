@@ -6,6 +6,12 @@ export interface AreaResponse {
   description: string | null;
   capacity: number | null;
   available: boolean;
+  timeSlots?: {
+    id: string;
+    startsAt: string;
+    endsAt: string;
+    sortOrder: number | null;
+  }[];
   createdAt: string;
   updatedAt: string;
 }
