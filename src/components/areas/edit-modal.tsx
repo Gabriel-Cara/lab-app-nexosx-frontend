@@ -34,7 +34,6 @@ import {
   MIN_TIME,
   TIME_STEP_SECONDS,
 } from "@/utils/time-range";
-import { Separator } from "../ui/separator";
 
 interface EditModalProps {
   areaId: string;

@@ -23,6 +23,7 @@ import {
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { SlotColumn } from "./slot-column";
+import type { AreaSlot } from "@/api/get-area-slots";
 
 interface ScheduleModalProps {
   areaId: string;
