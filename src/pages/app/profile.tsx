@@ -82,6 +82,12 @@ export function Profile() {
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
       const sanitizedPhone = sanitizePhone(values.phone);
+
+      if (values.phone && !sanitizedPhone) {
+        toast.error("Telefone inválido. Use DDD + número.");
+        return;
+      }
+
       console.log({ ...values, phone: sanitizedPhone || undefined });
       toast.success("Dados atualizados com sucesso (mock)!");
       setIsEditing(false);

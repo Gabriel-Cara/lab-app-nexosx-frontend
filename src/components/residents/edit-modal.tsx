@@ -88,6 +88,10 @@ export function EditModal(props: EditModalProps) {
     try {
       const phone = sanitizePhone(data.phone);
 
+      if (data.phone && !phone) {
+        throw toast.error("Telefone inválido. Use DDD + número.");
+      }
+
       await mutateResident({
         id: props.id,
         name: data.name || undefined,

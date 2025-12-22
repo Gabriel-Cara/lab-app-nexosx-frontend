@@ -68,6 +68,10 @@ export function AddModal() {
     try {
       const phone = sanitizePhone(data.phone);
 
+      if (!phone) {
+        throw toast.error("Telefone inválido. Use DDD + número.");
+      }
+
       await mutateResident({
         ...data,
         role: "resident",

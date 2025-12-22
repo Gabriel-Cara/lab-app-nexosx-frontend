@@ -89,7 +89,10 @@ export function RetrieveModal({ id }: RetrieveModalProps) {
   });
 
   async function handleRetrievePackage({ code }: OTPFormSchema) {
-    await retrievePackage({ id, code });
+    await retrievePackage({
+      id,
+      code,
+    });
 
     toast.success("Encomenda resgatada com sucesso!");
 
@@ -109,7 +112,9 @@ export function RetrieveModal({ id }: RetrieveModalProps) {
       <DialogContent>
         <DialogHeader className="sr-only">
           <DialogTitle>Resgatar encomenda</DialogTitle>
-          <DialogDescription>Insira o código para resgatar a encomenda.</DialogDescription>
+          <DialogDescription>
+            Insira o código para resgatar a encomenda.
+          </DialogDescription>
         </DialogHeader>
         <Card className="border-none shadow-none">
           <CardHeader className="text-center">

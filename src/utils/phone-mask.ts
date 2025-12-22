@@ -1,5 +1,9 @@
 export function maskPhone(value?: string | null) {
-  const digits = (value ?? "").replace(/\D/g, "").slice(0, 11);
+  const rawDigits = (value ?? "").replace(/\D/g, "");
+  const normalized = rawDigits.startsWith("55") && rawDigits.length > 11
+    ? rawDigits.slice(2)
+    : rawDigits;
+  const digits = normalized.slice(0, 11);
 
   if (digits.length === 0) {
     return "";
@@ -23,5 +27,17 @@ export function maskPhone(value?: string | null) {
 }
 
 export function sanitizePhone(value?: string | null) {
-  return (value ?? "").replace(/\D/g, "");
+  const rawDigits = (value ?? "").replace(/\D/g, "");
+
+  if (!rawDigits) {
+    return "";
+  }
+
+  const local = rawDigits.startsWith("55") ? rawDigits.slice(2) : rawDigits;
+
+  if (local.length !== 11) {
+    return "";
+  }
+
+  return `+55${local}`;
 }

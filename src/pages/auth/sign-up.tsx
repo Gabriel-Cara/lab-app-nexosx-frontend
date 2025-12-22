@@ -38,8 +38,12 @@ export function SignUp() {
     try {
       const phone = sanitizePhone(data.phone);
 
-      if (!data.name || !phone || !data.email || !data.password) {
+      if (!data.name || !data.email || !data.password) {
         return toast.error("Preencha todos os campos.");
+      }
+
+      if (!phone) {
+        return toast.error("Telefone inválido. Use DDD + número.");
       }
 
       console.log(data);

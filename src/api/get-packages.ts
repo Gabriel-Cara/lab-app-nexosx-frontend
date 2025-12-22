@@ -5,7 +5,6 @@ export type PackageType = "box" | "envelope" | "food" | "others";
 
 export type Package = {
   id: string;
-  code: string;
   description: string;
   carrier: string | null;
   type: PackageType;
@@ -13,6 +12,8 @@ export type Package = {
   receivedAt: string;
   retrievedAt: string | null;
   deliveredAt: string | null;
+  codeExpiresAt: string;
+  codeHint: string | null;
   residentId: string;
   createdById: string;
   resident: {
