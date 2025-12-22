@@ -56,7 +56,11 @@ interface RetrieveModalProps {
 const otpFormSchema = z.object({
   code: z
     .string()
-    .min(6, { message: "Código de verificação precisa ter 6 caracteres." }),
+    .transform((value) => value.replace(/[^A-Za-z0-9]/g, "").toUpperCase())
+    .refine((value) => /^[A-Z0-9]{6}$/.test(value), {
+      message:
+        "Código de verificação deve ter 6 caracteres entre letras e números.",
+    }),
 });
 
 type OTPFormSchema = z.infer<typeof otpFormSchema>;
@@ -143,6 +147,14 @@ export function RetrieveModal({ id }: RetrieveModalProps) {
                           required
                           containerClassName="gap-2"
                           {...field}
+                          inputMode="text"
+                          onChange={(value) =>
+                            field.onChange(
+                              value
+                                .replace(/[^A-Za-z0-9]/g, "")
+                                .toUpperCase()
+                            )
+                          }
                         >
                           <InputOTPGroup>
                             <InputOTPSlot index={0} />
