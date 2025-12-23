@@ -30,7 +30,7 @@ export function TablePackages() {
           <TableHead>Remetente</TableHead>
           <TableHead className="text-center">Tipo</TableHead>
           <TableHead className="text-center">Status</TableHead>
-          <TableHead></TableHead>
+          <TableHead className="text-center">Ações</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

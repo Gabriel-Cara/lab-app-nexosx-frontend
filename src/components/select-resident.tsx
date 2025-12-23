@@ -22,6 +22,7 @@ type SelectResidentProps = {
   onChange?: (residentId: string) => void;
   inputId?: string;
   placeholder?: string;
+  selectedLabel?: string;
 };
 
 export function SelectResident({
@@ -29,6 +30,7 @@ export function SelectResident({
   onChange,
   inputId = "resident",
   placeholder = "Buscar moradores",
+  selectedLabel,
 }: SelectResidentProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -95,11 +97,13 @@ export function SelectResident({
     const match = residents.find((resident) => resident.id === value);
     if (match) {
       setSearchTerm(match.name);
+    } else if (selectedLabel && previousValueRef.current !== value) {
+      setSearchTerm(selectedLabel);
     }
 
     manualClearRef.current = false;
     previousValueRef.current = value;
-  }, [value, residents]);
+  }, [residents, selectedLabel, value]);
 
   useEffect(() => {
     return () => {
