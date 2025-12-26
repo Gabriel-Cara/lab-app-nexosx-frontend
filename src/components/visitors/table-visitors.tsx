@@ -17,6 +17,7 @@ import { getVisitors } from "@/api/get-visitors";
 import type { VisitorsResponse } from "@/api/get-visitors";
 import { VisitorsPagination } from "./pagination";
 import { useAuth } from "@/hooks/use-auth";
+import { TableVisitorsSkeleton } from "@/components/visitors/table-visitors-skeleton";
 
 type TableVisitorsProps = {
   filters?: {
@@ -112,11 +113,7 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
-                Carregando visitantes...
-              </TableCell>
-            </TableRow>
+            <TableVisitorsSkeleton />
           ) : totalItems === 0 ? (
             <TableRow>
               <TableCell colSpan={5} className="text-center text-muted-foreground">

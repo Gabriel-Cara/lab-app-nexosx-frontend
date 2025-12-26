@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Icons
 import { Package, Plus } from "lucide-react";
@@ -40,10 +40,14 @@ import {
 
 // API
 import { postPackage } from "@/api/post-package";
+import { uploadImage } from "@/api/post-image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import { toast } from "sonner";
+import { fileToDataUrl } from "@/utils/image-utils";
+
+import { ImageDropzone } from "@/components/images/image-dropzone";
 
 const createPackageFormSchema = z.object({
   residentId: z.string({ message: "O destinatário é obrigatório" }),
@@ -58,6 +62,7 @@ type CreatePackageFormData = z.infer<typeof createPackageFormSchema>;
 
 export function AddModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const { register, control, handleSubmit, reset } = useForm<CreatePackageFormData>({
     resolver: zodResolver(createPackageFormSchema),
@@ -71,11 +76,13 @@ export function AddModal() {
 
   const { mutateAsync: createPackage, isPending } = useMutation({
     mutationFn: postPackage,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["packages"] });
-      setIsOpen(false);
-    },
   });
+
+  useEffect(() => {
+    if (!isOpen) {
+      setImageFiles([]);
+    }
+  }, [isOpen]);
 
   async function handleCreatePackage({
     residentId,
@@ -87,10 +94,27 @@ export function AddModal() {
       throw toast.error("Preencha todos os campos");
     }
 
-    await createPackage({ residentId, carrier, description, type })
+    const created = await createPackage({ residentId, carrier, description, type });
+
+    const imageFile = imageFiles[0];
+    if (imageFile) {
+      try {
+        const dataUrl = await fileToDataUrl(imageFile);
+        await uploadImage({
+          entityType: "package",
+          entityId: created.id,
+          image: dataUrl,
+        });
+      } catch (error) {
+        toast.error("Não foi possível salvar a imagem da encomenda.");
+        console.error(error);
+      }
+    }
 
     toast.success("Encomenda criada com sucesso!");
+    await queryClient.invalidateQueries({ queryKey: ["packages"] });
     reset();
+    setImageFiles([]);
     
     setIsOpen(false);
   }
@@ -197,6 +221,15 @@ export function AddModal() {
                   </SelectContent>
                 </Select>
               )}
+            />
+          </div>
+          <div className="grid col-span-2 gap-2">
+            <Label>Imagem (opcional)</Label>
+            <ImageDropzone
+              value={imageFiles}
+              onChange={setImageFiles}
+              maxFiles={1}
+              maxSizeMB={4}
             />
           </div>
         </form>

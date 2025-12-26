@@ -24,6 +24,10 @@ import {
 } from "@/components/ui/table";
 import type { VisitorsResponse } from "@/api/get-visitors";
 import { Status as VisitorStatusBadge } from "@/components/visitors/status";
+import {
+  VisitorsRecentSkeleton,
+  VisitorsStatusSkeleton,
+} from "@/components/dashboard/visitors-section-skeleton";
 
 type VisitorStatus = VisitorsResponse["status"];
 
@@ -74,7 +78,7 @@ export function VisitorsSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando visitantes...</p>
+              <VisitorsStatusSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">
                 Não foi possível carregar os visitantes.
@@ -129,7 +133,7 @@ export function VisitorsSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando visitantes...</p>
+              <VisitorsRecentSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">
                 Não foi possível carregar os visitantes.

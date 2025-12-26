@@ -1,12 +1,15 @@
 import { api } from "@/lib/axios";
 
-type PatchPackageParams = {
+export type PatchPackagePayload = {
   id: string;
-  code: string;
+  residentId?: string;
+  description?: string;
+  carrier?: string;
+  type?: "box" | "envelope" | "food" | "others";
 };
 
-export function patchPackage({ id, code }: PatchPackageParams) {
-  return api.patch(`/packages/${id}/retrieve`, {
-    code,
-  });
+export async function patchPackage({ id, ...payload }: PatchPackagePayload) {
+  const response = await api.patch(`/packages/${id}`, payload);
+
+  return response.data;
 }

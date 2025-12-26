@@ -28,6 +28,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { SlotColumn } from "./slot-column";
+import { ImageManager } from "@/components/images/image-manager";
 import type { AreaSlot } from "@/api/get-area-slots";
 import {
   MAX_TIME,
@@ -211,6 +212,17 @@ export function EditModal({ areaId }: EditModalProps) {
               </InputGroupAddon>
             </InputGroup>
           </div>
+
+          <ImageManager
+            entityType="area"
+            entityId={areaId}
+            imageUrl={areaData?.imageUrl}
+            label="Imagem da área"
+            onUpdated={() => {
+              queryClient.invalidateQueries({ queryKey: ["areas"] });
+              queryClient.invalidateQueries({ queryKey: ["area-details", areaId] });
+            }}
+          />
 
           <div className="space-y-2 max-w-14 relative">
             <Label htmlFor="capacity">Capacidade</Label>

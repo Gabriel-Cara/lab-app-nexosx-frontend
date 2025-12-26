@@ -23,6 +23,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Resident } from "@/api/get-residents";
+import {
+  ResidentsCoverageSkeleton,
+  ResidentsRecentSkeleton,
+} from "@/components/dashboard/residents-section-skeleton";
 
 type ResidentsChartPoint = {
   key: "apartments" | "emergency";
@@ -78,7 +82,7 @@ export function ResidentsSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando moradores...</p>
+              <ResidentsCoverageSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">
                 Não foi possível carregar os moradores.
@@ -118,7 +122,7 @@ export function ResidentsSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando moradores...</p>
+              <ResidentsRecentSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">
                 Não foi possível carregar os moradores.

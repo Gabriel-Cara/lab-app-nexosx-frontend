@@ -1,12 +1,11 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, format, startOfWeek } from "date-fns";
-import { Loader2 } from "lucide-react";
-
 import { getReservations, type Reservation } from "@/api/get-reservations";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { UpcomingReservationsSkeleton } from "@/components/areas/upcoming-reservations-skeleton";
 
 interface UpcomingReservationsProps {
   withContainer?: boolean;
@@ -40,7 +39,7 @@ export function UpcomingReservations({
     staleTime: 1000 * 60 * 5,
   });
 
-  const reservations = data ?? [];
+  const reservations = useMemo(() => data ?? [], [data]);
   const visibleReservations = useMemo(() => {
     if (!session?.user) return reservations;
     if (session.user.role !== "resident") return reservations;
@@ -60,17 +59,7 @@ export function UpcomingReservations({
     : "rounded-xl border border-dashed p-4 text-sm";
 
   if (isLoading) {
-    return (
-      <div
-        className={cn(
-          placeholderClass,
-          "flex min-h-[120px] items-center justify-center gap-2 text-muted-foreground"
-        )}
-      >
-        <Loader2 className="size-4 animate-spin" />
-        Carregando agendamentos...
-      </div>
-    );
+    return <UpcomingReservationsSkeleton withContainer={withContainer} />;
   }
 
   if (isError) {

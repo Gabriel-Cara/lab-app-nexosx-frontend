@@ -15,6 +15,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 // API
 import { getResidents, type GetResidentsResponse } from "@/api/get-residents";
+import { SelectResidentSkeleton } from "@/components/select-resident-skeleton";
 
 
 type SelectResidentProps = {
@@ -81,7 +82,6 @@ export function SelectResident({
     () => data?.pages.flatMap((page) => page.data) ?? [],
     [data],
   );
-
   const showEmptyState = !isLoading && !isError && residents.length === 0;
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export function SelectResident({
             event.preventDefault();
           }}
         >
-          {isLoading && <CommandEmpty>Carregando moradores...</CommandEmpty>}
+          {isLoading && <SelectResidentSkeleton />}
 
           {isError && (
             <CommandEmpty>

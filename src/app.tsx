@@ -6,7 +6,7 @@ import { Routes } from "./routes";
 import { Toaster } from "sonner";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/react-query";
-import { AuthProvider } from "./contexts/auth-context";
+import { AuthProvider } from "./contexts/auth-provider";
 
 export function App() {
   return (

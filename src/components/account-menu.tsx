@@ -11,6 +11,9 @@ import {
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { getProfile } from "@/api/get-profile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function AccountMenu() {
   const navigate = useNavigate();
@@ -18,9 +21,22 @@ export function AccountMenu() {
   const { session, remove } = useAuth();
 
   const user = session?.user;
+  const userId = user?.id;
 
-  const firstName = user?.name.split(" ")[0];
-  const lastName = user?.name.split(" ")[user?.name.split(" ").length - 1];
+  const { data: profile } = useQuery({
+    queryKey: ["profile", userId],
+    queryFn: () => getProfile(userId!),
+    enabled: !!userId,
+  });
+
+  const displayName = profile?.name ?? user?.name ?? "";
+  const firstName = displayName.split(" ")[0] ?? "";
+  const lastName = displayName.split(" ")[displayName.split(" ").length - 1] ?? "";
+  const initials = displayName
+    .split(" ")
+    .map((name) => name[0])
+    .join("")
+    .slice(0, 2);
 
   return (
     <DropdownMenu>
@@ -30,15 +46,14 @@ export function AccountMenu() {
           className="p-2 inline-flex items-center w-full h-full justify-between"
         >
           <div className="flex items-center gap-3 max-w-fit">
-            <div className="w-10 h-10 bg-linear-to-br from-sky-300 to-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-background dark:text-foreground tracking-wide">
-                {user?.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .slice(0, 2)}
-              </span>
-            </div>
+            <Avatar className="h-10 w-10">
+              {profile?.imageUrl && (
+                <AvatarImage src={profile.imageUrl} alt={displayName} />
+              )}
+              <AvatarFallback className="bg-linear-to-br from-sky-300 to-blue-600 text-background dark:text-foreground tracking-wide">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0 text-start">
               <p className="text-foreground tracking-tight">
                 {`${firstName} ${lastName === firstName ? "" : lastName}`}

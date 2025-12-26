@@ -11,6 +11,7 @@ import { AddModal } from "@/components/residents/add-modal";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { getResidents } from "@/api/get-residents";
 import { ResidentsPagination } from "@/components/residents/pagination";
+import { ResidentsPageSkeleton } from "@/pages/app/residents-skeleton";
 
 export function Residents() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -105,7 +106,7 @@ export function Residents() {
         </InputGroup>
 
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Carregando moradores...</p>
+          <ResidentsPageSkeleton />
         ) : isError ? (
           <p className="text-sm text-destructive">
             Não foi possível carregar os moradores. Tente novamente.
@@ -126,6 +127,7 @@ export function Residents() {
                   email={resident.email}
                   phone={resident.phone}
                   role={resident.role}
+                  imageUrl={resident.imageUrl}
                   building={resident.building}
                   vehicle={resident.vehicle}
                   emergencyContact={resident.emergencyContact}

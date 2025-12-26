@@ -23,7 +23,7 @@ export function Header(props: React.ComponentProps<"header">) {
         />
 
         <div className="ml-auto flex items-center gap-2">
-          <Button className="h-9 w-9 md:hidden" variant="outline" asChild>
+          <Button className="h-11 w-11 md:hidden" variant="outline" asChild>
             <SidebarTrigger>
               <span className="sr-only">Toggle Sidebar</span>
             </SidebarTrigger>

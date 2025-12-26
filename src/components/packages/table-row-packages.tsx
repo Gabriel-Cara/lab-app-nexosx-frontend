@@ -40,6 +40,7 @@ export function TableRowPackages({ pkg }: TableRowPackagesProps) {
               carrier={pkg.carrier}
               description={pkg.description}
               type={pkg.type}
+              imageUrl={pkg.imageUrl}
             />
             <DeleteModal
               id={pkg.id}

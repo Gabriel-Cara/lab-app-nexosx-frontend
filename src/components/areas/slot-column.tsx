@@ -1,9 +1,8 @@
-import { Loader2 } from "lucide-react";
-
 import { type AreaSlot } from "@/api/get-area-slots";
 
 import { Label } from "../ui/label";
 import { SlotButton } from "./slot-button";
+import { SlotColumnSkeleton } from "@/components/areas/slot-column-skeleton";
 
 interface SlotColumnProps {
   title: string;
@@ -32,10 +31,7 @@ export function SlotColumn({
       <Label>{title}</Label>
       <div className="md:h-[248px] max-w-[200px] sm:w-fit overflow-y-auto no-scrollbar">
         {isLoading ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
-            Carregando horários disponíveis
-          </div>
+          <SlotColumnSkeleton />
         ) : slots.length === 0 ? (
           <p className="px-2 pt-4 text-center text-sm text-muted-foreground">
             Nenhum horário configurado para esta área.

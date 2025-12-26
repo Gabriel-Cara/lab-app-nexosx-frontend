@@ -1,6 +1,6 @@
 import { api } from "@/lib/axios";
 
-export type UpdateResidentPayload = {
+export type PutResidentPayload = {
   id: string;
   name?: string;
   email?: string;
@@ -13,10 +13,10 @@ export type UpdateResidentPayload = {
   emergencyContact?: string;
 };
 
-export async function updateResident({
+export async function putResident({
   id,
   ...payload
-}: UpdateResidentPayload) {
+}: PutResidentPayload) {
   const response = await api.put(`/auth/users/${id}`, {
     ...payload,
     phone: payload.phone ?? undefined,

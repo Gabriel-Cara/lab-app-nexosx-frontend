@@ -92,7 +92,7 @@ export function AddModal() {
         emergencyContact: "",
       });
       setIsOpen(false);
-    } catch (error) {
+    } catch {
       toast.error("Não foi possível criar o morador. Tente novamente.");
     }
   }

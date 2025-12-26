@@ -23,6 +23,9 @@ import {
 import { Status } from "./status";
 
 import type { VisitorsResponse } from "@/api/get-visitors";
+import { ImageManager } from "@/components/images/image-manager";
+import { useAuth } from "@/hooks/use-auth";
+import { useQueryClient } from "@tanstack/react-query";
 
 type ViewVisitorModalProps = {
   log: VisitorsResponse;
@@ -36,6 +39,10 @@ export function ViewVisitorModal({
   onOpenChange,
 }: ViewVisitorModalProps) {
   const { visitor, host, handledBy, entryTime, exitTime, status } = log;
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+  const canManageImage =
+    session?.user.role !== "resident" || log.hostId === session?.user.id;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -144,6 +151,19 @@ export function ViewVisitorModal({
                 </TableRow>
               </TableBody>
             </Table>
+          </div>
+
+          <div className="p-4 border rounded-md">
+            <ImageManager
+              entityType="visit"
+              entityId={log.id}
+              imageUrl={log.imageUrl}
+              label="Imagem da visita"
+              disabled={!canManageImage}
+              onUpdated={() =>
+                queryClient.invalidateQueries({ queryKey: ["visitors"] })
+              }
+            />
           </div>
         </div>
 
