@@ -10,6 +10,7 @@ import {
 } from "../ui/table";
 import { TableRowPackages } from "./table-row-packages";
 import { getPackages, type Package } from "@/api/get-packages";
+import { TablePackagesSkeleton } from "@/components/packages/table-packages-skeleton";
 
 export function TablePackages() {
   const {
@@ -35,11 +36,7 @@ export function TablePackages() {
       </TableHeader>
       <TableBody>
         {isLoading ? (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center text-muted-foreground">
-              Carregando encomendas...
-            </TableCell>
-          </TableRow>
+          <TablePackagesSkeleton />
         ) : isError ? (
           <TableRow>
             <TableCell colSpan={6} className="text-center text-destructive">

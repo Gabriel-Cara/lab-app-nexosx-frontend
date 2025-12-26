@@ -1,4 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 import { Mail, SquareAsterisk } from "lucide-react";
-import { useLogin } from "@/api/login";
+import { useLogin } from "@/api/post-login";
 import { useAuth } from "@/hooks/use-auth";
 
 const signInFormSchema = z.object({
@@ -26,7 +27,9 @@ export function SignIn() {
     register,
     handleSubmit,
     formState: { isSubmitting },
-  } = useForm<SignInForm>();
+  } = useForm<SignInForm>({
+    resolver: zodResolver(signInFormSchema),
+  });
 
   const { mutateAsync: authenticate, isPending: isLoggingIn } = useLogin();
 

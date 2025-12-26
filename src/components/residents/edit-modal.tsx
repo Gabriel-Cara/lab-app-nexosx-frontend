@@ -24,8 +24,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { updateResident } from "@/api/update-resident";
+import { putResident } from "@/api/put-resident";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
+import { ImageManager } from "@/components/images/image-manager";
 
 const editResidentFormSchema = z.object({
   name: z.string().optional(),
@@ -43,6 +44,7 @@ type EditResidentForm = z.infer<typeof editResidentFormSchema>;
 type EditModalProps = EditResidentForm & {
   id: string;
   role: "admin" | "staff" | "resident";
+  imageUrl?: string | null;
 };
 
 export function EditModal(props: EditModalProps) {
@@ -63,7 +65,7 @@ export function EditModal(props: EditModalProps) {
   });
 
   const { mutateAsync: mutateResident, isPending } = useMutation({
-    mutationFn: updateResident,
+    mutationFn: putResident,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["residents"] });
     },
@@ -133,6 +135,18 @@ export function EditModal(props: EditModalProps) {
           onSubmit={handleSubmit(handleEditResident)}
         >
           <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <ImageManager
+                entityType="user"
+                entityId={props.id}
+                imageUrl={props.imageUrl}
+                label="Foto do morador"
+                shape="round"
+                onUpdated={() =>
+                  queryClient.invalidateQueries({ queryKey: ["residents"] })
+                }
+              />
+            </div>
             <div className="grid col-span-2 sm:col-span-1 gap-3">
               <Label htmlFor="name">Nome</Label>
               <InputGroup>

@@ -6,6 +6,7 @@ export interface Area {
   description: string | null;
   capacity: number | null;
   available: boolean;
+  imageUrl?: string | null;
   timeSlots?: {
     id: string;
     startsAt: string;

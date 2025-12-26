@@ -29,6 +29,11 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusPackages } from "@/components/packages/status-packages";
 import type { Package as PackageModel, PackageType } from "@/api/get-packages";
+import {
+  PackagesQueueSkeleton,
+  PackagesTrendSkeleton,
+  PackagesTypeSkeleton,
+} from "@/components/dashboard/packages-section-skeleton";
 
 const packageTrendChartConfig: ChartConfig = {
   received: {
@@ -99,7 +104,7 @@ export function PackagesSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando dados de encomendas...</p>
+              <PackagesTrendSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">
                 Não foi possível carregar as encomendas.
@@ -162,7 +167,7 @@ export function PackagesSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando tipos...</p>
+              <PackagesTypeSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">
                 Não foi possível carregar as categorias.
@@ -205,7 +210,7 @@ export function PackagesSection({
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Carregando pendências...</p>
+            <PackagesQueueSkeleton />
           ) : isError ? (
             <p className="text-sm text-destructive">
               Não foi possível carregar os registros.

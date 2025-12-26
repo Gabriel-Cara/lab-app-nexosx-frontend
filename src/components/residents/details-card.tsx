@@ -1,5 +1,5 @@
 import { Home, Mail, Phone } from "lucide-react";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
 import { EditModal } from "./edit-modal";
@@ -13,6 +13,7 @@ interface DetailsCardProps {
   email?: string | null;
   phone?: string | null;
   role: "admin" | "staff" | "resident";
+  imageUrl?: string | null;
   password?: string;
   building?: string | null;
   vehicle?: string | null;
@@ -35,6 +36,9 @@ export function DetailsCard(props: DetailsCardProps) {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
+              {props.imageUrl && (
+                <AvatarImage src={props.imageUrl} alt={props.name} />
+              )}
               <AvatarFallback className="bg-gradient-to-br from-sky-300 to-blue-600 text-background">
                 {getInitials(props.name)}
               </AvatarFallback>
@@ -58,6 +62,7 @@ export function DetailsCard(props: DetailsCardProps) {
               building={props.building ?? ""}
               vehicle={props.vehicle ?? ""}
               emergencyContact={props.emergencyContact ?? ""}
+              imageUrl={props.imageUrl}
             />
             <DeleteModal id={props.id} name={props.name} />
             <ResendInviteButton userId={props.id} />

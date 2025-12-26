@@ -7,7 +7,7 @@ import { Status } from "./status";
 import { ViewVisitorModal } from "./view-modal";
 
 import type { VisitorsResponse } from "@/api/get-visitors";
-import { patchStatusOfVisitor } from "@/api/patch-status-of-visitor";
+import { patchVisitorStatus } from "@/api/patch-visitor-status";
 import { useAuth } from "@/hooks/use-auth";
 
 interface TableRowVisitorProps {
@@ -22,7 +22,7 @@ export function TableRowVisitor({ log }: TableRowVisitorProps) {
 
   const queryClient = useQueryClient();
   const { mutateAsync: updateStatus, isPending } = useMutation({
-    mutationFn: patchStatusOfVisitor,
+    mutationFn: patchVisitorStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["visitors"] });
     },

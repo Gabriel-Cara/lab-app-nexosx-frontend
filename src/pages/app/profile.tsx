@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,6 +24,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
+import { ImageManager } from "@/components/images/image-manager";
+import { ProfileSkeleton } from "@/pages/app/profile-skeleton";
 
 const profileFormSchema = z.object({
   name: z.string().min(3, "Informe o nome completo"),
@@ -41,6 +43,7 @@ type ProfileFormData = z.infer<typeof profileFormSchema>;
 export function Profile() {
   const { session } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const queryClient = useQueryClient();
 
   const userId = session?.user.id;
 
@@ -153,7 +156,7 @@ export function Profile() {
             Aguarde o carregamento do usuário para editar o perfil.
           </p>
         ) : isLoading ? (
-          <p className="text-sm text-muted-foreground">Carregando informações...</p>
+          <ProfileSkeleton showExtended={session?.user.role !== "staff"} />
         ) : isError || !data ? (
           <p className="text-sm text-destructive">
             Não foi possível carregar seus dados. Tente novamente.
@@ -168,6 +171,23 @@ export function Profile() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">
+                {userId && (
+                  <div className="md:col-span-2">
+                    <ImageManager
+                      entityType="user"
+                      entityId={userId}
+                      imageUrl={data?.imageUrl}
+                      label="Foto do perfil"
+                      shape="round"
+                      disabled={!isEditing}
+                      onUpdated={() =>
+                        queryClient.invalidateQueries({
+                          queryKey: ["profile", userId],
+                        })
+                      }
+                    />
+                  </div>
+                )}
                 <div className="grid gap-1.5">
                   <Label htmlFor="name">Nome completo</Label>
                   <InputGroup>

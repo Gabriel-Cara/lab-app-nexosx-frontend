@@ -9,6 +9,7 @@ export type Package = {
   carrier: string | null;
   type: PackageType;
   status: PackageStatus;
+  imageUrl?: string | null;
   receivedAt: string;
   retrievedAt: string | null;
   deliveredAt: string | null;

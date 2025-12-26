@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { getReservations, type Reservation } from "@/api/get-reservations";
@@ -12,6 +11,7 @@ import {
 } from "@/api/patch-reservation-status";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { PendingReservationsSkeleton } from "@/components/reservations/pending-reservations-skeleton";
 
 export function PendingReservations() {
   const queryClient = useQueryClient();
@@ -70,12 +70,7 @@ export function PendingReservations() {
   const reservations = useMemo(() => data ?? [], [data]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-40 items-center justify-center gap-2 rounded-xl border text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" />
-        Carregando solicitações...
-      </div>
-    );
+    return <PendingReservationsSkeleton />;
   }
 
   if (isError) {

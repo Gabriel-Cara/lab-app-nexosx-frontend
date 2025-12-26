@@ -2,23 +2,49 @@ import {
   CalendarDays,
   LayoutDashboard,
   Package,
-  /*PartyPopper,*/ UserRoundCheck,
+  PartyPopper,
+  UserRoundCheck,
   Users,
   Volleyball,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 
-import { Dashboard } from "@/pages/app/dashboard";
-import { Residents } from "@/pages/app/residents";
-import { Visitors } from "@/pages/app/visitors";
-import { Packages } from "@/pages/app/packages";
-import { Areas } from "@/pages/app/areas";
-import { Reservations } from "@/pages/app/reservations";
-import { Profile } from "@/pages/app/profile";
-// import { Events } from "@/pages/app/events";
+import { RouteFallback } from "@/routes/route-fallback";
+import { ResidentsPageSkeleton } from "@/pages/app/residents-skeleton";
+import { ProfileSkeleton } from "@/pages/app/profile-skeleton";
+import type { UserRole } from "@/types/auth";
 
-export type Role = "admin" | "staff" | "resident";
+const Dashboard = lazy(() =>
+  import("@/pages/app/dashboard").then((module) => ({ default: module.Dashboard }))
+);
+const Residents = lazy(() =>
+  import("@/pages/app/residents").then((module) => ({ default: module.Residents }))
+);
+const Visitors = lazy(() =>
+  import("@/pages/app/visitors").then((module) => ({ default: module.Visitors }))
+);
+const Packages = lazy(() =>
+  import("@/pages/app/packages").then((module) => ({ default: module.Packages }))
+);
+const Areas = lazy(() =>
+  import("@/pages/app/areas").then((module) => ({ default: module.Areas }))
+);
+const Reservations = lazy(() =>
+  import("@/pages/app/reservations").then((module) => ({ default: module.Reservations }))
+);
+const Profile = lazy(() =>
+  import("@/pages/app/profile").then((module) => ({ default: module.Profile }))
+);
+const Events = lazy(() =>
+  import("@/pages/app/events").then((module) => ({ default: module.Events }))
+);
+
+const withSuspense = (element: ReactNode, fallback: ReactNode = <RouteFallback />) => (
+  <Suspense fallback={fallback}>{element}</Suspense>
+);
+
+export type Role = UserRole;
 
 export type AppRouteDefinition = {
   id: string;
@@ -34,7 +60,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
   {
     id: "dashboard",
     path: "dashboard",
-    element: <Dashboard />,
+    element: withSuspense(<Dashboard />),
     roles: ["admin", "staff", "resident"],
     label: "Dashboard",
     icon: LayoutDashboard,
@@ -43,7 +69,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
   {
     id: "residents",
     path: "residents",
-    element: <Residents />,
+    element: withSuspense(<Residents />, <ResidentsPageSkeleton />),
     roles: ["admin", "staff"],
     label: "Moradores",
     icon: Users,
@@ -52,7 +78,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
   {
     id: "visitors",
     path: "visitors",
-    element: <Visitors />,
+    element: withSuspense(<Visitors />),
     roles: ["admin", "staff", "resident"],
     label: "Visitantes",
     icon: UserRoundCheck,
@@ -61,7 +87,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
   {
     id: "packages",
     path: "packages",
-    element: <Packages />,
+    element: withSuspense(<Packages />),
     roles: ["admin", "staff", "resident"],
     label: "Encomendas",
     icon: Package,
@@ -70,7 +96,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
   {
     id: "areas",
     path: "areas",
-    element: <Areas />,
+    element: withSuspense(<Areas />),
     roles: ["admin", "staff", "resident"],
     label: "Áreas de Lazer",
     icon: Volleyball,
@@ -79,7 +105,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
   {
     id: "reservations",
     path: "reservations",
-    element: <Reservations />,
+    element: withSuspense(<Reservations />),
     roles: ["admin", "staff"],
     label: "Agendamentos",
     icon: CalendarDays,
@@ -88,19 +114,19 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
   {
     id: "profile",
     path: "profile",
-    element: <Profile />,
+    element: withSuspense(<Profile />, <ProfileSkeleton showExtended />),
     roles: ["admin", "staff", "resident"],
     showInSidebar: false,
   },
-  // {
-  //   id: "events",
-  //   path: "events",
-  //   element: <Events />,
-  //   roles: ["admin", "staff", "resident"],
-  //   label: "Eventos",
-  //   icon: PartyPopper,
-  //   showInSidebar: true,
-  // },
+  {
+    id: "events",
+    path: "events",
+    element: withSuspense(<Events />),
+    roles: ["admin", "staff", "resident"],
+    label: "Eventos",
+    icon: PartyPopper,
+    showInSidebar: true,
+  },
 ];
 
 export const sidebarNavigation = appRouteDefinitions

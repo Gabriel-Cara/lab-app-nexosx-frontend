@@ -2,7 +2,7 @@ import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { resendInvite } from "@/api/resend-invite";
+import { resendInvite } from "@/api/post-resend-invite";
 
 interface Props {
   userId: string;

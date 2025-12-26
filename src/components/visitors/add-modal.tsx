@@ -39,8 +39,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
 import { postVisitor } from "@/api/post-visitor";
+import { uploadImage } from "@/api/post-image";
 import { useAuth } from "@/hooks/use-auth";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
+import { fileToDataUrl } from "@/utils/image-utils";
+
+import { ImageDropzone } from "@/components/images/image-dropzone";
 
 
 
@@ -56,6 +60,7 @@ type CreateVisitorForm = z.infer<typeof createVisitorFormSchema>;
 
 export function AddModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const queryClient = useQueryClient();
   const { session } = useAuth();
   const isResident = session?.user.role === "resident";
@@ -78,6 +83,12 @@ export function AddModal() {
       setValue("hostId", residentHostId);
     }
   }, [isResident, residentHostId, setValue]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setImageFiles([]);
+    }
+  }, [isOpen]);
 
   const { mutateAsync: createVisitor, isPending } = useMutation({
     mutationFn: postVisitor,
@@ -106,11 +117,28 @@ export function AddModal() {
         throw new Error("Documento é obrigatório");
       }
 
-      await createVisitor({
+      const created = await createVisitor({
         ...data,
         phone: phone || undefined,
         hostId,
       });
+
+      const imageFile = imageFiles[0];
+      if (imageFile) {
+        try {
+          const dataUrl = await fileToDataUrl(imageFile);
+          await uploadImage({
+            entityType: "visit",
+            entityId: created.id,
+            image: dataUrl,
+          });
+        } catch (error) {
+          toast.error("Não foi possível salvar a imagem da visita.");
+          console.error(error);
+        }
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["visitors"] });
 
       reset({
         name: "",
@@ -120,11 +148,16 @@ export function AddModal() {
         hostId: isResident ? residentHostId : "",
       });
 
+      setImageFiles([]);
       setIsOpen(false);
 
       toast.success("Visitante criado com sucesso!");
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Não foi possível criar o visitante. Tente novamente.";
+      toast.error(message);
     }
   }
 
@@ -231,6 +264,15 @@ export function AddModal() {
                 id="visitReason"
                 placeholder="Motivo da visita"
                 {...register("visitReason")}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Imagem (opcional)</Label>
+              <ImageDropzone
+                value={imageFiles}
+                onChange={setImageFiles}
+                maxFiles={1}
+                maxSizeMB={4}
               />
             </div>
           </div>

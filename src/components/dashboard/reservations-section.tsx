@@ -23,6 +23,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Reservation } from "@/api/get-reservations";
+import {
+  ReservationsStatusSkeleton,
+  ReservationsUpcomingSkeleton,
+} from "@/components/dashboard/reservations-section-skeleton";
 
 type ReservationStatus = Reservation["status"];
 
@@ -82,7 +86,7 @@ export function ReservationsSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando agendamentos...</p>
+              <ReservationsStatusSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">
                 Não foi possível carregar os agendamentos.
@@ -116,7 +120,7 @@ export function ReservationsSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando agendamentos...</p>
+              <ReservationsUpcomingSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">
                 Não foi possível carregar os agendamentos.

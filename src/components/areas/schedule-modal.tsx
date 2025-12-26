@@ -245,7 +245,7 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
               selected={date}
               onSelect={setDate}
               locale={ptBR}
-              className="border-y md:border-x md:border-y-0 max-w-full md:max-w-full w-auto"
+              className="border-y md:border-x md:border-y-0 max-w-full md:max-w-full w-auto h-auto"
               disabled={bookedDates}
               modifiers={{
                 booked: bookedDates,

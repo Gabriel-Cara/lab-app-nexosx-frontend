@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/input-group";
 
 import { KeyRound, SquareAsterisk } from "lucide-react";
-import { setupPassword } from "@/api/setup-password";
+import { setupPassword } from "@/api/post-setup-password";
 
 const firstAccessSchema = z
   .object({
@@ -53,7 +53,7 @@ export function FirstAccess() {
 
       toast.success("Senha definida com sucesso! Faça login.");
       navigate("/sign-in");
-    } catch (e) {
+    } catch {
       toast.error("Não foi possível definir a senha. Verifique se o link expirou.");
     }
   }

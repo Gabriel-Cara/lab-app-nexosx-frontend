@@ -27,6 +27,7 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Plus } from "lucide-react";
 import { postArea } from "@/api/post-area";
+import { uploadImage } from "@/api/post-image";
 import { SlotColumn } from "./slot-column";
 import type { AreaSlot } from "@/api/get-area-slots";
 import {
@@ -34,6 +35,9 @@ import {
   MIN_TIME,
   TIME_STEP_SECONDS,
 } from "@/utils/time-range";
+import { fileToDataUrl } from "@/utils/image-utils";
+
+import { ImageDropzone } from "@/components/images/image-dropzone";
 
 interface AddAreaFormData {
   name: string;
@@ -48,6 +52,7 @@ export function AddModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [startSlotId, setStartSlotId] = useState<string | null>(null);
   const [endSlotId, setEndSlotId] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const { handleSubmit, register, reset } = useForm<AddAreaFormData>();
 
@@ -68,6 +73,7 @@ export function AddModal() {
       reset();
       setStartSlotId(null);
       setEndSlotId(null);
+      setImageFiles([]);
     }
   }, [isOpen, reset]);
 
@@ -101,7 +107,7 @@ export function AddModal() {
     }
 
     try {
-      await createArea({
+      const created = await createArea({
         name,
         description,
         capacity,
@@ -112,6 +118,21 @@ export function AddModal() {
           stepMinutes: SLOT_STEP_MINUTES,
         },
       });
+
+      const imageFile = imageFiles[0];
+      if (imageFile) {
+        try {
+          const dataUrl = await fileToDataUrl(imageFile);
+          await uploadImage({
+            entityType: "area",
+            entityId: created.id,
+            image: dataUrl,
+          });
+        } catch (error) {
+          toast.error("Não foi possível salvar a imagem da área.");
+          console.error(error);
+        }
+      }
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["areas"] }),
@@ -174,6 +195,16 @@ export function AddModal() {
                 máximo de 200 caracteres
               </InputGroupAddon>
             </InputGroup>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Imagem (opcional)</Label>
+            <ImageDropzone
+              value={imageFiles}
+              onChange={setImageFiles}
+              maxFiles={1}
+              maxSizeMB={4}
+            />
           </div>
 
           <div className="space-y-2 max-w-14 relative">

@@ -41,7 +41,7 @@ import z from "zod";
 // Form
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { patchPackage } from "@/api/patch-package";
+import { retrievePackage as retrievePackageRequest } from "@/api/patch-package-retrieve";
 import { queryClient } from "@/lib/react-query";
 import { useForm } from "react-hook-form";
 import { isAxiosError } from "axios";
@@ -77,8 +77,8 @@ export function RetrieveModal({ id }: RetrieveModalProps) {
 
   const { control, handleSubmit, reset } = form;
 
-  const { mutateAsync: retrievePackage, isPending } = useMutation({
-    mutationFn: patchPackage,
+  const { mutateAsync: mutateRetrievePackage, isPending } = useMutation({
+    mutationFn: retrievePackageRequest,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["packages"] });
     },
@@ -93,7 +93,7 @@ export function RetrieveModal({ id }: RetrieveModalProps) {
   });
 
   async function handleRetrievePackage({ code }: OTPFormSchema) {
-    await retrievePackage({
+    await mutateRetrievePackage({
       id,
       code,
     });

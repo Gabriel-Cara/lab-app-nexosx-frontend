@@ -5,6 +5,7 @@ export type UserProfile = {
   name: string;
   email: string;
   role: "admin" | "staff" | "resident";
+  imageUrl?: string | null;
   phone?: string | null;
   document?: string | null;
   apartment?: string | null;

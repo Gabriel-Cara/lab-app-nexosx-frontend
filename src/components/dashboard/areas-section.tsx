@@ -16,6 +16,10 @@ import {
 } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 import type { Area } from "@/api/get-areas";
+import {
+  AreasAvailabilitySkeleton,
+  AreasQuickMapSkeleton,
+} from "@/components/dashboard/areas-section-skeleton";
 
 type AreasChartPoint = {
   key: "available" | "blocked";
@@ -63,7 +67,7 @@ export function AreasSection({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando áreas...</p>
+              <AreasAvailabilitySkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">Não foi possível carregar as áreas.</p>
             ) : (
@@ -100,7 +104,7 @@ export function AreasSection({
           </CardHeader>
           <CardContent className="space-y-3">
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando áreas...</p>
+              <AreasQuickMapSkeleton />
             ) : isError ? (
               <p className="text-sm text-destructive">Não foi possível carregar as áreas.</p>
             ) : areas.length === 0 ? (

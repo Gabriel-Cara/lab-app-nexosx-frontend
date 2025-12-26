@@ -7,6 +7,7 @@ export type Resident = {
   phone?: string | null;
   apartment: string | null;
   role: "admin" | "staff" | "resident";
+  imageUrl?: string | null;
   building?: string | null;
   vehicle?: string | null;
   emergencyContact?: string | null;
@@ -60,6 +61,7 @@ export async function getResidents(
     phone: resident.phone ?? null,
     apartment: resident.apartment ?? null,
     role: resident.role,
+    imageUrl: resident.imageUrl ?? null,
     building: resident.residents?.building ?? null,
     vehicle: resident.residents?.vehicle ?? null,
     emergencyContact: resident.residents?.emergencyContact ?? null,

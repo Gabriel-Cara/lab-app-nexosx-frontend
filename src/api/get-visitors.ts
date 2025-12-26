@@ -4,6 +4,7 @@ export type VisitorsResponse = {
   id: string;
   status: "pending" | "authorized" | "denied" | "entry" | "left";
   createdAt: string;
+  imageUrl?: string | null;
   entryTime: string | null;
   exitTime: string | null;
   handledBy: {

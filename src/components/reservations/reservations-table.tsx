@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
-
 import { getReservations, type Reservation } from "@/api/get-reservations";
 import {
   Table,
@@ -12,6 +10,7 @@ import {
   TableRow,
 } from "../ui/table";
 import { Badge } from "../ui/badge";
+import { ReservationsTableSkeleton } from "@/components/reservations/reservations-table-skeleton";
 
 const statusLabels: Record<Reservation["status"], string> = {
   pending: "Pendente",
@@ -36,12 +35,7 @@ export function ReservationsTable() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[200px] items-center justify-center gap-2 rounded-lg border border-dashed text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" />
-        Carregando agendamentos...
-      </div>
-    );
+    return <ReservationsTableSkeleton />;
   }
 
   if (isError) {

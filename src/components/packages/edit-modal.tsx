@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { updatePackage } from "@/api/update-package";
+import { patchPackage } from "@/api/patch-package";
 import type { PackageType } from "@/api/get-packages";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { SelectResident } from "../select-resident";
+import { ImageManager } from "@/components/images/image-manager";
 
 const editPackageFormSchema = z.object({
   residentId: z.string({ message: "O destinatário é obrigatório" }),
@@ -54,6 +55,7 @@ type EditModalProps = {
   carrier: string | null;
   description: string;
   type: PackageType;
+  imageUrl?: string | null;
 };
 
 export function EditModal({
@@ -63,6 +65,7 @@ export function EditModal({
   carrier,
   description,
   type,
+  imageUrl,
 }: EditModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -78,7 +81,7 @@ export function EditModal({
   });
 
   const { mutateAsync: mutatePackage, isPending } = useMutation({
-    mutationFn: updatePackage,
+    mutationFn: patchPackage,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["packages"] });
     },
@@ -231,6 +234,15 @@ export function EditModal({
               )}
             />
           </div>
+          <ImageManager
+            entityType="package"
+            entityId={id}
+            imageUrl={imageUrl}
+            label="Imagem da encomenda"
+            onUpdated={() =>
+              queryClient.invalidateQueries({ queryKey: ["packages"] })
+            }
+          />
         </form>
         <DialogFooter>
           <DialogClose asChild>

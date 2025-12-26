@@ -26,10 +26,10 @@ export function DeleteModal({ areaId, name }: DeleteModalProps) {
     try {
       await removeArea(areaId);
       
-      toast.success(`Morador ${name} removido com sucesso.`);
+      toast.success(`Área ${name} removida com sucesso.`);
       setOpen(false);
     } catch {
-      toast.error("Não foi possível remover o morador. Tente novamente.");
+      toast.error("Não foi possível remover a área. Tente novamente.");
     }
   }
 
