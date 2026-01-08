@@ -168,17 +168,17 @@ export function EventsFeed() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-sky-100 to-indigo-100 text-muted-foreground">
+                  <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-muted/70 to-muted text-muted-foreground">
                     <CalendarDays className="size-10" />
                   </div>
                 )}
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/70 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4 space-y-2">
-                <h3 className="text-2xl font-semibold text-white">
+                <h3 className="text-2xl font-semibold text-foreground">
                   {event.title}
                 </h3>
-                <div className="flex flex-wrap items-center gap-3 text-xs text-white/80">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-foreground/80">
                   <span className="inline-flex items-center gap-1">
                     <MapPin className="size-3" />
                     {event.location?.name ?? "Área comum"}
@@ -206,7 +206,7 @@ export function EventsFeed() {
                   </div>
                   <div className="h-2 w-full rounded-full bg-muted">
                     <div
-                      className="h-2 rounded-full bg-emerald-500 transition-all"
+                      className="h-2 rounded-full bg-primary transition-all"
                       style={{ width: `${occupancy}%` }}
                     />
                   </div>
@@ -229,7 +229,7 @@ export function EventsFeed() {
                     <Heart
                       className={
                         event.likedByUser
-                          ? "text-rose-500 fill-rose-500"
+                          ? "text-destructive fill-destructive"
                           : "text-muted-foreground"
                       }
                     />

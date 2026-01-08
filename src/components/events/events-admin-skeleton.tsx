@@ -9,7 +9,7 @@ export function EventsAdminSummarySkeleton() {
       {Array.from({ length: SUMMARY_COUNT }).map((_, index) => (
         <div
           key={`event-summary-${index}`}
-          className="rounded-2xl border bg-white/80 p-4"
+          className="rounded-2xl border bg-muted/40 p-4"
         >
           <Skeleton className="h-3 w-24" />
           <Skeleton className="mt-3 h-7 w-12" />

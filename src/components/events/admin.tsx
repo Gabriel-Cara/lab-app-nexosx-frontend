@@ -71,7 +71,7 @@ export function EventsAdmin() {
           <EventsAdminSummarySkeleton />
         ) : !isError && events.length > 0 ? (
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border bg-white/80 p-4">
+            <div className="rounded-2xl border bg-muted/40 p-4">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 Eventos ativos
               </p>
@@ -80,7 +80,7 @@ export function EventsAdmin() {
                 Total cadastrados
               </p>
             </div>
-            <div className="rounded-2xl border bg-white/80 p-4">
+            <div className="rounded-2xl border bg-muted/40 p-4">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 Agendáveis
               </p>
@@ -91,7 +91,7 @@ export function EventsAdmin() {
                 Com inscrições abertas
               </p>
             </div>
-            <div className="rounded-2xl border bg-white/80 p-4">
+            <div className="rounded-2xl border bg-muted/40 p-4">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 Informativos
               </p>
@@ -102,7 +102,7 @@ export function EventsAdmin() {
                 Sem agendamento
               </p>
             </div>
-            <div className="rounded-2xl border bg-white/80 p-4">
+            <div className="rounded-2xl border bg-muted/40 p-4">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 Inscrições
               </p>
@@ -152,13 +152,18 @@ export function EventsAdmin() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-sky-100 to-indigo-100 text-muted-foreground">
+                      <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-muted/70 to-muted text-muted-foreground">
                         <CalendarDays className="size-8" />
                       </div>
                     )}
                     <Badge
-                      variant={event.allowBookings ? "success" : "secondary"}
-                      className="absolute left-3 top-3 bg-white/85 text-foreground backdrop-blur"
+                      variant="outline"
+                      className={[
+                        "absolute left-3 top-3 backdrop-blur",
+                        event.allowBookings
+                          ? "border-primary/30 bg-primary/10 text-primary"
+                          : "border-border/60 bg-muted/70 text-muted-foreground",
+                      ].join(" ")}
                     >
                       {event.allowBookings ? "Agendável" : "Informativo"}
                     </Badge>
@@ -207,7 +212,7 @@ export function EventsAdmin() {
                         </div>
                         <div className="h-2 w-full rounded-full bg-muted">
                           <div
-                            className="h-2 rounded-full bg-emerald-500 transition-all"
+                            className="h-2 rounded-full bg-primary transition-all"
                             style={{ width: `${occupancy}%` }}
                           />
                         </div>
@@ -227,7 +232,7 @@ export function EventsAdmin() {
                           </Badge>
                         )}
                         <span className="inline-flex items-center gap-1">
-                          <Heart className="size-3 text-rose-500" />
+                          <Heart className="size-3 text-destructive" />
                           {event.likesCount} curtidas
                         </span>
                       </div>

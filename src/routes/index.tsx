@@ -33,6 +33,14 @@ const withSuspense = (element: ReactNode) => (
 export function Routes() {
   const { session, isLoading } = useAuth();
 
+  const resolveDefaultPath = useCallback((role?: Role) => {
+    if (role === "master") {
+      return "/master/requests";
+    }
+
+    return "/dashboard";
+  }, []);
+
   const guard = useCallback(
     (allowedRoles?: Role[]) =>
       () => {
@@ -41,24 +49,27 @@ export function Routes() {
         }
 
         if (allowedRoles && !allowedRoles.includes(session.user.role)) {
-          throw redirect("/dashboard");
+          throw redirect(resolveDefaultPath(session.user.role));
         }
 
         return null;
       },
-    [session]
+    [resolveDefaultPath, session]
   );
 
   const publicGuard = useCallback(() => {
     if (session) {
-      throw redirect("/dashboard");
+      throw redirect(resolveDefaultPath(session.user.role));
     }
     return null;
-  }, [session]);
+  }, [resolveDefaultPath, session]);
 
-  const dashboardRoute = appRouteDefinitions.find(
-    (route) => route.id === "dashboard",
-  );
+  const indexGuard = useCallback(() => {
+    if (!session) {
+      throw redirect("/sign-in");
+    }
+    throw redirect(resolveDefaultPath(session.user.role));
+  }, [resolveDefaultPath, session]);
 
   const router = useMemo(
     () =>
@@ -80,8 +91,8 @@ export function Routes() {
           children: [
             {
               index: true,
-              loader: guard(["admin", "staff", "resident"]),
-              element: dashboardRoute?.element ?? <RouteFallback />,
+              loader: indexGuard,
+              element: <RouteFallback />,
             },
             ...appRouteDefinitions.map((route) => ({
               path: route.path,
@@ -95,7 +106,7 @@ export function Routes() {
           element: withSuspense(<NotFound />),
         }
       ]),
-    [dashboardRoute, guard, publicGuard],
+    [guard, indexGuard, publicGuard],
   );
 
   if (isLoading) {

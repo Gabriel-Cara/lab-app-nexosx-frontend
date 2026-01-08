@@ -39,7 +39,7 @@ export function DetailsCard(props: DetailsCardProps) {
               {props.imageUrl && (
                 <AvatarImage src={props.imageUrl} alt={props.name} />
               )}
-              <AvatarFallback className="bg-gradient-to-br from-sky-300 to-blue-600 text-background">
+              <AvatarFallback className="bg-linear-to-br from-lime-300 to-teal-600 text-background">
                 {getInitials(props.name)}
               </AvatarFallback>
             </Avatar>

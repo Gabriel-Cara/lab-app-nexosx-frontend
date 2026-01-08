@@ -1,10 +1,12 @@
 import { api } from "@/lib/axios";
+import type { UserRole } from "@/types/auth";
 
 export type UserProfile = {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "staff" | "resident";
+  role: UserRole;
+  condominiumId?: string | null;
   imageUrl?: string | null;
   phone?: string | null;
   document?: string | null;

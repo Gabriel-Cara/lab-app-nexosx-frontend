@@ -37,6 +37,15 @@ export function AccountMenu() {
     .map((name) => name[0])
     .join("")
     .slice(0, 2);
+  const roleLabel = user
+    ? user.role === "admin"
+      ? "Admin"
+      : user.role === "staff"
+      ? "Staff"
+      : user.role === "resident"
+      ? "Morador"
+      : "Master"
+    : "";
 
   return (
     <DropdownMenu>
@@ -50,7 +59,7 @@ export function AccountMenu() {
               {profile?.imageUrl && (
                 <AvatarImage src={profile.imageUrl} alt={displayName} />
               )}
-              <AvatarFallback className="bg-linear-to-br from-sky-300 to-blue-600 text-background dark:text-foreground tracking-wide">
+              <AvatarFallback className="bg-linear-to-br from-lime-300 to-teal-600 text-background dark:text-foreground tracking-wide">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -59,11 +68,7 @@ export function AccountMenu() {
                 {`${firstName} ${lastName === firstName ? "" : lastName}`}
               </p>
               <p className="text-xs text-muted-foreground">
-                {user?.role === "admin"
-                  ? "Admin"
-                  : user?.role === "staff"
-                  ? "Staff"
-                  : "Morador"}
+                {roleLabel}
               </p>
             </div>
           </div>
@@ -80,10 +85,12 @@ export function AccountMenu() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => navigate("/profile")}>
-          <UserCircle className="h-4 w-4" />
-          <span>Perfil</span>
-        </DropdownMenuItem>
+        {user?.role !== "master" && (
+          <DropdownMenuItem onClick={() => navigate("/profile")}>
+            <UserCircle className="h-4 w-4" />
+            <span>Perfil</span>
+          </DropdownMenuItem>
+        )}
 
         <DropdownMenuItem
           onClick={remove}

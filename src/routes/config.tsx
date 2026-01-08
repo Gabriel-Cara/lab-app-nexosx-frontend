@@ -1,8 +1,11 @@
 import {
   CalendarDays,
+  ClipboardList,
+  Building2,
   LayoutDashboard,
   Package,
   PartyPopper,
+  UserCog,
   UserRoundCheck,
   Users,
   Volleyball,
@@ -38,6 +41,21 @@ const Profile = lazy(() =>
 );
 const Events = lazy(() =>
   import("@/pages/app/events").then((module) => ({ default: module.Events }))
+);
+const CondominiumRequests = lazy(() =>
+  import("@/pages/master/condominium-requests").then((module) => ({
+    default: module.CondominiumRequests,
+  }))
+);
+const MasterCondominiums = lazy(() =>
+  import("@/pages/master/condominiums").then((module) => ({
+    default: module.MasterCondominiums,
+  }))
+);
+const MasterUsers = lazy(() =>
+  import("@/pages/master/users").then((module) => ({
+    default: module.MasterUsers,
+  }))
 );
 
 const withSuspense = (element: ReactNode, fallback: ReactNode = <RouteFallback />) => (
@@ -125,6 +143,33 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     roles: ["admin", "staff", "resident"],
     label: "Eventos",
     icon: PartyPopper,
+    showInSidebar: true,
+  },
+  {
+    id: "master-requests",
+    path: "master/requests",
+    element: withSuspense(<CondominiumRequests />),
+    roles: ["master"],
+    label: "Solicitações",
+    icon: ClipboardList,
+    showInSidebar: true,
+  },
+  {
+    id: "master-condominiums",
+    path: "master/condominiums",
+    element: withSuspense(<MasterCondominiums />),
+    roles: ["master"],
+    label: "Condomínios",
+    icon: Building2,
+    showInSidebar: true,
+  },
+  {
+    id: "master-users",
+    path: "master/users",
+    element: withSuspense(<MasterUsers />),
+    roles: ["master"],
+    label: "Usuários",
+    icon: UserCog,
     showInSidebar: true,
   },
 ];

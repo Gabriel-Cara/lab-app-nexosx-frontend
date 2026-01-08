@@ -53,7 +53,7 @@ export function DeleteModal({ eventId, title }: DeleteModalProps) {
             <CircleAlert
               size={52}
               strokeWidth={2}
-              className="mx-auto animate-pulse text-rose-500"
+              className="mx-auto animate-pulse text-destructive"
             />
           </AlertDialogTitle>
         </AlertDialogHeader>

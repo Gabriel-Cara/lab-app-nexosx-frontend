@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { useCreateCondominiumRequest } from "@/api/post-condominium-request";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,14 +14,16 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 
-import { Mail, Phone, SquareAsterisk, User } from "lucide-react";
+import { Building2, Hash, Mail, Phone, SquareAsterisk, User } from "lucide-react";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 
 const signUpFormSchema = z.object({
-  name: z.string(),
-  phone: z.string(),
-  email: z.email(),
-  password: z.string(),
+  name: z.string().min(2, "Informe o nome do condomínio"),
+  code: z.string().min(2, "Informe o código do condomínio"),
+  adminName: z.string().min(2, "Informe o nome do administrador"),
+  adminEmail: z.email("Informe um e-mail válido"),
+  adminPhone: z.string().optional(),
+  adminPassword: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
 });
 
 type SignUpForm = z.infer<typeof signUpFormSchema>;
@@ -32,42 +35,46 @@ export function SignUp() {
     register,
     handleSubmit,
     setValue,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<SignUpForm>({
     resolver: zodResolver(signUpFormSchema),
   });
 
+  const { mutateAsync: createRequest, isPending: isCreating } =
+    useCreateCondominiumRequest();
+
   async function handleSignUp(data: SignUpForm) {
     try {
-      const phone = sanitizePhone(data.phone);
+      const phone = data.adminPhone ? sanitizePhone(data.adminPhone) : undefined;
 
-      if (!data.name || !data.email || !data.password) {
-        return toast.error("Preencha todos os campos.");
-      }
-
-      if (!phone) {
+      if (data.adminPhone && !phone) {
         return toast.error("Telefone inválido. Use DDD + número.");
       }
 
-      console.log(data);
+      await createRequest({
+        name: data.name.trim(),
+        code: data.code.trim(),
+        adminName: data.adminName.trim(),
+        adminEmail: data.adminEmail.trim(),
+        adminPhone: phone,
+        adminPassword: data.adminPassword,
+      });
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      toast.success("Usuário cadastrado com sucesso.", {
+      toast.success("Solicitação enviada. Aguarde a aprovação do master.", {
         action: {
           label: "Login",
           onClick: () => navigate("/sign-in"),
         },
       });
     } catch {
-      toast.error("Erro ao cadastrar usuário.");
+      toast.error("Erro ao enviar a solicitação.");
     }
   }
 
   return (
     <>
       <Helmet>
-        <title>Cadastro</title>
+        <title>Cadastro de condomínio</title>
       </Helmet>
 
       <div className="p-8">
@@ -75,96 +82,143 @@ export function SignUp() {
           <Link to="/sign-in">Fazer login</Link>
         </Button>
 
-        <div className="flex w-full md:w-[350px] flex-col justify-center gap-6">
+        <div className="flex w-full md:w-[380px] flex-col justify-center gap-6">
           <div className="flex flex-col gap-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
-              Criar conta
+              Solicitar cadastro
             </h1>
             <p className="text-sm text-muted-foreground">
-              Informe os dados abaixo para continuar!
+              Informe os dados do condomínio e do administrador
             </p>
           </div>
 
           <form onSubmit={handleSubmit(handleSignUp)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Seu nome</Label>
+              <Label htmlFor="name">Nome do condomínio</Label>
               <InputGroup>
                 <InputGroupInput
                   id="name"
                   type="text"
-                  placeholder="Insira seu nome"
-                  {...register("name", { required: true })}
+                  placeholder="Ex: Residencial Aurora"
+                  {...register("name")}
+                />
+                <InputGroupAddon>
+                  <Building2 />
+                </InputGroupAddon>
+              </InputGroup>
+              {errors.name && (
+                <p className="text-xs text-rose-500">{errors.name.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="code">Código do condomínio</Label>
+              <InputGroup>
+                <InputGroupInput
+                  id="code"
+                  type="text"
+                  placeholder="Ex: aurora"
+                  {...register("code")}
+                />
+                <InputGroupAddon>
+                  <Hash />
+                </InputGroupAddon>
+              </InputGroup>
+              {errors.code && (
+                <p className="text-xs text-rose-500">{errors.code.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="adminName">Nome do administrador</Label>
+              <InputGroup>
+                <InputGroupInput
+                  id="adminName"
+                  type="text"
+                  placeholder="Insira o nome completo"
+                  {...register("adminName")}
                 />
                 <InputGroupAddon>
                   <User />
                 </InputGroupAddon>
               </InputGroup>
+              {errors.adminName && (
+                <p className="text-xs text-rose-500">
+                  {errors.adminName.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Seu e-mail</Label>
+              <Label htmlFor="adminEmail">E-mail do administrador</Label>
               <InputGroup>
                 <InputGroupInput
-                id="email"
-                type="email"
-                placeholder="Insira seu e-mail"
-                {...register("email", { required: true })}
-              />
-              <InputGroupAddon>
-                <Mail />
-              </InputGroupAddon>
+                  id="adminEmail"
+                  type="email"
+                  placeholder="email@dominio.com"
+                  {...register("adminEmail")}
+                />
+                <InputGroupAddon>
+                  <Mail />
+                </InputGroupAddon>
               </InputGroup>
+              {errors.adminEmail && (
+                <p className="text-xs text-rose-500">
+                  {errors.adminEmail.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Seu celular</Label>
+              <Label htmlFor="adminPhone">Telefone do administrador</Label>
               <InputGroup>
                 <InputGroupInput
-                id="phone"
-                type="text"
-                placeholder="Insira seu número de celular"
-                {...register("phone", {
-                  required: true,
-                  onChange: (event) =>
-                    setValue("phone", maskPhone(event.target.value)),
-                })}
-              />
-              <InputGroupAddon>
-                <Phone />
-              </InputGroupAddon>
+                  id="adminPhone"
+                  type="text"
+                  placeholder="(00) 00000-0000"
+                  {...register("adminPhone", {
+                    onChange: (event) =>
+                      setValue("adminPhone", maskPhone(event.target.value)),
+                  })}
+                />
+                <InputGroupAddon>
+                  <Phone />
+                </InputGroupAddon>
               </InputGroup>
+              {errors.adminPhone && (
+                <p className="text-xs text-rose-500">
+                  {errors.adminPhone.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Sua senha</Label>
+              <Label htmlFor="adminPassword">Senha do administrador</Label>
               <InputGroup>
-              <InputGroupInput
-                id="password"
-                type="password"
-                placeholder="Insira sua senha"
-                {...register("password", { required: true })}
-              />
-              <InputGroupAddon>
-                <SquareAsterisk />
-              </InputGroupAddon>
+                <InputGroupInput
+                  id="adminPassword"
+                  type="password"
+                  placeholder="Defina uma senha"
+                  {...register("adminPassword")}
+                />
+                <InputGroupAddon>
+                  <SquareAsterisk />
+                </InputGroupAddon>
               </InputGroup>
+              {errors.adminPassword && (
+                <p className="text-xs text-rose-500">
+                  {errors.adminPassword.message}
+                </p>
+              )}
             </div>
 
-            <Button className="w-full" type="submit" disabled={isSubmitting}>
-              Finalizar cadastro
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={isSubmitting || isCreating}
+            >
+              Enviar solicitação
             </Button>
-
-            <p className="px-6 text-center text-sm leading-relaxed text-muted-foreground">
-              Ao continuar, você concorda com nossos{" "}
-              <a className="underline underline-offset-4 text-primary" href="#">
-                termos de serviço
-              </a>{" "}
-              e{" "}
-              <a className="underline underline-offset-4 text-primary" href="#">
-                políticas de privacidade
-              </a>
-              .
-            </p>
           </form>
         </div>
       </div>

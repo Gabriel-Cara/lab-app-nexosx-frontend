@@ -11,7 +11,7 @@ export function Header(props: React.ComponentProps<"header">) {
     <header {...props}>
       <div className="flex h-16 items-center gap-6 px-6">
         <div className="flex items-center gap-2">
-          <img src={icon} alt="logo" className="w-12 h-12" />
+          <img src={icon} alt="logo" className="w-14 h-14" />
           <div className="hidden md:block">
             <span className="text-xl font-bold tracking-tight">nexus</span>
           </div>

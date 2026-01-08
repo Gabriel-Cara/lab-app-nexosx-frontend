@@ -72,12 +72,12 @@ export function ImageDropzone({
       : "flex flex-col items-center justify-center gap-2 p-6";
   const labelClass =
     shape === "round"
-      ? "text-xs font-medium text-zinc-900"
-      : "text-sm font-medium text-zinc-900";
+      ? "text-xs font-medium text-foreground"
+      : "text-sm font-medium text-foreground";
   const helperClass =
     shape === "round"
-      ? "text-[10px] text-zinc-500"
-      : "text-xs text-zinc-500";
+      ? "text-[10px] text-muted-foreground"
+      : "text-xs text-muted-foreground";
 
   const previews: PreviewItem[] = useMemo(() => {
     return files.map((file) => ({
@@ -206,8 +206,8 @@ export function ImageDropzone({
           "group relative overflow-hidden border-2 border-dashed transition",
           radiusClass,
           dimensionClass,
-          disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-zinc-50",
-          isDragging ? "border-zinc-900 bg-zinc-50" : "border-zinc-200 bg-white",
+          disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-muted/40",
+          isDragging ? "border-foreground bg-muted/50" : "border-border bg-background",
           showSinglePreview
             ? shape === "round"
               ? ""
@@ -222,7 +222,7 @@ export function ImageDropzone({
               alt={singlePreviewAlt}
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/20" />
+            <div className="absolute inset-0 bg-foreground/0 transition group-hover:bg-foreground/10" />
             {canRemoveSinglePreview && (
               <Button
                 type="button"
@@ -237,7 +237,7 @@ export function ImageDropzone({
                   }
                 }}
                 className={[
-                  "absolute bg-rose-500/70 text-white opacity-0 transition hover:bg-rose-500/80 group-hover:opacity-100",
+                  "absolute bg-destructive/80 text-destructive-foreground opacity-0 transition hover:bg-destructive/90 group-hover:opacity-100",
                   shape === "round"
                     ? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
                     : "right-3 top-3",
@@ -250,8 +250,8 @@ export function ImageDropzone({
           </>
         ) : (
           <>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100">
-              <Upload className="h-5 w-5 text-zinc-700" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+              <Upload className="h-5 w-5 text-muted-foreground" />
             </div>
 
             {shape !== "round" && (
@@ -266,21 +266,21 @@ export function ImageDropzone({
         )}
       </div>
 
-      {error ? <p className="mt-2 text-xs font-medium text-red-600">{error}</p> : null}
+      {error ? <p className="mt-2 text-xs font-medium text-destructive">{error}</p> : null}
 
       {!showSinglePreview && files.length > 0 ? (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {previews.map((p, idx) => (
             <div
               key={p.id}
-              className="group relative overflow-hidden rounded-2xl border border-zinc-200"
+              className="group relative overflow-hidden rounded-2xl border border-border"
               onClick={(e) => e.stopPropagation()}
             >
               <img src={p.url} alt={p.file.name} className="h-28 w-full object-cover" />
 
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                <p className="truncate text-xs font-medium text-white">{p.file.name}</p>
-                <p className="text-[11px] text-white/80">{formatBytes(p.file.size)}</p>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent p-2">
+                <p className="truncate text-xs font-medium text-foreground">{p.file.name}</p>
+                <p className="text-[11px] text-foreground/80">{formatBytes(p.file.size)}</p>
               </div>
 
               <Button
@@ -288,7 +288,7 @@ export function ImageDropzone({
                 variant="destructive"
                 size="icon-sm"
                 onClick={() => removeAt(idx)}
-                className="absolute right-2 top-2 bg-rose-500/70 text-white opacity-0 transition hover:bg-rose-500/80 group-hover:opacity-100"
+                className="absolute right-2 top-2 bg-destructive/80 text-destructive-foreground opacity-0 transition hover:bg-destructive/90 group-hover:opacity-100"
               >
                 <Trash2 className="h-4 w-4" />
                 <span className="sr-only">Remover</span>
