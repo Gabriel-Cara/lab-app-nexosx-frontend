@@ -7,11 +7,11 @@ export function AuthLayout() {
     <div className="grid min-h-screen grid-cols-1 md:grid-cols-2 antialiased">
       <div className="hidden md:flex h-full flex-col justify-between border-r border-foreground/5 bg-muted p-10 text-muted-foreground">
         <div className="flex items-center gap-2 text-foreground">
-          <img src={icon} alt="logo" className="w-14 h-14" />
-          <span className="font-light text-2xl tracking-tight font-montserrat">nexus</span>
+          <img src={icon} alt="logo" className="w-8 h-8" />
+          <span className="font-light text-2xl tracking-tight font-montserrat">nexos</span>
         </div>
         <footer className="text-sm">
-          Painel do parceiro &copy; nexus - {new Date().getFullYear()}
+          Painel do parceiro &copy; nexos - {new Date().getFullYear()}
         </footer>
       </div>
 

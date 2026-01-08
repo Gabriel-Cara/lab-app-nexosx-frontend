@@ -11,9 +11,9 @@ import { AuthProvider } from "./contexts/auth-provider";
 export function App() {
   return (
     <HelmetProvider>
-      <ThemeProvider storageKey="nexus-theme" defaultTheme="system">
-        <Helmet titleTemplate="%s | nexus">
-          <title>Nexus</title>
+      <ThemeProvider storageKey="nexos-theme" defaultTheme="system">
+        <Helmet titleTemplate="%s | nexos">
+          <title>Nexos</title>
         </Helmet>
         
         <Toaster richColors />

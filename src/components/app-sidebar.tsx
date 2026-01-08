@@ -29,7 +29,7 @@ export function AppSidebar() {
         
         <img src={icon} className="h-14 w-14" />
         <div>
-          <span className="text-xl font-bold tracking-wider">nexus</span>
+          <span className="text-xl font-bold tracking-wider">nexos</span>
           <p className="text-xs tracking-wide text-muted-foreground">Sistema de controle</p>
         </div>
       </SidebarHeader>

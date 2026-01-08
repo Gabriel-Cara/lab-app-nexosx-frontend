@@ -4,7 +4,7 @@ import { api } from "@/lib/axios";
 import { AuthContext } from "@/contexts/auth-context";
 import type { AuthSession } from "@/types/auth";
 
-const LOCAL_STORAGE_KEY = "@nexus";
+const LOCAL_STORAGE_KEY = "@nexos";
 
 type AuthProviderProps = {
   children: ReactNode;

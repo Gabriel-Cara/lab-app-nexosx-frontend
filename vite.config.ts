@@ -21,9 +21,9 @@ export default defineConfig({
         'maskable-512x512.png',
       ],
       manifest: {
-        name: 'Nexus',
-        short_name: 'Nexus',
-        description: 'Nexus',
+        name: 'Nexos',
+        short_name: 'Nexos',
+        description: 'Nexos',
         start_url: '/',
         scope: '/',
         display: 'standalone',
