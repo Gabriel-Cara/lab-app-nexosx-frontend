@@ -27,7 +27,7 @@ export function AppSidebar() {
     <Sidebar variant="floating">
       <SidebarHeader className="flex border-b border-muted flex-row items-center gap-3 p-4">
         
-        <img src={icon} className="h-14 w-14" />
+        <img src={icon} className="h-8 w-8" />
         <div>
           <span className="text-xl font-bold tracking-wider">nexos</span>
           <p className="text-xs tracking-wide text-muted-foreground">Sistema de controle</p>
