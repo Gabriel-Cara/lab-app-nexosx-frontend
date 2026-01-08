@@ -41,8 +41,9 @@ import {
   getReservations,
   type Reservation,
 } from "@/api/get-reservations";
+import type { UserRole } from "@/types/auth";
 
-type Role = "admin" | "staff" | "resident";
+type Role = Exclude<UserRole, "master">;
 
 type VisitorStatus = VisitorsResponse["status"];
 type ReservationStatus = Reservation["status"];
@@ -51,6 +52,11 @@ const roleLabel: Record<Role, string> = {
   admin: "Administrador(a)",
   staff: "Equipe",
   resident: "Morador(a)",
+};
+
+const userRoleLabel: Record<UserRole, string> = {
+  ...roleLabel,
+  master: "Master",
 };
 
 const quickLinkDescriptions: Record<string, string> = {
@@ -108,6 +114,8 @@ const reservationStatusConfig: Record<ReservationStatus, { label: string; classN
   rejected: { label: "Recusada", className: "bg-rose-100 text-rose-900" },
   cancelled: { label: "Cancelada", className: "bg-slate-200 text-slate-700" },
 };
+
+const isAppRole = (value: UserRole): value is Role => value !== "master";
 
 const packageTypeLabels: Record<PackageType, string> = {
   box: "Caixa",
@@ -186,7 +194,10 @@ export function Dashboard() {
   const userName = session?.user.name ?? "Morador(a)";
 
   const visibleSections = useMemo(
-    () => sectionOrder.filter((section) => sectionAccess[section].includes(role)),
+    () =>
+      isAppRole(role)
+        ? sectionOrder.filter((section) => sectionAccess[section].includes(role))
+        : [],
     [role],
   );
 
@@ -432,7 +443,7 @@ export function Dashboard() {
         <header className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
           <DashboardHero
             userName={userName}
-            roleLabel={roleLabel[role]}
+            roleLabel={userRoleLabel[role]}
             visibleSections={visibleSections as string[]}
             sectionLabels={sectionLabels}
             quickLinkDescriptions={quickLinkDescriptions}
