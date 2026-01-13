@@ -22,6 +22,26 @@ const FirstAccess = lazy(() =>
     default: module.FirstAccess,
   }))
 );
+const StaffSignUp = lazy(() =>
+  import("@/pages/auth/staff-sign-up").then((module) => ({
+    default: module.StaffSignUp,
+  }))
+);
+const ForgotPassword = lazy(() =>
+  import("@/pages/auth/forgot-password").then((module) => ({
+    default: module.ForgotPassword,
+  }))
+);
+const ResetPassword = lazy(() =>
+  import("@/pages/auth/reset-password").then((module) => ({
+    default: module.ResetPassword,
+  }))
+);
+const ResidentSignUp = lazy(() =>
+  import("@/pages/auth/resident-sign-up").then((module) => ({
+    default: module.ResidentSignUp,
+  }))
+);
 const NotFound = lazy(() =>
   import("@/pages/not-found").then((module) => ({ default: module.NotFound }))
 );
@@ -82,7 +102,11 @@ export function Routes() {
             { index: true, element: withSuspense(<SignIn />) },
             { path: "sign-in", element: withSuspense(<SignIn />) },
             { path: "sign-up", element: withSuspense(<SignUp />) },
+            { path: "esqueci-senha", element: withSuspense(<ForgotPassword />) },
+            { path: "redefinir-senha", element: withSuspense(<ResetPassword />) },
             { path: "primeiro-acesso", element: withSuspense(<FirstAccess />) },
+            { path: "cadastro-equipe", element: withSuspense(<StaffSignUp />) },
+            { path: "cadastro-morador", element: withSuspense(<ResidentSignUp />) },
           ],
         },
         {

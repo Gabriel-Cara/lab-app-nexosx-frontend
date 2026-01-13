@@ -1,44 +1,40 @@
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Helmet } from "@dr.pogodin/react-helmet";
+
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { DetailsCard } from "@/components/residents/details-card";
-import { AddModal } from "@/components/residents/add-modal";
-import { ResidentInviteLinkModal } from "@/components/residents/invite-link-modal";
-import { Helmet } from "@dr.pogodin/react-helmet";
-import { getResidents } from "@/api/get-residents";
-import { ResidentsPagination } from "@/components/residents/pagination";
+import { StaffDetailsCard } from "@/components/staff/details-card";
+import { AddStaffModal } from "@/components/staff/add-modal";
+import { StaffInviteLinkModal } from "@/components/staff/invite-link-modal";
+import { StaffPagination } from "@/components/staff/pagination";
 import { ResidentsPageSkeleton } from "@/pages/app/residents-skeleton";
+import { getStaff } from "@/api/get-staff";
 
-export function Residents() {
+export function Staff() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["residents"],
-    queryFn: () => getResidents(),
+    queryKey: ["staff"],
+    queryFn: () => getStaff(),
   });
 
-  const filteredResidents = useMemo(() => {
+  const filteredStaff = useMemo(() => {
     const normalized = searchTerm.trim().toLowerCase();
-    const residents = data?.data ?? [];
+    const staff = data?.data ?? [];
 
     if (!normalized) {
-      return residents;
+      return staff;
     }
 
-    return residents.filter((resident) => {
-      const haystack = [
-        resident.name,
-        resident.apartment ?? "",
-        resident.email ?? "",
-        resident.phone ?? "",
-      ]
+    return staff.filter((member) => {
+      const haystack = [member.name, member.email ?? "", member.phone ?? ""]
         .join(" ")
         .toLowerCase();
 
@@ -46,7 +42,7 @@ export function Residents() {
     });
   }, [data, searchTerm]);
 
-  const totalItems = filteredResidents.length;
+  const totalItems = filteredStaff.length;
   const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / perPage);
 
   useEffect(() => {
@@ -59,14 +55,14 @@ export function Residents() {
     }
   }, [page, totalPages]);
 
-  const visibleResidents = useMemo(() => {
-    if (filteredResidents.length === 0) {
+  const visibleStaff = useMemo(() => {
+    if (filteredStaff.length === 0) {
       return [];
     }
 
     const start = (page - 1) * perPage;
-    return filteredResidents.slice(start, start + perPage);
-  }, [filteredResidents, page, perPage]);
+    return filteredStaff.slice(start, start + perPage);
+  }, [filteredStaff, page, perPage]);
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
     setSearchTerm(e.target.value);
@@ -79,22 +75,22 @@ export function Residents() {
   return (
     <>
       <Helmet>
-        <title>Moradores</title>
+        <title>Equipe</title>
       </Helmet>
 
       <main className="flex min-h-svh flex-col gap-8">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl text-foreground font-bold tracking-tight">
-              Moradores
+              Equipe
             </h1>
             <p className="text-muted-foreground sr-only md:not-sr-only">
-              Gerencie os moradores do condomínio
+              Gerencie os funcionários do condomínio
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <ResidentInviteLinkModal />
-            <AddModal />
+            <StaffInviteLinkModal />
+            <AddStaffModal />
           </div>
         </header>
 
@@ -102,7 +98,7 @@ export function Residents() {
           <InputGroupInput
             value={searchTerm}
             onChange={handleSearch}
-            placeholder="Buscar morador"
+            placeholder="Buscar funcionário"
           />
           <InputGroupAddon>
             <Search />
@@ -113,33 +109,29 @@ export function Residents() {
           <ResidentsPageSkeleton />
         ) : isError ? (
           <p className="text-sm text-destructive">
-            Não foi possível carregar os moradores. Tente novamente.
+            Não foi possível carregar a equipe. Tente novamente.
           </p>
-        ) : filteredResidents.length === 0 ? (
+        ) : filteredStaff.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Nenhum morador encontrado.
+            Nenhum funcionário encontrado.
           </p>
         ) : (
           <section className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {visibleResidents.map((resident) => (
-                <DetailsCard
-                  key={resident.id}
-                  id={resident.id}
-                  name={resident.name}
-                  apartment={resident.apartment}
-                  email={resident.email}
-                  phone={resident.phone}
-                  role={resident.role}
-                  imageUrl={resident.imageUrl}
-                  building={resident.building}
-                  vehicle={resident.vehicle}
-                  emergencyContact={resident.emergencyContact}
-                />
+              {visibleStaff.map((member) => (
+                  <StaffDetailsCard
+                    key={member.id}
+                    id={member.id}
+                    name={member.name}
+                    email={member.email}
+                    phone={member.phone}
+                    shift={member.shift}
+                    imageUrl={member.imageUrl}
+                  />
               ))}
             </div>
 
-            <ResidentsPagination
+            <StaffPagination
               page={page}
               perPage={perPage}
               totalPages={totalPages}

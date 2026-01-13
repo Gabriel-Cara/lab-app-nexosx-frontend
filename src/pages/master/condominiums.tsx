@@ -2,6 +2,7 @@ import { Helmet } from "@dr.pogodin/react-helmet";
 import { useQuery } from "@tanstack/react-query";
 
 import { getCondominiums } from "@/api/get-condominiums";
+import { StaffInviteLinkModal } from "@/components/staff/invite-link-modal";
 import {
   Table,
   TableBody,
@@ -52,24 +53,25 @@ export function MasterCondominiums() {
               <TableHead>Nome</TableHead>
               <TableHead>Código</TableHead>
               <TableHead>Criado em</TableHead>
+              <TableHead>Equipe</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground">
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
                   Carregando condomínios...
                 </TableCell>
               </TableRow>
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center text-destructive">
+                <TableCell colSpan={4} className="text-center text-destructive">
                   Não foi possível carregar os condomínios.
                 </TableCell>
               </TableRow>
             ) : data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground">
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
                   Nenhum condomínio cadastrado.
                 </TableCell>
               </TableRow>
@@ -84,6 +86,14 @@ export function MasterCondominiums() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(condominium.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    <StaffInviteLinkModal
+                      condominiumId={condominium.id}
+                      buttonLabel="Gerar link"
+                      buttonVariant="ghost"
+                      buttonSize="sm"
+                    />
                   </TableCell>
                 </TableRow>
               ))

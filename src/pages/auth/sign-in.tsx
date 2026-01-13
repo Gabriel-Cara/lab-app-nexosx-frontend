@@ -192,20 +192,28 @@ export function SignIn() {
                   </InputGroupAddon>
                 </InputGroup>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Sua senha</Label>
-                <InputGroup>
-                  <InputGroupInput
-                    id="password"
-                    type="password"
-                    placeholder="********"
-                    {...register("password")}
-                  />
-                  <InputGroupAddon>
-                    <SquareAsterisk />
-                  </InputGroupAddon>
-                </InputGroup>
+            <div className="space-y-2">
+              <Label htmlFor="password">Sua senha</Label>
+              <InputGroup>
+                <InputGroupInput
+                  id="password"
+                  type="password"
+                  placeholder="********"
+                  {...register("password")}
+                />
+                <InputGroupAddon>
+                  <SquareAsterisk />
+                </InputGroupAddon>
+              </InputGroup>
+              <div className="text-right">
+                <Link
+                  to="/esqueci-senha"
+                  className="text-xs text-primary hover:underline"
+                >
+                  Esqueci minha senha
+                </Link>
               </div>
+            </div>
               <Button
                 className="w-full"
                 type="submit"

@@ -7,6 +7,7 @@ export type PutResidentPayload = {
   phone?: string;
   role?: "admin" | "staff" | "resident";
   apartment?: string;
+  shift?: string;
   password?: string;
   building?: string;
   vehicle?: string;
@@ -21,6 +22,7 @@ export async function putResident({
     ...payload,
     phone: payload.phone ?? undefined,
     apartment: payload.apartment ?? undefined,
+    shift: payload.shift ?? undefined,
     building: payload.building ?? undefined,
     vehicle: payload.vehicle ?? undefined,
     emergencyContact: payload.emergencyContact ?? undefined,

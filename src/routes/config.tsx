@@ -24,6 +24,9 @@ const Dashboard = lazy(() =>
 const Residents = lazy(() =>
   import("@/pages/app/residents").then((module) => ({ default: module.Residents }))
 );
+const Staff = lazy(() =>
+  import("@/pages/app/staff").then((module) => ({ default: module.Staff }))
+);
 const Visitors = lazy(() =>
   import("@/pages/app/visitors").then((module) => ({ default: module.Visitors }))
 );
@@ -91,6 +94,15 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     roles: ["admin", "staff"],
     label: "Moradores",
     icon: Users,
+    showInSidebar: true,
+  },
+  {
+    id: "staff",
+    path: "staff",
+    element: withSuspense(<Staff />, <ResidentsPageSkeleton />),
+    roles: ["admin"],
+    label: "Equipe",
+    icon: UserCog,
     showInSidebar: true,
   },
   {
