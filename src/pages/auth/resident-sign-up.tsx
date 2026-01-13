@@ -72,7 +72,8 @@ const residentSignUpSchema = z
     }
   );
 
-type ResidentSignUpForm = z.infer<typeof residentSignUpSchema>;
+type ResidentSignUpFormInput = z.input<typeof residentSignUpSchema>;
+type ResidentSignUpFormOutput = z.output<typeof residentSignUpSchema>;
 
 export function ResidentSignUp() {
   const navigate = useNavigate();
@@ -91,11 +92,11 @@ export function ResidentSignUp() {
     handleSubmit,
     setValue,
     formState: { isSubmitting, errors },
-  } = useForm<ResidentSignUpForm>({
+  } = useForm<ResidentSignUpFormInput, unknown, ResidentSignUpFormOutput>({
     resolver: zodResolver(residentSignUpSchema),
   });
 
-  async function handleSignUp(data: ResidentSignUpForm) {
+  async function handleSignUp(data: ResidentSignUpFormOutput) {
     try {
       if (!token) {
         return toast.error("Link inválido. Solicite um novo convite.");

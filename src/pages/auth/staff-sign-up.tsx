@@ -60,7 +60,8 @@ const staffSignUpSchema = z
     }
   );
 
-type StaffSignUpForm = z.infer<typeof staffSignUpSchema>;
+type StaffSignUpFormInput = z.input<typeof staffSignUpSchema>;
+type StaffSignUpFormOutput = z.output<typeof staffSignUpSchema>;
 
 export function StaffSignUp() {
   const navigate = useNavigate();
@@ -79,11 +80,11 @@ export function StaffSignUp() {
     handleSubmit,
     setValue,
     formState: { isSubmitting, errors },
-  } = useForm<StaffSignUpForm>({
+  } = useForm<StaffSignUpFormInput, unknown, StaffSignUpFormOutput>({
     resolver: zodResolver(staffSignUpSchema),
   });
 
-  async function handleSignUp(data: StaffSignUpForm) {
+  async function handleSignUp(data: StaffSignUpFormOutput) {
     try {
       if (!token) {
         return toast.error("Link inválido. Solicite um novo convite.");
