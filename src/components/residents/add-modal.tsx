@@ -1,7 +1,18 @@
 import { useState } from "react";
-import { Building, Car, House, Mail, Phone, Plus, User } from "lucide-react";
+import {
+  Building,
+  Calendar,
+  Car,
+  House,
+  Mail,
+  Phone,
+  Plus,
+  TextCursorInput,
+  Trash2,
+  User,
+} from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +24,7 @@ import {
 } from "../ui/input-group";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogClose,
@@ -27,13 +39,29 @@ import {
 import { postResident } from "@/api/post-resident";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 
+const vehicleSchema = z
+  .object({
+    model: z.string().min(1, "Informe o modelo"),
+    plate: z.string().min(1, "Informe a placa"),
+    year: z.number().int().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (typeof value.year !== "number" || Number.isNaN(value.year)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Informe o ano",
+        path: ["year"],
+      });
+    }
+  });
+
 const createResidentFormSchema = z.object({
   name: z.string({ message: "O nome é obrigatório" }),
   email: z.email({ message: "O email é obrigatório" }),
   phone: z.string({ message: "O telefone é obrigatório" }),
   apartment: z.string({ message: "O apartamento é obrigatório" }),
   building: z.string().optional(),
-  vehicle: z.string().optional(),
+  vehicles: z.array(vehicleSchema).optional(),
   emergencyContact: z.string().optional(),
 });
 
@@ -43,19 +71,30 @@ export function AddModal() {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { register, handleSubmit, reset, setValue } =
-    useForm<CreateResidentForm>({
-      resolver: zodResolver(createResidentFormSchema),
-      defaultValues: {
-        name: "",
-        email: "",
-        phone: "",
-        apartment: "",
-        building: "",
-        vehicle: "",
-        emergencyContact: "",
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    control,
+    formState: { errors },
+  } = useForm<CreateResidentForm>({
+    resolver: zodResolver(createResidentFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      apartment: "",
+      building: "",
+      vehicles: [],
+      emergencyContact: "",
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "vehicles",
+  });
 
   const { mutateAsync: mutateResident, isPending } = useMutation({
     mutationFn: postResident,
@@ -76,7 +115,12 @@ export function AddModal() {
         ...data,
         role: "resident",
         phone,
-        vehicle: data.vehicle || "",
+        vehicles:
+          data.vehicles?.map((vehicle) => ({
+            model: vehicle.model.trim(),
+            plate: vehicle.plate.trim(),
+            year: vehicle.year!,
+          })) ?? [],
         building: data.building || "",
         emergencyContact: data.emergencyContact || "",
       });
@@ -88,7 +132,7 @@ export function AddModal() {
         phone: "",
         apartment: "",
         building: "",
-        vehicle: "",
+        vehicles: [],
         emergencyContact: "",
       });
       setIsOpen(false);
@@ -221,19 +265,116 @@ export function AddModal() {
             </InputGroup>
           </div>
           <div className="grid col-span-2 gap-3 text-lg">
-            <Label htmlFor="vehicle">Qtd. Veículos</Label>
-            <InputGroup>
-              <InputGroupInput
-                id="vehicle"
-                placeholder="Se tiver veículos incluir quantidade"
-                {...register("vehicle")}
-              />
-              <InputGroupAddon>
-                <Car />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
+            <div className="flex items-center justify-between">
+              <Label>Veículos</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  append({ model: "", plate: "", year: undefined })
+                }
+              >
+                <Plus />
+                Adicionar veículo
+              </Button>
+            </div>
 
+            {fields.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Nenhum carro adicionado.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {index + 1}º Veículo
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => remove(index)}
+                        aria-label="Remover carro"
+                        className="text-rose-400 hover:text-rose-500"
+                      >
+                        <Trash2 />
+                      </Button>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="grid gap-1.5">
+                        <Label htmlFor={`vehicle-model-${field.id}`}>
+                          Modelo
+                        </Label>
+                        <InputGroup>
+                          <InputGroupInput
+                            id={`vehicle-model-${field.id}`}
+                            placeholder="Ex: Civic"
+                            {...register(`vehicles.${index}.model`)}
+                          />
+                          <InputGroupAddon>
+                            <Car />
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {errors.vehicles?.[index]?.model && (
+                          <p className="text-xs text-rose-500">
+                            {errors.vehicles[index]?.model?.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="grid gap-1.5">
+                        <Label htmlFor={`vehicle-plate-${field.id}`}>
+                          Placa
+                        </Label>
+                        <InputGroup>
+                          <InputGroupInput
+                            id={`vehicle-plate-${field.id}`}
+                            placeholder="ABC-1234"
+                            {...register(`vehicles.${index}.plate`)}
+                          />
+                          <InputGroupAddon>
+                            <TextCursorInput />
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {errors.vehicles?.[index]?.plate && (
+                          <p className="text-xs text-rose-500">
+                            {errors.vehicles[index]?.plate?.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="grid gap-1.5">
+                        <Label htmlFor={`vehicle-year-${field.id}`}>
+                          Ano do veículo
+                        </Label>
+                        <InputGroup>
+                          <InputGroupInput
+                            id={`vehicle-year-${field.id}`}
+                            type="number"
+                            placeholder="2020"
+                            {...register(`vehicles.${index}.year`, {
+                              setValueAs: (value) =>
+                                value === "" ? undefined : Number(value),
+                            })}
+                          />
+                          <InputGroupAddon>
+                            <Calendar />
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {errors.vehicles?.[index]?.year && (
+                          <p className="text-xs text-rose-500">
+                            {errors.vehicles[index]?.year?.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {index < fields.length - 1 && <Separator />}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </form>
         <DialogFooter>
           <DialogClose asChild>

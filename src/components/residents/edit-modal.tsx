@@ -1,13 +1,24 @@
 import { useEffect, useState } from "react";
-import { Building, Car, Edit, House, Mail, Phone, User } from "lucide-react";
+import {
+  Building,
+  Car,
+  Edit,
+  House,
+  Mail,
+  Phone,
+  Plus,
+  Trash2,
+  User,
+} from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
   InputGroup,
   InputGroupAddon,
@@ -28,6 +39,22 @@ import { putResident } from "@/api/put-resident";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 import { ImageManager } from "@/components/images/image-manager";
 
+const vehicleSchema = z
+  .object({
+    model: z.string().min(1, "Informe o modelo"),
+    plate: z.string().min(1, "Informe a placa"),
+    year: z.number().int().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (typeof value.year !== "number" || Number.isNaN(value.year)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Informe o ano",
+        path: ["year"],
+      });
+    }
+  });
+
 const editResidentFormSchema = z.object({
   name: z.string().optional(),
   email: z.string().email().optional(),
@@ -35,7 +62,7 @@ const editResidentFormSchema = z.object({
   apartment: z.string().optional(),
   password: z.string().optional(),
   building: z.string().optional(),
-  vehicle: z.string().optional(),
+  vehicles: z.array(vehicleSchema).optional(),
   emergencyContact: z.string().optional(),
 });
 
@@ -50,7 +77,14 @@ type EditModalProps = EditResidentForm & {
 export function EditModal(props: EditModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset, setValue } = useForm<EditResidentForm>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    control,
+    formState: { errors },
+  } = useForm<EditResidentForm>({
     resolver: zodResolver(editResidentFormSchema),
     defaultValues: {
       name: props.name,
@@ -59,9 +93,14 @@ export function EditModal(props: EditModalProps) {
       apartment: props.apartment,
       password: "",
       building: props.building ?? "",
-      vehicle: props.vehicle ?? "",
+      vehicles: props.vehicles ?? [],
       emergencyContact: props.emergencyContact ?? "",
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "vehicles",
   });
 
   const { mutateAsync: mutateResident, isPending } = useMutation({
@@ -80,7 +119,7 @@ export function EditModal(props: EditModalProps) {
         apartment: props.apartment,
         password: "",
         building: props.building ?? "",
-        vehicle: props.vehicle ?? "",
+        vehicles: props.vehicles ?? [],
         emergencyContact: props.emergencyContact ?? "",
       });
     }
@@ -103,7 +142,12 @@ export function EditModal(props: EditModalProps) {
         apartment: data.apartment || undefined,
         password: data.password || undefined,
         building: data.building || undefined,
-        vehicle: data.vehicle || undefined,
+        vehicles:
+          data.vehicles?.map((vehicle) => ({
+            model: vehicle.model.trim(),
+            plate: vehicle.plate.trim(),
+            year: vehicle.year!,
+          })) ?? [],
         emergencyContact: data.emergencyContact || undefined,
       });
 
@@ -147,7 +191,7 @@ export function EditModal(props: EditModalProps) {
                 }
               />
             </div>
-            <div className="grid col-span-2 sm:col-span-1 gap-3">
+            <div className="grid col-span-2 gap-3">
               <Label htmlFor="name">Nome</Label>
               <InputGroup>
                 <InputGroupInput
@@ -189,18 +233,106 @@ export function EditModal(props: EditModalProps) {
               </InputGroup>
             </div>
             <div className="grid col-span-2 sm:col-span-1 gap-3">
-              <Label htmlFor="vehicle">Qtd. Veículos</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="vehicle"
-                  placeholder="Se tiver veículos incluir quantidade"
-                  type="number"
-                  {...register("vehicle")}
-                />
-                <InputGroupAddon>
-                  <Car />
-                </InputGroupAddon>
-              </InputGroup>
+              <div className="flex items-center justify-between">
+                <Label>Veículos</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => append({ model: "", plate: "", year: undefined })}
+                >
+                  <Plus />
+                  adicionar carro
+                </Button>
+              </div>
+
+              {fields.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum carro adicionado.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          Carro {index + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => remove(index)}
+                          aria-label="Remover carro"
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
+                      <div className="grid gap-3">
+                        <div className="grid gap-1.5">
+                          <Label htmlFor={`vehicle-model-${field.id}`}>Modelo</Label>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-model-${field.id}`}
+                              placeholder="Ex: Civic"
+                              {...register(`vehicles.${index}.model`)}
+                            />
+                            <InputGroupAddon>
+                              <Car />
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {errors.vehicles?.[index]?.model && (
+                            <p className="text-xs text-rose-500">
+                              {errors.vehicles[index]?.model?.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="grid gap-1.5">
+                          <Label htmlFor={`vehicle-plate-${field.id}`}>Placa</Label>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-plate-${field.id}`}
+                              placeholder="ABC-1234"
+                              {...register(`vehicles.${index}.plate`)}
+                            />
+                            <InputGroupAddon>
+                              <Car />
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {errors.vehicles?.[index]?.plate && (
+                            <p className="text-xs text-rose-500">
+                              {errors.vehicles[index]?.plate?.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="grid gap-1.5">
+                          <Label htmlFor={`vehicle-year-${field.id}`}>Ano do veículo</Label>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-year-${field.id}`}
+                              type="number"
+                              placeholder="2020"
+                              {...register(`vehicles.${index}.year`, {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : Number(value),
+                              })}
+                            />
+                            <InputGroupAddon>
+                              <Car />
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {errors.vehicles?.[index]?.year && (
+                            <p className="text-xs text-rose-500">
+                              {errors.vehicles[index]?.year?.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {index < fields.length - 1 && <Separator />}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="grid col-span-2 sm:col-span-1 gap-3">
               <Label htmlFor="phone">Telefone</Label>

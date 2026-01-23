@@ -9,8 +9,15 @@ export type Resident = {
   role: "admin" | "staff" | "resident";
   imageUrl?: string | null;
   building?: string | null;
-  vehicle?: string | null;
+  vehicles: ResidentVehicle[];
   emergencyContact?: string | null;
+};
+
+export type ResidentVehicle = {
+  id: string;
+  model: string;
+  plate: string;
+  year: number;
 };
 
 export type GetResidentsParams = {
@@ -37,7 +44,7 @@ const parseHeaderNumber = (value: unknown, fallback: number) => {
 type ResidentApiResponse = Resident & {
   residents?: {
     building: string | null;
-    vehicle: string | null;
+    vehicles: ResidentVehicle[];
     emergencyContact: string | null;
   } | null;
 };
@@ -63,7 +70,7 @@ export async function getResidents(
     role: resident.role,
     imageUrl: resident.imageUrl ?? null,
     building: resident.residents?.building ?? null,
-    vehicle: resident.residents?.vehicle ?? null,
+    vehicles: resident.residents?.vehicles ?? [],
     emergencyContact: resident.residents?.emergencyContact ?? null,
   }));
 

@@ -7,7 +7,11 @@ export type ResidentSignupPayload = {
   phone?: string;
   apartment: string;
   building?: string;
-  vehicle?: string;
+  vehicles?: {
+    model: string;
+    plate: string;
+    year: number;
+  }[];
   emergencyContact?: string;
   password?: string;
 };
@@ -20,7 +24,7 @@ export async function postResidentSignup(payload: ResidentSignupPayload) {
     phone: payload.phone ?? undefined,
     apartment: payload.apartment,
     building: payload.building ?? undefined,
-    vehicle: payload.vehicle ?? undefined,
+    vehicles: payload.vehicles ?? undefined,
     emergencyContact: payload.emergencyContact ?? undefined,
     password: payload.password ?? undefined,
   });

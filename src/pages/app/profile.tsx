@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { getProfile } from "@/api/get-profile";
@@ -21,11 +21,29 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 import { ImageManager } from "@/components/images/image-manager";
 import { ProfileSkeleton } from "@/pages/app/profile-skeleton";
+import { Car, Plus, Trash2 } from "lucide-react";
+
+const vehicleSchema = z
+  .object({
+    model: z.string().min(1, "Informe o modelo"),
+    plate: z.string().min(1, "Informe a placa"),
+    year: z.number().int().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (typeof value.year !== "number" || Number.isNaN(value.year)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Informe o ano",
+        path: ["year"],
+      });
+    }
+  });
 
 const profileFormSchema = z.object({
   name: z.string().min(3, "Informe o nome completo"),
@@ -34,7 +52,7 @@ const profileFormSchema = z.object({
   document: z.string().optional(),
   apartment: z.string().optional(),
   building: z.string().optional(),
-  vehicle: z.string().optional(),
+  vehicles: z.array(vehicleSchema).optional(),
   emergencyContact: z.string().optional(),
 });
 
@@ -62,9 +80,14 @@ export function Profile() {
       document: undefined,
       apartment: undefined,
       building: undefined,
-      vehicle: undefined,
+      vehicles: [],
       emergencyContact: undefined,
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "vehicles",
   });
 
   useEffect(() => {
@@ -76,7 +99,7 @@ export function Profile() {
         document: data.document ?? undefined,
         apartment: data.apartment ?? undefined,
         building: data.building ?? undefined,
-        vehicle: data.vehicle ?? undefined,
+        vehicles: data.vehicles ?? [],
         emergencyContact: data.emergencyContact ?? undefined,
       });
     }
@@ -111,7 +134,7 @@ export function Profile() {
         document: data.document ?? undefined,
         apartment: data.apartment ?? undefined,
         building: data.building ?? undefined,
-        vehicle: data.vehicle ?? undefined,
+        vehicles: data.vehicles ?? [],
         emergencyContact: data.emergencyContact ?? undefined,
       });
     }
@@ -273,16 +296,97 @@ export function Profile() {
                         />
                       </InputGroup>
                     </div>
-                    <div className="grid gap-1.5">
-                      <Label htmlFor="vehicle">Veículo</Label>
-                      <InputGroup>
-                        <InputGroupInput
-                          id="vehicle"
+                    <div className="md:col-span-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label>Veículos</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => append({ model: "", plate: "", year: undefined })}
                           disabled={!isEditing}
-                          placeholder="Modelo / Placa"
-                          {...form.register("vehicle")}
-                        />
-                      </InputGroup>
+                        >
+                          <Plus />
+                          adicionar carro
+                        </Button>
+                      </div>
+
+                      {fields.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          Nenhum carro adicionado.
+                        </p>
+                      ) : (
+                        <div className="space-y-4">
+                          {fields.map((field, index) => (
+                            <div key={field.id} className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">
+                                  Carro {index + 1}
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  onClick={() => remove(index)}
+                                  aria-label="Remover carro"
+                                  disabled={!isEditing}
+                                >
+                                  <Trash2 />
+                                </Button>
+                              </div>
+                              <div className="grid gap-4 md:grid-cols-3">
+                                <div className="grid gap-1.5">
+                                  <Label htmlFor={`vehicle-model-${field.id}`}>Modelo</Label>
+                                  <InputGroup>
+                                    <InputGroupInput
+                                      id={`vehicle-model-${field.id}`}
+                                      disabled={!isEditing}
+                                      placeholder="Ex: Civic"
+                                      {...form.register(`vehicles.${index}.model`)}
+                                    />
+                                    <InputGroupAddon>
+                                      <Car />
+                                    </InputGroupAddon>
+                                  </InputGroup>
+                                </div>
+                                <div className="grid gap-1.5">
+                                  <Label htmlFor={`vehicle-plate-${field.id}`}>Placa</Label>
+                                  <InputGroup>
+                                    <InputGroupInput
+                                      id={`vehicle-plate-${field.id}`}
+                                      disabled={!isEditing}
+                                      placeholder="ABC-1234"
+                                      {...form.register(`vehicles.${index}.plate`)}
+                                    />
+                                    <InputGroupAddon>
+                                      <Car />
+                                    </InputGroupAddon>
+                                  </InputGroup>
+                                </div>
+                                <div className="grid gap-1.5">
+                                  <Label htmlFor={`vehicle-year-${field.id}`}>Ano do veículo</Label>
+                                  <InputGroup>
+                                    <InputGroupInput
+                                      id={`vehicle-year-${field.id}`}
+                                      type="number"
+                                      disabled={!isEditing}
+                                      placeholder="2020"
+                                      {...form.register(`vehicles.${index}.year`, {
+                                        setValueAs: (value) =>
+                                          value === "" ? undefined : Number(value),
+                                      })}
+                                    />
+                                    <InputGroupAddon>
+                                      <Car />
+                                    </InputGroupAddon>
+                                  </InputGroup>
+                                </div>
+                              </div>
+                              {index < fields.length - 1 && <Separator />}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

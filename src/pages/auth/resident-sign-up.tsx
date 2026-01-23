@@ -1,7 +1,7 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useMemo } from "react";
@@ -14,6 +14,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { Separator } from "@/components/ui/separator";
 
 import {
   Building,
@@ -22,6 +23,8 @@ import {
   KeyRound,
   Mail,
   Phone,
+  Plus,
+  Trash2,
   SquareAsterisk,
   User,
 } from "lucide-react";
@@ -47,6 +50,22 @@ const optionalTextSchema = z.preprocess(
   z.string().optional()
 );
 
+const vehicleSchema = z
+  .object({
+    model: z.string().min(1, "Informe o modelo"),
+    plate: z.string().min(1, "Informe a placa"),
+    year: z.number().int().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (typeof value.year !== "number" || Number.isNaN(value.year)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Informe o ano",
+        path: ["year"],
+      });
+    }
+  });
+
 const residentSignUpSchema = z
   .object({
     name: z.string().min(2, "Informe seu nome completo"),
@@ -54,7 +73,7 @@ const residentSignUpSchema = z
     phone: z.string().optional(),
     apartment: z.string().min(1, "Informe seu apartamento"),
     building: optionalTextSchema,
-    vehicle: optionalTextSchema,
+    vehicles: z.array(vehicleSchema).optional(),
     emergencyContact: optionalTextSchema,
     password: optionalPasswordSchema,
     confirmPassword: optionalConfirmPasswordSchema,
@@ -91,9 +110,18 @@ export function ResidentSignUp() {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { isSubmitting, errors },
   } = useForm<ResidentSignUpFormInput, unknown, ResidentSignUpFormOutput>({
     resolver: zodResolver(residentSignUpSchema),
+    defaultValues: {
+      vehicles: [],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "vehicles",
   });
 
   async function handleSignUp(data: ResidentSignUpFormOutput) {
@@ -115,7 +143,12 @@ export function ResidentSignUp() {
         phone,
         apartment: data.apartment.trim(),
         building: data.building?.trim() || undefined,
-        vehicle: data.vehicle?.trim() || undefined,
+        vehicles:
+          data.vehicles?.map((vehicle) => ({
+            model: vehicle.model.trim(),
+            plate: vehicle.plate.trim(),
+            year: vehicle.year!,
+          })) ?? [],
         emergencyContact: data.emergencyContact?.trim() || undefined,
         password: data.password?.trim() || undefined,
       });
@@ -272,21 +305,110 @@ export function ResidentSignUp() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="vehicle">Qtd. Veículos</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="vehicle"
-                  type="text"
-                  placeholder="Se tiver veículos incluir quantidade"
-                  {...register("vehicle")}
+              <div className="flex items-center justify-between">
+                <Label>Veículos</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => append({ model: "", plate: "", year: undefined })}
                   disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <Car />
-                </InputGroupAddon>
-              </InputGroup>
-              {errors.vehicle && (
-                <p className="text-xs text-rose-500">{errors.vehicle.message}</p>
+                >
+                  <Plus />
+                  adicionar carro
+                </Button>
+              </div>
+
+              {fields.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum carro adicionado.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          Carro {index + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => remove(index)}
+                          aria-label="Remover carro"
+                          disabled={isFormDisabled}
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`vehicle-model-${field.id}`}>Modelo</Label>
+                        <InputGroup>
+                          <InputGroupInput
+                            id={`vehicle-model-${field.id}`}
+                            type="text"
+                            placeholder="Ex: Civic"
+                            {...register(`vehicles.${index}.model`)}
+                            disabled={isFormDisabled}
+                          />
+                          <InputGroupAddon>
+                            <Car />
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {errors.vehicles?.[index]?.model && (
+                          <p className="text-xs text-rose-500">
+                            {errors.vehicles[index]?.model?.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`vehicle-plate-${field.id}`}>Placa</Label>
+                        <InputGroup>
+                          <InputGroupInput
+                            id={`vehicle-plate-${field.id}`}
+                            type="text"
+                            placeholder="ABC-1234"
+                            {...register(`vehicles.${index}.plate`)}
+                            disabled={isFormDisabled}
+                          />
+                          <InputGroupAddon>
+                            <Car />
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {errors.vehicles?.[index]?.plate && (
+                          <p className="text-xs text-rose-500">
+                            {errors.vehicles[index]?.plate?.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`vehicle-year-${field.id}`}>Ano do veículo</Label>
+                        <InputGroup>
+                          <InputGroupInput
+                            id={`vehicle-year-${field.id}`}
+                            type="number"
+                            placeholder="2020"
+                            {...register(`vehicles.${index}.year`, {
+                              setValueAs: (value) =>
+                                value === "" ? undefined : Number(value),
+                            })}
+                            disabled={isFormDisabled}
+                          />
+                          <InputGroupAddon>
+                            <Car />
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {errors.vehicles?.[index]?.year && (
+                          <p className="text-xs text-rose-500">
+                            {errors.vehicles[index]?.year?.message}
+                          </p>
+                        )}
+                      </div>
+                      {index < fields.length - 1 && <Separator />}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 

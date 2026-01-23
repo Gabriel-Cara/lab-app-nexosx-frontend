@@ -10,7 +10,11 @@ export type PutResidentPayload = {
   shift?: string;
   password?: string;
   building?: string;
-  vehicle?: string;
+  vehicles?: {
+    model: string;
+    plate: string;
+    year: number;
+  }[];
   emergencyContact?: string;
 };
 
@@ -24,7 +28,7 @@ export async function putResident({
     apartment: payload.apartment ?? undefined,
     shift: payload.shift ?? undefined,
     building: payload.building ?? undefined,
-    vehicle: payload.vehicle ?? undefined,
+    vehicles: payload.vehicles ?? undefined,
     emergencyContact: payload.emergencyContact ?? undefined,
   });
 

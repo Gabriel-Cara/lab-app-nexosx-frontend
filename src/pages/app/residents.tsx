@@ -133,7 +133,7 @@ export function Residents() {
                   role={resident.role}
                   imageUrl={resident.imageUrl}
                   building={resident.building}
-                  vehicle={resident.vehicle}
+                  vehicles={resident.vehicles}
                   emergencyContact={resident.emergencyContact}
                 />
               ))}

@@ -16,7 +16,11 @@ interface DetailsCardProps {
   imageUrl?: string | null;
   password?: string;
   building?: string | null;
-  vehicle?: string | null;
+  vehicles?: {
+    model: string;
+    plate: string;
+    year: number;
+  }[] | null;
   emergencyContact?: string | null;
 }
 
@@ -60,7 +64,7 @@ export function DetailsCard(props: DetailsCardProps) {
               apartment={props.apartment ?? ""}
               password=""
               building={props.building ?? ""}
-              vehicle={props.vehicle ?? ""}
+              vehicles={props.vehicles ?? []}
               emergencyContact={props.emergencyContact ?? ""}
               imageUrl={props.imageUrl}
             />

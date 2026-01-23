@@ -8,7 +8,11 @@ export type PostResidentPayload = {
   apartment?: string;
   password?: string;
   building?: string;
-  vehicle?: string;
+  vehicles?: {
+    model: string;
+    plate: string;
+    year: number;
+  }[];
   emergencyContact?: string;
 };
 
@@ -18,7 +22,7 @@ export async function postResident(payload: PostResidentPayload) {
     phone: payload.phone ?? null,
     apartment: payload.apartment ?? null,
     building: payload.building ?? null,
-    vehicle: payload.vehicle ?? null,
+    vehicles: payload.vehicles ?? [],
     emergencyContact: payload.emergencyContact ?? null,
   });
 
