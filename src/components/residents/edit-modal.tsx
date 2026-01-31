@@ -284,7 +284,7 @@ export function EditModal(props: EditModalProps) {
                   </InputGroupAddon>
                 </InputGroup>
               </div>
-              <div className="grid col-span-2 sm:col-span-1 gap-3">
+              <div className="grid col-span-2 gap-3">
                 <div className="flex items-center justify-between">
                   <Label>Veículos</Label>
                   <Button
