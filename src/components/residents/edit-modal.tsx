@@ -173,11 +173,7 @@ export function EditModal(props: EditModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          id="edit-resident"
-          className="overflow-y-scroll md:overflow-y-hidden max-h-[calc(100vh-300px)]"
-          onSubmit={handleSubmit(handleEditResident)}
-        >
+        <form id="edit-resident" onSubmit={handleSubmit(handleEditResident)}>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <ImageManager
