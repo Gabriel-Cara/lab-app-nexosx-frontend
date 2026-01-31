@@ -229,118 +229,16 @@ export function EditModal(props: EditModalProps) {
               </InputGroup>
             </div>
             <div className="grid col-span-2 sm:col-span-1 gap-3">
-              <div className="flex items-center justify-between">
-                <Label>Veículos</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => append({ model: "", plate: "", year: undefined })}
-                >
-                  <Plus />
-                  adicionar carro
-                </Button>
-              </div>
-
-              {fields.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nenhum carro adicionado.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {fields.map((field, index) => (
-                    <div key={field.id} className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">
-                          Carro {index + 1}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => remove(index)}
-                          aria-label="Remover carro"
-                        >
-                          <Trash2 />
-                        </Button>
-                      </div>
-                      <div className="grid gap-3">
-                        <div className="grid gap-1.5">
-                          <Label htmlFor={`vehicle-model-${field.id}`}>Modelo</Label>
-                          <InputGroup>
-                            <InputGroupInput
-                              id={`vehicle-model-${field.id}`}
-                              placeholder="Ex: Civic"
-                              {...register(`vehicles.${index}.model`)}
-                            />
-                            <InputGroupAddon>
-                              <Car />
-                            </InputGroupAddon>
-                          </InputGroup>
-                          {errors.vehicles?.[index]?.model && (
-                            <p className="text-xs text-rose-500">
-                              {errors.vehicles[index]?.model?.message}
-                            </p>
-                          )}
-                        </div>
-                        <div className="grid gap-1.5">
-                          <Label htmlFor={`vehicle-plate-${field.id}`}>Placa</Label>
-                          <InputGroup>
-                            <InputGroupInput
-                              id={`vehicle-plate-${field.id}`}
-                              placeholder="ABC-1234"
-                              {...register(`vehicles.${index}.plate`)}
-                            />
-                            <InputGroupAddon>
-                              <Car />
-                            </InputGroupAddon>
-                          </InputGroup>
-                          {errors.vehicles?.[index]?.plate && (
-                            <p className="text-xs text-rose-500">
-                              {errors.vehicles[index]?.plate?.message}
-                            </p>
-                          )}
-                        </div>
-                        <div className="grid gap-1.5">
-                          <Label htmlFor={`vehicle-year-${field.id}`}>Ano do veículo</Label>
-                          <InputGroup>
-                            <InputGroupInput
-                              id={`vehicle-year-${field.id}`}
-                              type="number"
-                              placeholder="2020"
-                              {...register(`vehicles.${index}.year`, {
-                                setValueAs: (value) =>
-                                  value === "" ? undefined : Number(value),
-                              })}
-                            />
-                            <InputGroupAddon>
-                              <Car />
-                            </InputGroupAddon>
-                          </InputGroup>
-                          {errors.vehicles?.[index]?.year && (
-                            <p className="text-xs text-rose-500">
-                              {errors.vehicles[index]?.year?.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      {index < fields.length - 1 && <Separator />}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="grid col-span-2 sm:col-span-1 gap-3">
               <Label htmlFor="phone">Telefone</Label>
               <InputGroup>
-              <InputGroupInput
-                id="phone"
-                placeholder="Insira o telefone"
-                {...register("phone", {
-                  onChange: (event) =>
-                    setValue("phone", maskPhone(event.target.value)),
-                })}
-              />
+                <InputGroupInput
+                  id="phone"
+                  placeholder="Insira o telefone"
+                  {...register("phone", {
+                    onChange: (event) =>
+                      setValue("phone", maskPhone(event.target.value)),
+                  })}
+                />
                 <InputGroupAddon>
                   <Phone />
                 </InputGroupAddon>
@@ -385,6 +283,116 @@ export function EditModal(props: EditModalProps) {
                     <Building />
                   </InputGroupAddon>
                 </InputGroup>
+              </div>
+              <div className="grid col-span-2 sm:col-span-1 gap-3">
+                <div className="flex items-center justify-between">
+                  <Label>Veículos</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      append({ model: "", plate: "", year: undefined })
+                    }
+                  >
+                    <Plus />
+                    adicionar carro
+                  </Button>
+                </div>
+
+                {fields.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhum carro adicionado.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">
+                            Carro {index + 1}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => remove(index)}
+                            aria-label="Remover carro"
+                          >
+                            <Trash2 />
+                          </Button>
+                        </div>
+                        <div className="grid gap-3">
+                          <div className="grid gap-1.5">
+                            <Label htmlFor={`vehicle-model-${field.id}`}>
+                              Modelo
+                            </Label>
+                            <InputGroup>
+                              <InputGroupInput
+                                id={`vehicle-model-${field.id}`}
+                                placeholder="Ex: Civic"
+                                {...register(`vehicles.${index}.model`)}
+                              />
+                              <InputGroupAddon>
+                                <Car />
+                              </InputGroupAddon>
+                            </InputGroup>
+                            {errors.vehicles?.[index]?.model && (
+                              <p className="text-xs text-rose-500">
+                                {errors.vehicles[index]?.model?.message}
+                              </p>
+                            )}
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label htmlFor={`vehicle-plate-${field.id}`}>
+                              Placa
+                            </Label>
+                            <InputGroup>
+                              <InputGroupInput
+                                id={`vehicle-plate-${field.id}`}
+                                placeholder="ABC-1234"
+                                {...register(`vehicles.${index}.plate`)}
+                              />
+                              <InputGroupAddon>
+                                <Car />
+                              </InputGroupAddon>
+                            </InputGroup>
+                            {errors.vehicles?.[index]?.plate && (
+                              <p className="text-xs text-rose-500">
+                                {errors.vehicles[index]?.plate?.message}
+                              </p>
+                            )}
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label htmlFor={`vehicle-year-${field.id}`}>
+                              Ano do veículo
+                            </Label>
+                            <InputGroup>
+                              <InputGroupInput
+                                id={`vehicle-year-${field.id}`}
+                                type="number"
+                                placeholder="2020"
+                                {...register(`vehicles.${index}.year`, {
+                                  setValueAs: (value) =>
+                                    value === "" ? undefined : Number(value),
+                                })}
+                              />
+                              <InputGroupAddon>
+                                <Car />
+                              </InputGroupAddon>
+                            </InputGroup>
+                            {errors.vehicles?.[index]?.year && (
+                              <p className="text-xs text-rose-500">
+                                {errors.vehicles[index]?.year?.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {index < fields.length - 1 && <Separator />}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
