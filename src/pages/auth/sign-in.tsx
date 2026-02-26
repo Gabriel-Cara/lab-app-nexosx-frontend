@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 import { CheckCircle2, Mail, SquareAsterisk } from "lucide-react";
@@ -33,7 +33,7 @@ export function SignIn() {
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<SignInForm>({
     resolver: zodResolver(signInFormSchema),
   });
@@ -178,33 +178,41 @@ export function SignIn() {
             </div>
           ) : (
             <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Seu e-mail</Label>
+              <Field className="gap-2">
+                <FieldLabel htmlFor="email">Seu e-mail</FieldLabel>
+                <FieldContent>
+                  <InputGroup>
+                    <InputGroupInput
+                      id="email"
+                      type="email"
+                      placeholder="example@email.com"
+                      aria-invalid={Boolean(errors.email)}
+                      aria-required={true}
+                      {...register("email")}
+                    />
+                    <InputGroupAddon>
+                      <Mail />
+                    </InputGroupAddon>
+                  </InputGroup>
+                </FieldContent>
+              </Field>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="password">Sua senha</FieldLabel>
+              <FieldContent>
                 <InputGroup>
                   <InputGroupInput
-                    id="email"
-                    type="email"
-                    placeholder="example@email.com"
-                    {...register("email")}
+                    id="password"
+                    type="password"
+                    placeholder="********"
+                    aria-invalid={Boolean(errors.password)}
+                    aria-required={true}
+                    {...register("password")}
                   />
                   <InputGroupAddon>
-                    <Mail />
+                    <SquareAsterisk />
                   </InputGroupAddon>
                 </InputGroup>
-              </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Sua senha</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="password"
-                  type="password"
-                  placeholder="********"
-                  {...register("password")}
-                />
-                <InputGroupAddon>
-                  <SquareAsterisk />
-                </InputGroupAddon>
-              </InputGroup>
+              </FieldContent>
               <div className="text-right">
                 <Link
                   to="/esqueci-senha"
@@ -213,7 +221,7 @@ export function SignIn() {
                   Esqueci minha senha
                 </Link>
               </div>
-            </div>
+            </Field>
               <Button
                 className="w-full"
                 type="submit"

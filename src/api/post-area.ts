@@ -2,8 +2,8 @@ import { api } from "@/lib/axios";
 
 interface PostAreaData {
   name: string;
-  description: string;
-  capacity: number;
+  description?: string;
+  capacity?: number;
   available: boolean;
   schedule?: {
     start: string;

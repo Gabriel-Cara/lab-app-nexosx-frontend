@@ -25,15 +25,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  Form,
-} from "../ui/form";
 import { Button } from "@/components/ui/button";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 
 // Types
 import z from "zod";
@@ -43,7 +36,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { retrievePackage as retrievePackageRequest } from "@/api/patch-package-retrieve";
 import { queryClient } from "@/lib/react-query";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { isAxiosError } from "axios";
 
 // Toast
@@ -130,58 +123,61 @@ export function RetrieveModal({ id }: RetrieveModalProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={handleSubmit(handleRetrievePackage)}>
-                <FormField
-                  control={control}
-                  name="code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor="code" className="sr-only">
-                        Código de verificação
-                      </FormLabel>
-                      <FormControl>
-                        <InputOTP
-                          maxLength={6}
-                          id="code"
-                          required
-                          containerClassName="gap-2"
-                          {...field}
-                          inputMode="text"
-                          onChange={(value) =>
-                            field.onChange(
-                              value
-                                .replace(/[^A-Za-z0-9]/g, "")
-                                .toUpperCase()
-                            )
-                          }
-                        >
-                          <InputOTPGroup>
-                            <InputOTPSlot index={0} />
-                            <InputOTPSlot index={1} />
-                            <InputOTPSlot index={2} />
-                          </InputOTPGroup>
-                          <InputOTPSeparator />
-                          <InputOTPGroup>
-                            <InputOTPSlot index={3} />
-                            <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="submit"
-                  className="mt-4 w-full"
-                  disabled={isPending}
-                >
-                  {isPending ? "Verificando..." : "Verificar"}
-                </Button>
-              </form>
-            </Form>
+            <form onSubmit={handleSubmit(handleRetrievePackage)}>
+              <Controller
+                name="code"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field className="gap-2">
+                    <FieldLabel htmlFor="code" className="sr-only">
+                      Código de verificação
+                    </FieldLabel>
+                    <FieldContent>
+                      <InputOTP
+                        maxLength={6}
+                        id="code"
+                        aria-invalid={Boolean(fieldState.error)}
+                        aria-required={true}
+                        containerClassName="gap-2"
+                        {...field}
+                        inputMode="text"
+                        onChange={(value) =>
+                          field.onChange(
+                            value
+                              .replace(/[^A-Za-z0-9]/g, "")
+                              .toUpperCase()
+                          )
+                        }
+                      >
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                        </InputOTPGroup>
+                        <InputOTPSeparator />
+                        <InputOTPGroup>
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                          <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </FieldContent>
+                    {fieldState.error && (
+                      <p className="text-xs text-rose-500">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </Field>
+                )}
+              />
+              <Button
+                type="submit"
+                className="mt-4 w-full"
+                disabled={isPending}
+              >
+                {isPending ? "Verificando..." : "Verificar"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </DialogContent>

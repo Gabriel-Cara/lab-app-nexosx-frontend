@@ -24,6 +24,8 @@ type SelectResidentProps = {
   inputId?: string;
   placeholder?: string;
   selectedLabel?: string;
+  invalid?: boolean;
+  required?: boolean;
 };
 
 export function SelectResident({
@@ -32,6 +34,8 @@ export function SelectResident({
   inputId = "resident",
   placeholder = "Buscar moradores",
   selectedLabel,
+  invalid = false,
+  required = false,
 }: SelectResidentProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -153,6 +157,8 @@ export function SelectResident({
         onValueChange={handleInputValueChange}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
+        aria-invalid={invalid}
+        aria-required={required || undefined}
       />
       {isOpen && (
         <CommandList

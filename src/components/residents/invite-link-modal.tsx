@@ -82,7 +82,7 @@ export function ResidentInviteLinkModal({
       setHasAttempted(false);
       void handleGenerate();
     }
-  }, [isOpen]);
+  }, [isOpen, handleGenerate]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

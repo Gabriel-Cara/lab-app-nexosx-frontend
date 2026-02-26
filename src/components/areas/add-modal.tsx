@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { queryClient } from "@/lib/react-query";
+import { cn } from "@/lib/utils";
 
 import {
   Dialog,
@@ -24,6 +27,7 @@ import {
 } from "../ui/input-group";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Field, FieldContent, FieldLabel } from "../ui/field";
 import { Label } from "../ui/label";
 import { Plus } from "lucide-react";
 import { postArea } from "@/api/post-area";
@@ -36,15 +40,28 @@ import {
   TIME_STEP_SECONDS,
 } from "@/utils/time-range";
 import { fileToDataUrl } from "@/utils/image-utils";
+import { formatFieldErrors } from "@/utils/form-errors";
 
 import { ImageDropzone } from "@/components/images/image-dropzone";
 
-interface AddAreaFormData {
-  name: string;
-  description: string;
-  capacity: number;
-  available: boolean;
-}
+const addAreaFormSchema = z.object({
+  name: z.string().min(2, "Informe o nome do local."),
+  description: z.string().optional(),
+  capacity: z.preprocess(
+    (value) => {
+      if (value === "" || value === null || value === undefined) {
+        return undefined;
+      }
+      if (typeof value === "number" && Number.isNaN(value)) {
+        return undefined;
+      }
+      return value;
+    },
+    z.number().int().positive("Informe uma capacidade válida.").optional()
+  ),
+});
+
+type AddAreaFormData = z.infer<typeof addAreaFormSchema>;
 
 const SLOT_STEP_MINUTES = TIME_STEP_SECONDS / 60;
 
@@ -53,8 +70,21 @@ export function AddModal() {
   const [startSlotId, setStartSlotId] = useState<string | null>(null);
   const [endSlotId, setEndSlotId] = useState<string | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [scheduleError, setScheduleError] = useState(false);
 
-  const { handleSubmit, register, reset } = useForm<AddAreaFormData>();
+  const {
+    handleSubmit,
+    register,
+    reset,
+    formState: { errors },
+  } = useForm<AddAreaFormData>({
+    resolver: zodResolver(addAreaFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      capacity: undefined,
+    },
+  });
 
   const slots = useMemo(
     () => buildSlots(MIN_TIME, MAX_TIME, SLOT_STEP_MINUTES),
@@ -74,6 +104,7 @@ export function AddModal() {
       setStartSlotId(null);
       setEndSlotId(null);
       setImageFiles([]);
+      setScheduleError(false);
     }
   }, [isOpen, reset]);
 
@@ -85,8 +116,21 @@ export function AddModal() {
       timeToMinutes(selectedStartSlot.startsAt)
     ) {
       setEndSlotId(null);
+      setScheduleError(true);
+      return;
     }
+    setScheduleError(false);
   }, [selectedStartSlot, selectedEndSlot]);
+
+  const fieldLabels = {
+    name: "Nome do local",
+    description: "Descrição",
+    capacity: "Capacidade",
+  };
+
+  function handleInvalidForm(formErrors: FieldErrors<AddAreaFormData>) {
+    toast.error(formatFieldErrors(formErrors, fieldLabels));
+  }
 
   async function handleAddArea({
     name,
@@ -94,7 +138,8 @@ export function AddModal() {
     capacity,
   }: AddAreaFormData) {
     if (!selectedStartSlot || !selectedEndSlot) {
-      toast.error("Selecione o horário de início e fim.");
+      setScheduleError(true);
+      toast.error("Horário de funcionamento: selecione início e fim.");
       return;
     }
 
@@ -102,7 +147,8 @@ export function AddModal() {
       timeToMinutes(selectedEndSlot.endsAt) <=
       timeToMinutes(selectedStartSlot.startsAt)
     ) {
-      toast.error("O horário final deve ser depois do inicial.");
+      setScheduleError(true);
+      toast.error("Horário de funcionamento: o fim deve ser depois do início.");
       return;
     }
 
@@ -139,9 +185,14 @@ export function AddModal() {
       ]);
 
       toast.success(`${name} criada com sucesso!`);
+      reset();
+      setStartSlotId(null);
+      setEndSlotId(null);
+      setImageFiles([]);
+      setScheduleError(false);
       setIsOpen(false);
     } catch {
-      throw toast.error("Não foi possível criar a área de lazer.");
+      toast.error("Não foi possível criar a área de lazer.");
     }
   }
 
@@ -171,16 +222,23 @@ export function AddModal() {
         <form
           id="add-form"
           className="space-y-4"
-          onSubmit={handleSubmit(handleAddArea)}
+          onSubmit={handleSubmit(handleAddArea, handleInvalidForm)}
         >
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome do local</Label>
-            <Input
-              id="name"
-              placeholder="Ex: Salão de Festas"
-              {...register("name")}
-            />
-          </div>
+          <Field className="gap-2">
+            <FieldLabel htmlFor="name">Nome do local</FieldLabel>
+            <FieldContent>
+              <Input
+                id="name"
+                placeholder="Ex: Salão de Festas"
+                aria-invalid={Boolean(errors.name)}
+                aria-required={true}
+                {...register("name")}
+              />
+            </FieldContent>
+            {errors.name && (
+              <p className="text-xs text-rose-500">{errors.name.message}</p>
+            )}
+          </Field>
 
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
@@ -188,6 +246,7 @@ export function AddModal() {
               <InputGroupTextarea
                 id="description"
                 placeholder="Insira a descrição..."
+                aria-invalid={Boolean(errors.description)}
                 {...register("description")}
                 maxLength={200}
               />
@@ -195,6 +254,11 @@ export function AddModal() {
                 máximo de 200 caracteres
               </InputGroupAddon>
             </InputGroup>
+            {errors.description && (
+              <p className="text-xs text-rose-500">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -214,14 +278,25 @@ export function AddModal() {
                 id="capacity"
                 type="number"
                 min={0}
+                aria-invalid={Boolean(errors.capacity)}
                 {...register("capacity", { valueAsNumber: true })}
               />
             </InputGroup>
+            {errors.capacity && (
+              <p className="text-xs text-rose-500">
+                {errors.capacity.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label>Horário de funcionamento</Label>
-            <div className="flex flex-col md:flex-row border rounded-xl justify-around md:items-center">
+            <div
+              className={cn(
+                "flex flex-col md:flex-row border rounded-xl justify-around md:items-center",
+                scheduleError && "border-rose-500"
+              )}
+            >
               <SlotColumn
                 title="Início"
                 variant="start"

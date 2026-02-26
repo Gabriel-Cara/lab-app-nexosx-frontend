@@ -122,6 +122,22 @@
     @apply bg-background text-foreground;
   }
 
+  [data-slot="field"]:has([aria-invalid="true"]) [data-slot="field-label"] {
+    color: var(--destructive);
+  }
+
+  [data-slot="field"]:has(
+      [data-slot="field-content"] [required],
+      [data-slot="field-content"] [aria-required="true"]
+    )
+    [data-slot="field-label"]::after {
+    content: "*";
+    color: var(--destructive);
+    font-weight: 600;
+    line-height: 1;
+    margin-left: 0.25rem;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Edge */
   }

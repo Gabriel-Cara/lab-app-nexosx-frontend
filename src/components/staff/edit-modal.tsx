@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Clock, Edit, Mail, Phone, SquareAsterisk, User } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -26,10 +26,11 @@ import {
 
 import { putResident } from "@/api/put-resident";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
+import { formatFieldErrors } from "@/utils/form-errors";
 
 const editStaffFormSchema = z.object({
   name: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.string().email("Informe um e-mail válido").optional(),
   phone: z.string().optional(),
   shift: z.string().optional(),
   password: z.string().optional(),
@@ -44,7 +45,14 @@ type EditStaffModalProps = EditStaffForm & {
 export function EditStaffModal(props: EditStaffModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset, setValue } = useForm<EditStaffForm>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    setError,
+    formState: { errors },
+  } = useForm<EditStaffForm>({
     resolver: zodResolver(editStaffFormSchema),
     defaultValues: {
       name: props.name,
@@ -74,12 +82,27 @@ export function EditStaffModal(props: EditStaffModalProps) {
     }
   }, [isOpen, props, reset]);
 
+  const fieldLabels = {
+    name: "Nome",
+    email: "E-mail",
+    phone: "Telefone",
+  };
+
+  function handleInvalidForm(formErrors: FieldErrors<EditStaffForm>) {
+    toast.error(formatFieldErrors(formErrors, fieldLabels));
+  }
+
   async function handleEditStaff(data: EditStaffForm) {
     try {
       const phone = sanitizePhone(data.phone);
 
       if (data.phone && !phone) {
-        throw toast.error("Telefone inválido. Use DDD + número.");
+        setError("phone", {
+          type: "manual",
+          message: "Telefone inválido. Use DDD + número.",
+        });
+        toast.error("Campo inválido: Telefone.");
+        return;
       }
 
       await mutateStaff({
@@ -92,6 +115,7 @@ export function EditStaffModal(props: EditStaffModalProps) {
         role: "staff",
       });
 
+      reset();
       toast.success("Funcionário atualizado com sucesso!");
       setIsOpen(false);
     } catch {
@@ -117,7 +141,7 @@ export function EditStaffModal(props: EditStaffModalProps) {
         <form
           id="edit-staff"
           className="grid grid-cols-2 gap-4"
-          onSubmit={handleSubmit(handleEditStaff)}
+          onSubmit={handleSubmit(handleEditStaff, handleInvalidForm)}
         >
           <div className="grid col-span-2 sm:col-span-1 gap-3">
             <Label htmlFor="name">Nome</Label>
@@ -125,12 +149,16 @@ export function EditStaffModal(props: EditStaffModalProps) {
               <InputGroupInput
                 id="name"
                 placeholder="Insira o nome completo"
+                aria-invalid={Boolean(errors.name)}
                 {...register("name")}
               />
               <InputGroupAddon>
                 <User />
               </InputGroupAddon>
             </InputGroup>
+            {errors.name && (
+              <p className="text-xs text-rose-500">{errors.name.message}</p>
+            )}
           </div>
           <div className="grid col-span-2 sm:col-span-1 gap-3">
             <Label htmlFor="email">E-mail</Label>
@@ -139,12 +167,16 @@ export function EditStaffModal(props: EditStaffModalProps) {
                 id="email"
                 type="email"
                 placeholder="Insira o e-mail"
+                aria-invalid={Boolean(errors.email)}
                 {...register("email")}
               />
               <InputGroupAddon>
                 <Mail />
               </InputGroupAddon>
             </InputGroup>
+            {errors.email && (
+              <p className="text-xs text-rose-500">{errors.email.message}</p>
+            )}
           </div>
           <div className="grid col-span-2 sm:col-span-1 gap-3">
             <Label htmlFor="phone">Telefone</Label>
@@ -152,6 +184,7 @@ export function EditStaffModal(props: EditStaffModalProps) {
               <InputGroupInput
                 id="phone"
                 placeholder="Insira o telefone"
+                aria-invalid={Boolean(errors.phone)}
                 {...register("phone", {
                   onChange: (event) =>
                     setValue("phone", maskPhone(event.target.value)),
@@ -161,6 +194,9 @@ export function EditStaffModal(props: EditStaffModalProps) {
                 <Phone />
               </InputGroupAddon>
             </InputGroup>
+            {errors.phone && (
+              <p className="text-xs text-rose-500">{errors.phone.message}</p>
+            )}
           </div>
           <div className="grid col-span-2 sm:col-span-1 gap-3">
             <Label htmlFor="shift">Turno</Label>

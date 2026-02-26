@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Clock, Mail, Phone, Plus, User } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import {
   Dialog,
   DialogClose,
@@ -26,10 +26,11 @@ import {
 
 import { postStaff } from "@/api/post-staff";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
+import { formatFieldErrors } from "@/utils/form-errors";
 
 const createStaffFormSchema = z.object({
-  name: z.string({ message: "O nome é obrigatório" }),
-  email: z.email({ message: "O email é obrigatório" }),
+  name: z.string().min(1, "O nome é obrigatório"),
+  email: z.string().min(1, "O email é obrigatório").email("Informe um e-mail válido"),
   phone: z.string().optional(),
   shift: z.string().optional(),
 });
@@ -40,7 +41,14 @@ export function AddStaffModal() {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { register, handleSubmit, reset, setValue } = useForm<CreateStaffForm>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    setError,
+    formState: { errors },
+  } = useForm<CreateStaffForm>({
     resolver: zodResolver(createStaffFormSchema),
       defaultValues: {
         name: "",
@@ -57,12 +65,27 @@ export function AddStaffModal() {
     },
   });
 
+  const fieldLabels = {
+    name: "Nome",
+    email: "E-mail",
+    phone: "Telefone",
+  };
+
+  function handleInvalidForm(formErrors: FieldErrors<CreateStaffForm>) {
+    toast.error(formatFieldErrors(formErrors, fieldLabels));
+  }
+
   async function handleCreateStaff(data: CreateStaffForm) {
     try {
       const phone = data.phone ? sanitizePhone(data.phone) : undefined;
 
       if (data.phone && !phone) {
-        throw toast.error("Telefone inválido. Use DDD + número.");
+        setError("phone", {
+          type: "manual",
+          message: "Telefone inválido. Use DDD + número.",
+        });
+        toast.error("Campo inválido: Telefone.");
+        return;
       }
 
       await mutateStaff({
@@ -104,74 +127,86 @@ export function AddStaffModal() {
         <form
           id="create-staff-form"
           className="grid grid-cols-2 gap-4"
-          onSubmit={handleSubmit(handleCreateStaff)}
+          onSubmit={handleSubmit(handleCreateStaff, handleInvalidForm)}
         >
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="name"
-            >
-              Nome
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="name"
-                placeholder="Insira o nome completo"
-                {...register("name")}
-              />
-              <InputGroupAddon>
-                <User />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="email"
-            >
-              E-mail
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="email"
-                type="email"
-                placeholder="Insira o e-mail"
-                {...register("email")}
-              />
-              <InputGroupAddon>
-                <Mail />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label htmlFor="phone">Telefone</Label>
-            <InputGroup>
-              <InputGroupInput
-                id="phone"
-                placeholder="Insira o telefone"
-                {...register("phone", {
-                  onChange: (event) =>
-                    setValue("phone", maskPhone(event.target.value)),
-                })}
-              />
-              <InputGroupAddon>
-                <Phone />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label htmlFor="shift">Turno</Label>
-            <InputGroup>
-              <InputGroupInput
-                id="shift"
-                placeholder="Ex: Manhã, Tarde, Noite"
-                {...register("shift")}
-              />
-              <InputGroupAddon>
-                <Clock />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="name">Nome</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="name"
+                  placeholder="Insira o nome completo"
+                  aria-invalid={Boolean(errors.name)}
+                  aria-required={true}
+                  {...register("name")}
+                />
+                <InputGroupAddon>
+                  <User />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.name && (
+              <p className="text-xs text-rose-500">{errors.name.message}</p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="email">E-mail</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="email"
+                  type="email"
+                  placeholder="Insira o e-mail"
+                  aria-invalid={Boolean(errors.email)}
+                  aria-required={true}
+                  {...register("email")}
+                />
+                <InputGroupAddon>
+                  <Mail />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.email && (
+              <p className="text-xs text-rose-500">{errors.email.message}</p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="phone">Telefone</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="phone"
+                  placeholder="Insira o telefone"
+                  aria-invalid={Boolean(errors.phone)}
+                  {...register("phone", {
+                    onChange: (event) =>
+                      setValue("phone", maskPhone(event.target.value)),
+                  })}
+                />
+                <InputGroupAddon>
+                  <Phone />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.phone && (
+              <p className="text-xs text-rose-500">{errors.phone.message}</p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="shift">Turno</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="shift"
+                  placeholder="Ex: Manhã, Tarde, Noite"
+                  {...register("shift")}
+                />
+                <InputGroupAddon>
+                  <Clock />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+          </Field>
         </form>
         <DialogFooter>
           <DialogClose asChild>

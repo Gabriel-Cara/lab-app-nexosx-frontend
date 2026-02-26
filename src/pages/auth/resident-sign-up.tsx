@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import {
   InputGroup,
@@ -202,107 +203,125 @@ export function ResidentSignUp() {
           </div>
 
           <form onSubmit={handleSubmit(handleSignUp)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome completo</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="name"
-                  type="text"
-                  placeholder="Insira seu nome"
-                  {...register("name")}
-                  disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <User />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="name">Nome completo</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="name"
+                    type="text"
+                    placeholder="Insira seu nome"
+                    aria-invalid={Boolean(errors.name)}
+                    aria-required={true}
+                    {...register("name")}
+                    disabled={isFormDisabled}
+                  />
+                  <InputGroupAddon>
+                    <User />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.name && (
                 <p className="text-xs text-rose-500">{errors.name.message}</p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="email"
-                  type="email"
-                  placeholder="email@dominio.com"
-                  {...register("email")}
-                  disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <Mail />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="email">E-mail</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="email"
+                    type="email"
+                    placeholder="email@dominio.com"
+                    aria-invalid={Boolean(errors.email)}
+                    aria-required={true}
+                    {...register("email")}
+                    disabled={isFormDisabled}
+                  />
+                  <InputGroupAddon>
+                    <Mail />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.email && (
                 <p className="text-xs text-rose-500">{errors.email.message}</p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="phone"
-                  type="text"
-                  placeholder="(00) 00000-0000"
-                  {...register("phone", {
-                    onChange: (event) =>
-                      setValue("phone", maskPhone(event.target.value)),
-                  })}
-                  disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <Phone />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="phone">Telefone</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="phone"
+                    type="text"
+                    placeholder="(00) 00000-0000"
+                    aria-invalid={Boolean(errors.phone)}
+                    {...register("phone", {
+                      onChange: (event) =>
+                        setValue("phone", maskPhone(event.target.value)),
+                    })}
+                    disabled={isFormDisabled}
+                  />
+                  <InputGroupAddon>
+                    <Phone />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.phone && (
                 <p className="text-xs text-rose-500">{errors.phone.message}</p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="apartment">Apartamento</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="apartment"
-                  type="text"
-                  placeholder="Ex: 101"
-                  {...register("apartment")}
-                  disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <House />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="apartment">Apartamento</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="apartment"
+                    type="text"
+                    placeholder="Ex: 101"
+                    aria-invalid={Boolean(errors.apartment)}
+                    aria-required={true}
+                    {...register("apartment")}
+                    disabled={isFormDisabled}
+                  />
+                  <InputGroupAddon>
+                    <House />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.apartment && (
                 <p className="text-xs text-rose-500">
                   {errors.apartment.message}
                 </p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="building">Torre</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="building"
-                  type="text"
-                  placeholder="Insira a torre"
-                  {...register("building")}
-                  disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <Building />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="building">Torre</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="building"
+                    type="text"
+                    placeholder="Insira a torre"
+                    aria-invalid={Boolean(errors.building)}
+                    {...register("building")}
+                    disabled={isFormDisabled}
+                  />
+                  <InputGroupAddon>
+                    <Building />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.building && (
                 <p className="text-xs text-rose-500">
                   {errors.building.message}
                 </p>
               )}
-            </div>
+            </Field>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -342,69 +361,93 @@ export function ResidentSignUp() {
                           <Trash2 />
                         </Button>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`vehicle-model-${field.id}`}>Modelo</Label>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={`vehicle-model-${field.id}`}
-                            type="text"
-                            placeholder="Ex: Civic"
-                            {...register(`vehicles.${index}.model`)}
-                            disabled={isFormDisabled}
-                          />
-                          <InputGroupAddon>
-                            <Car />
-                          </InputGroupAddon>
-                        </InputGroup>
+                      <Field className="gap-2">
+                        <FieldLabel htmlFor={`vehicle-model-${field.id}`}>
+                          Modelo
+                        </FieldLabel>
+                        <FieldContent>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-model-${field.id}`}
+                              type="text"
+                              placeholder="Ex: Civic"
+                              aria-invalid={Boolean(
+                                errors.vehicles?.[index]?.model
+                              )}
+                              aria-required={true}
+                              {...register(`vehicles.${index}.model`)}
+                              disabled={isFormDisabled}
+                            />
+                            <InputGroupAddon>
+                              <Car />
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FieldContent>
                         {errors.vehicles?.[index]?.model && (
                           <p className="text-xs text-rose-500">
                             {errors.vehicles[index]?.model?.message}
                           </p>
                         )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`vehicle-plate-${field.id}`}>Placa</Label>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={`vehicle-plate-${field.id}`}
-                            type="text"
-                            placeholder="ABC-1234"
-                            {...register(`vehicles.${index}.plate`)}
-                            disabled={isFormDisabled}
-                          />
-                          <InputGroupAddon>
-                            <Car />
-                          </InputGroupAddon>
-                        </InputGroup>
+                      </Field>
+                      <Field className="gap-2">
+                        <FieldLabel htmlFor={`vehicle-plate-${field.id}`}>
+                          Placa
+                        </FieldLabel>
+                        <FieldContent>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-plate-${field.id}`}
+                              type="text"
+                              placeholder="ABC-1234"
+                              aria-invalid={Boolean(
+                                errors.vehicles?.[index]?.plate
+                              )}
+                              aria-required={true}
+                              {...register(`vehicles.${index}.plate`)}
+                              disabled={isFormDisabled}
+                            />
+                            <InputGroupAddon>
+                              <Car />
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FieldContent>
                         {errors.vehicles?.[index]?.plate && (
                           <p className="text-xs text-rose-500">
                             {errors.vehicles[index]?.plate?.message}
                           </p>
                         )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`vehicle-year-${field.id}`}>Ano do veículo</Label>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={`vehicle-year-${field.id}`}
-                            type="number"
-                            placeholder="2020"
-                            {...register(`vehicles.${index}.year`, {
-                              setValueAs: (value) =>
-                                value === "" ? undefined : Number(value),
-                            })}
-                            disabled={isFormDisabled}
-                          />
-                          <InputGroupAddon>
-                            <Car />
-                          </InputGroupAddon>
-                        </InputGroup>
+                      </Field>
+                      <Field className="gap-2">
+                        <FieldLabel htmlFor={`vehicle-year-${field.id}`}>
+                          Ano do veículo
+                        </FieldLabel>
+                        <FieldContent>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-year-${field.id}`}
+                              type="number"
+                              placeholder="2020"
+                              aria-invalid={Boolean(
+                                errors.vehicles?.[index]?.year
+                              )}
+                              aria-required={true}
+                              {...register(`vehicles.${index}.year`, {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : Number(value),
+                              })}
+                              disabled={isFormDisabled}
+                            />
+                            <InputGroupAddon>
+                              <Car />
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FieldContent>
                         {errors.vehicles?.[index]?.year && (
                           <p className="text-xs text-rose-500">
                             {errors.vehicles[index]?.year?.message}
                           </p>
                         )}
-                      </div>
+                      </Field>
                       {index < fields.length - 1 && <Separator />}
                     </div>
                   ))}
@@ -412,41 +455,49 @@ export function ResidentSignUp() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="emergencyContact">Contato de emergência</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="emergencyContact"
-                  type="text"
-                  placeholder="Nome e telefone"
-                  {...register("emergencyContact")}
-                  disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <Phone />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="emergencyContact">
+                Contato de emergência
+              </FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="emergencyContact"
+                    type="text"
+                    placeholder="Nome e telefone"
+                    aria-invalid={Boolean(errors.emergencyContact)}
+                    {...register("emergencyContact")}
+                    disabled={isFormDisabled}
+                  />
+                  <InputGroupAddon>
+                    <Phone />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.emergencyContact && (
                 <p className="text-xs text-rose-500">
                   {errors.emergencyContact.message}
                 </p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha (opcional)</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="password"
-                  type="password"
-                  placeholder="Defina uma senha"
-                  {...register("password")}
-                  disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <SquareAsterisk />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="password">Senha (opcional)</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="password"
+                    type="password"
+                    placeholder="Defina uma senha"
+                    aria-invalid={Boolean(errors.password)}
+                    {...register("password")}
+                    disabled={isFormDisabled}
+                  />
+                  <InputGroupAddon>
+                    <SquareAsterisk />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               <p className="text-xs text-muted-foreground">
                 Se preferir, deixe em branco para definir a senha por e-mail.
               </p>
@@ -455,28 +506,33 @@ export function ResidentSignUp() {
                   {errors.password.message}
                 </p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar senha</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Repita a senha"
-                  {...register("confirmPassword")}
-                  disabled={isFormDisabled}
-                />
-                <InputGroupAddon>
-                  <KeyRound />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="confirmPassword">
+                Confirmar senha
+              </FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Repita a senha"
+                    aria-invalid={Boolean(errors.confirmPassword)}
+                    {...register("confirmPassword")}
+                    disabled={isFormDisabled}
+                  />
+                  <InputGroupAddon>
+                    <KeyRound />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.confirmPassword && (
                 <p className="text-xs text-rose-500">
                   {errors.confirmPassword.message}
                 </p>
               )}
-            </div>
+            </Field>
 
             <Button className="w-full" type="submit" disabled={isFormDisabled}>
               {isSubmitting ? "Enviando..." : "Concluir cadastro"}

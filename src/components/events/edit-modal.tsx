@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch, type FieldErrors } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { Event } from "@/api/get-events";
 import { getAreas } from "@/api/get-areas";
@@ -29,6 +31,7 @@ import {
   InputGroupInput,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -37,16 +40,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatFieldErrors } from "@/utils/form-errors";
 
-type EditEventFormData = {
-  title: string;
-  description: string;
-  commonAreaId: string;
-  capacity: number;
-  startDate: string;
-  endDate: string;
-  allowBookings: boolean;
-};
+const editEventFormSchema = z.object({
+  title: z.string().min(3, "Informe o título do evento."),
+  description: z.string().optional(),
+  commonAreaId: z.string().min(1, "Selecione uma área de lazer."),
+  capacity: z.number().int().positive("Informe uma capacidade válida."),
+  startDate: z.string().min(1, "Informe a data de início."),
+  endDate: z.string().min(1, "Informe a data de fim."),
+  allowBookings: z.boolean(),
+});
+
+type EditEventFormData = z.infer<typeof editEventFormSchema>;
 
 type EditModalProps = {
   event: Event;
@@ -64,8 +70,17 @@ export function EditModal({ event }: EditModalProps) {
     queryFn: getAreas,
   });
 
-  const { register, handleSubmit, control, reset, setValue } =
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    setValue,
+    setError,
+    formState: { errors },
+  } =
     useForm<EditEventFormData>({
+      resolver: zodResolver(editEventFormSchema),
       defaultValues: {
         title: event.title,
         description: event.description ?? "",
@@ -115,29 +130,25 @@ export function EditModal({ event }: EditModalProps) {
     mutationFn: patchEvent,
   });
 
+  const fieldLabels = {
+    title: "Título",
+    commonAreaId: "Área de lazer",
+    capacity: "Capacidade",
+    startDate: "Início",
+    endDate: "Fim",
+  };
+
+  function handleInvalidForm(formErrors: FieldErrors<EditEventFormData>) {
+    toast.error(formatFieldErrors(formErrors, fieldLabels));
+  }
+
   async function handleEditEvent(data: EditEventFormData) {
-    if (!data.title) {
-      toast.error("Informe o título do evento.");
-      return;
-    }
-
-    if (!data.commonAreaId) {
-      toast.error("Selecione uma área de lazer.");
-      return;
-    }
-
-    if (!data.capacity || data.capacity <= 0) {
-      toast.error("Informe uma capacidade válida.");
-      return;
-    }
-
-    if (!data.startDate || !data.endDate) {
-      toast.error("Informe as datas de início e fim.");
-      return;
-    }
-
     if (new Date(data.endDate) < new Date(data.startDate)) {
-      toast.error("A data final deve ser posterior à inicial.");
+      setError("endDate", {
+        type: "manual",
+        message: "A data final deve ser posterior à inicial.",
+      });
+      toast.error("Campo inválido: Fim.");
       return;
     }
 
@@ -155,6 +166,7 @@ export function EditModal({ event }: EditModalProps) {
 
       await queryClient.invalidateQueries({ queryKey: ["events"] });
       toast.success("Evento atualizado com sucesso!");
+      reset(data);
       setIsOpen(false);
     } catch {
       toast.error("Não foi possível atualizar o evento.");
@@ -177,16 +189,23 @@ export function EditModal({ event }: EditModalProps) {
         <form
           id={`edit-event-${event.id}`}
           className="grid gap-4"
-          onSubmit={handleSubmit(handleEditEvent)}
+          onSubmit={handleSubmit(handleEditEvent, handleInvalidForm)}
         >
-          <div className="grid gap-2">
-            <Label htmlFor={`title-${event.id}`}>Título</Label>
-            <Input
-              id={`title-${event.id}`}
-              placeholder="Ex: Natal do condomínio"
-              {...register("title")}
-            />
-          </div>
+          <Field className="gap-2">
+            <FieldLabel htmlFor={`title-${event.id}`}>Título</FieldLabel>
+            <FieldContent>
+              <Input
+                id={`title-${event.id}`}
+                placeholder="Ex: Natal do condomínio"
+                aria-invalid={Boolean(errors.title)}
+                aria-required={true}
+                {...register("title")}
+              />
+            </FieldContent>
+            {errors.title && (
+              <p className="text-xs text-rose-500">{errors.title.message}</p>
+            )}
+          </Field>
 
           <div className="grid gap-2">
             <Label htmlFor={`description-${event.id}`}>Descrição</Label>
@@ -203,57 +222,94 @@ export function EditModal({ event }: EditModalProps) {
             </InputGroup>
           </div>
 
-          <div className="grid gap-2">
-            <Label>Área de lazer</Label>
-            <Controller
-              name="commonAreaId"
-              control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma área" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {areas.map((area) => (
-                      <SelectItem key={area.id} value={area.id}>
-                        {area.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-
-          <div className="grid gap-2 max-w-36">
-            <Label htmlFor={`capacity-${event.id}`}>Capacidade</Label>
-            <InputGroup>
-              <InputGroupInput
-                id={`capacity-${event.id}`}
-                type="number"
-                min={0}
-                {...register("capacity", { valueAsNumber: true })}
+          <Field className="gap-2">
+            <FieldLabel>Área de lazer</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="commonAreaId"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      aria-invalid={Boolean(errors.commonAreaId)}
+                      aria-required={true}
+                    >
+                      <SelectValue placeholder="Selecione uma área" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {areas.map((area) => (
+                        <SelectItem key={area.id} value={area.id}>
+                          {area.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               />
-            </InputGroup>
-          </div>
+            </FieldContent>
+            {errors.commonAreaId && (
+              <p className="text-xs text-rose-500">
+                {errors.commonAreaId.message}
+              </p>
+            )}
+          </Field>
+
+          <Field className="gap-2 max-w-36">
+            <FieldLabel htmlFor={`capacity-${event.id}`}>Capacidade</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id={`capacity-${event.id}`}
+                  type="number"
+                  min={0}
+                  aria-invalid={Boolean(errors.capacity)}
+                  aria-required={true}
+                  {...register("capacity", { valueAsNumber: true })}
+                />
+              </InputGroup>
+            </FieldContent>
+            {errors.capacity && (
+              <p className="text-xs text-rose-500">
+                {errors.capacity.message}
+              </p>
+            )}
+          </Field>
 
           <div className="grid gap-2 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor={`start-${event.id}`}>Início</Label>
-              <Input
-                id={`start-${event.id}`}
-                type="datetime-local"
-                {...register("startDate")}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor={`end-${event.id}`}>Fim</Label>
-              <Input
-                id={`end-${event.id}`}
-                type="datetime-local"
-                {...register("endDate")}
-              />
-            </div>
+            <Field className="gap-2">
+              <FieldLabel htmlFor={`start-${event.id}`}>Início</FieldLabel>
+              <FieldContent>
+                <Input
+                  id={`start-${event.id}`}
+                  type="datetime-local"
+                  aria-invalid={Boolean(errors.startDate)}
+                  aria-required={true}
+                  {...register("startDate")}
+                />
+              </FieldContent>
+              {errors.startDate && (
+                <p className="text-xs text-rose-500">
+                  {errors.startDate.message}
+                </p>
+              )}
+            </Field>
+            <Field className="gap-2">
+              <FieldLabel htmlFor={`end-${event.id}`}>Fim</FieldLabel>
+              <FieldContent>
+                <Input
+                  id={`end-${event.id}`}
+                  type="datetime-local"
+                  aria-invalid={Boolean(errors.endDate)}
+                  aria-required={true}
+                  {...register("endDate")}
+                />
+              </FieldContent>
+              {errors.endDate && (
+                <p className="text-xs text-rose-500">
+                  {errors.endDate.message}
+                </p>
+              )}
+            </Field>
           </div>
 
           <div className="flex items-center gap-2">

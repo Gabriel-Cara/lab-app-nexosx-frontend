@@ -20,6 +20,7 @@ import {
   InputGroupInput,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
@@ -84,6 +85,7 @@ export function Profile() {
       emergencyContact: undefined,
     },
   });
+  const { errors } = form.formState;
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -211,28 +213,36 @@ export function Profile() {
                     />
                   </div>
                 )}
-                <div className="grid gap-1.5">
-                  <Label htmlFor="name">Nome completo</Label>
-                  <InputGroup>
-                    <InputGroupInput
-                      id="name"
-                      disabled={!isEditing}
-                      {...form.register("name")}
-                    />
-                  </InputGroup>
-                </div>
-                <div className="grid gap-1.5">
-                  <Label htmlFor="email">E-mail</Label>
-                  <InputGroup>
-                    <InputGroupInput
-                      id="email"
-                      type="email"
-                      disabled
-                      {...form.register("email")}
-                    />
-                    <InputGroupAddon>Conta</InputGroupAddon>
-                  </InputGroup>
-                </div>
+                <Field className="gap-1.5">
+                  <FieldLabel htmlFor="name">Nome completo</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupInput
+                        id="name"
+                        disabled={!isEditing}
+                        aria-invalid={Boolean(errors.name)}
+                        aria-required={true}
+                        {...form.register("name")}
+                      />
+                    </InputGroup>
+                  </FieldContent>
+                </Field>
+                <Field className="gap-1.5">
+                  <FieldLabel htmlFor="email">E-mail</FieldLabel>
+                  <FieldContent>
+                    <InputGroup>
+                      <InputGroupInput
+                        id="email"
+                        type="email"
+                        disabled
+                        aria-invalid={Boolean(errors.email)}
+                        aria-required={true}
+                        {...form.register("email")}
+                      />
+                      <InputGroupAddon>Conta</InputGroupAddon>
+                    </InputGroup>
+                  </FieldContent>
+                </Field>
                 <div className="grid gap-1.5">
                   <Label htmlFor="phone">Telefone</Label>
                   <InputGroup>
@@ -335,52 +345,67 @@ export function Profile() {
                                 </Button>
                               </div>
                               <div className="grid gap-4 md:grid-cols-3">
-                                <div className="grid gap-1.5">
-                                  <Label htmlFor={`vehicle-model-${field.id}`}>Modelo</Label>
-                                  <InputGroup>
-                                    <InputGroupInput
-                                      id={`vehicle-model-${field.id}`}
-                                      disabled={!isEditing}
-                                      placeholder="Ex: Civic"
-                                      {...form.register(`vehicles.${index}.model`)}
-                                    />
-                                    <InputGroupAddon>
-                                      <Car />
-                                    </InputGroupAddon>
-                                  </InputGroup>
-                                </div>
-                                <div className="grid gap-1.5">
-                                  <Label htmlFor={`vehicle-plate-${field.id}`}>Placa</Label>
-                                  <InputGroup>
-                                    <InputGroupInput
-                                      id={`vehicle-plate-${field.id}`}
-                                      disabled={!isEditing}
-                                      placeholder="ABC-1234"
-                                      {...form.register(`vehicles.${index}.plate`)}
-                                    />
-                                    <InputGroupAddon>
-                                      <Car />
-                                    </InputGroupAddon>
-                                  </InputGroup>
-                                </div>
-                                <div className="grid gap-1.5">
-                                  <Label htmlFor={`vehicle-year-${field.id}`}>Ano do veículo</Label>
-                                  <InputGroup>
-                                    <InputGroupInput
-                                      id={`vehicle-year-${field.id}`}
-                                      type="number"
-                                      disabled={!isEditing}
-                                      placeholder="2020"
-                                      {...form.register(`vehicles.${index}.year`, {
-                                        setValueAs: (value) =>
-                                          value === "" ? undefined : Number(value),
-                                      })}
-                                    />
-                                    <InputGroupAddon>
-                                      <Car />
-                                    </InputGroupAddon>
-                                  </InputGroup>
-                                </div>
+                                <Field className="gap-1.5">
+                                  <FieldLabel htmlFor={`vehicle-model-${field.id}`}>
+                                    Modelo
+                                  </FieldLabel>
+                                  <FieldContent>
+                                    <InputGroup>
+                                      <InputGroupInput
+                                        id={`vehicle-model-${field.id}`}
+                                        disabled={!isEditing}
+                                        placeholder="Ex: Civic"
+                                        aria-required={true}
+                                        {...form.register(`vehicles.${index}.model`)}
+                                      />
+                                      <InputGroupAddon>
+                                        <Car />
+                                      </InputGroupAddon>
+                                    </InputGroup>
+                                  </FieldContent>
+                                </Field>
+                                <Field className="gap-1.5">
+                                  <FieldLabel htmlFor={`vehicle-plate-${field.id}`}>
+                                    Placa
+                                  </FieldLabel>
+                                  <FieldContent>
+                                    <InputGroup>
+                                      <InputGroupInput
+                                        id={`vehicle-plate-${field.id}`}
+                                        disabled={!isEditing}
+                                        placeholder="ABC-1234"
+                                        aria-required={true}
+                                        {...form.register(`vehicles.${index}.plate`)}
+                                      />
+                                      <InputGroupAddon>
+                                        <Car />
+                                      </InputGroupAddon>
+                                    </InputGroup>
+                                  </FieldContent>
+                                </Field>
+                                <Field className="gap-1.5">
+                                  <FieldLabel htmlFor={`vehicle-year-${field.id}`}>
+                                    Ano do veículo
+                                  </FieldLabel>
+                                  <FieldContent>
+                                    <InputGroup>
+                                      <InputGroupInput
+                                        id={`vehicle-year-${field.id}`}
+                                        type="number"
+                                        disabled={!isEditing}
+                                        placeholder="2020"
+                                        aria-required={true}
+                                        {...form.register(`vehicles.${index}.year`, {
+                                          setValueAs: (value) =>
+                                            value === "" ? undefined : Number(value),
+                                        })}
+                                      />
+                                      <InputGroupAddon>
+                                        <Car />
+                                      </InputGroupAddon>
+                                    </InputGroup>
+                                  </FieldContent>
+                                </Field>
                               </div>
                               {index < fields.length - 1 && <Separator />}
                             </div>

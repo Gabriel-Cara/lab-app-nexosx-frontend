@@ -5,7 +5,7 @@ import { Mail, Phone, Plus, User } from "lucide-react";
 
 // Form
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type FieldErrors } from "react-hook-form";
 
 // Types
 import { z } from "zod";
@@ -13,6 +13,7 @@ import { z } from "zod";
 // Components
 import { SelectResident } from "../select-resident";
 import { Button } from "@/components/ui/button";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "../ui/textarea";
 import {
@@ -42,18 +43,20 @@ import { postVisitor } from "@/api/post-visitor";
 import { uploadImage } from "@/api/post-image";
 import { useAuth } from "@/hooks/use-auth";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
+import { maskRg } from "@/utils/rg-mask";
 import { fileToDataUrl } from "@/utils/image-utils";
+import { formatFieldErrors } from "@/utils/form-errors";
 
 import { ImageDropzone } from "@/components/images/image-dropzone";
 
 
 
 const createVisitorFormSchema = z.object({
-  name: z.string(),
-  document: z.string(),
+  name: z.string().min(1, "Nome é obrigatório"),
+  document: z.string().min(4, "Documento é obrigatório"),
   phone: z.string().optional(),
   visitReason: z.string().optional(),
-  hostId: z.string(),
+  hostId: z.string().min(1, "Morador é obrigatório"),
 });
 
 type CreateVisitorForm = z.infer<typeof createVisitorFormSchema>;
@@ -66,7 +69,15 @@ export function AddModal() {
   const isResident = session?.user.role === "resident";
   const residentHostId = session?.user.id ?? "";
 
-  const { register, handleSubmit, control, reset, setValue } =
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    setValue,
+    setError,
+    formState: { errors },
+  } =
     useForm<CreateVisitorForm>({
       resolver: zodResolver(createVisitorFormSchema),
       defaultValues: {
@@ -97,24 +108,29 @@ export function AddModal() {
     },
   });
 
+  const fieldLabels = {
+    hostId: "Morador",
+    name: "Nome",
+    document: "Documento",
+    phone: "Telefone",
+  };
+
+  function handleInvalidForm(formErrors: FieldErrors<CreateVisitorForm>) {
+    toast.error(formatFieldErrors(formErrors, fieldLabels));
+  }
+
   async function handleCreateVisitor(data: CreateVisitorForm) {
     try {
       const hostId = isResident ? residentHostId : data.hostId;
       const phone = sanitizePhone(data.phone);
 
-      if (!hostId) {
-        toast.error("Morador é obrigatório");
-        throw new Error("Morador é obrigatório");
-      }
-
-      if (!data.name) {
-        toast.error("Nome é obrigatório");
-        throw new Error("Nome é obrigatório");
-      }
-
-      if (!data.document) {
-        toast.error("Documento é obrigatório");
-        throw new Error("Documento é obrigatório");
+      if (data.phone && !phone) {
+        setError("phone", {
+          type: "manual",
+          message: "Telefone inválido. Use DDD + número.",
+        });
+        toast.error("Campo inválido: Telefone.");
+        return;
       }
 
       const created = await createVisitor({
@@ -179,24 +195,33 @@ export function AddModal() {
 
         <form
           id="register-visitor-form"
-          onSubmit={handleSubmit(handleCreateVisitor)}
+          onSubmit={handleSubmit(handleCreateVisitor, handleInvalidForm)}
         >
           <div className="grid gap-4">
             {!isResident ? (
-              <div className="grid gap-3">
-                <Label htmlFor="resident">Morador</Label>
-                <Controller
-                  name="hostId"
-                  control={control}
-                  render={({ field }) => (
-                    <SelectResident
-                      inputId="resident"
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  )}
-                />
-              </div>
+              <Field className="gap-3">
+                <FieldLabel htmlFor="resident">Morador</FieldLabel>
+                <FieldContent>
+                  <Controller
+                    name="hostId"
+                    control={control}
+                    render={({ field }) => (
+                      <SelectResident
+                        inputId="resident"
+                        value={field.value}
+                        onChange={field.onChange}
+                        invalid={Boolean(errors.hostId)}
+                        required
+                      />
+                    )}
+                  />
+                </FieldContent>
+                {errors.hostId && (
+                  <p className="text-xs text-rose-500">
+                    {errors.hostId.message}
+                  </p>
+                )}
+              </Field>
             ) : (
               <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground bg-muted text-center">
                 Este visitante será vinculado automaticamente ao morador{<br />}
@@ -206,58 +231,74 @@ export function AddModal() {
                 .
               </div>
             )}
-            <div className="grid gap-3">
-              <Label
-                className="after:content-['*'] after:text-rose-500 after:text-xl after:-ml-1"
-                htmlFor="name"
-              >
-                Nome
-              </Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="name"
-                  placeholder="Insira o nome completo"
-                  {...register("name")}
-                />
-                <InputGroupAddon>
-                  <User />
-                </InputGroupAddon>
-              </InputGroup>
-            </div>
-            <div className="grid gap-3">
-              <Label
-                className="after:content-['*'] after:text-rose-500 after:text-xl after:-ml-1"
-                htmlFor="document"
-              >
-                Documento
-              </Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="document"
-                  placeholder="Insira o documento"
-                  {...register("document")}
-                />
-                <InputGroupAddon>
-                  <Mail />
-                </InputGroupAddon>
-              </InputGroup>
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="phone">Telefone</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="phone"
-                  placeholder="Insira o telefone"
-                  {...register("phone", {
-                    onChange: (event) =>
-                      setValue("phone", maskPhone(event.target.value)),
-                  })}
-                />
-                <InputGroupAddon>
-                  <Phone />
-                </InputGroupAddon>
-              </InputGroup>
-            </div>
+            <Field className="gap-3">
+              <FieldLabel htmlFor="name">Nome</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="name"
+                    placeholder="Insira o nome completo"
+                    aria-invalid={Boolean(errors.name)}
+                    aria-required={true}
+                    {...register("name")}
+                  />
+                  <InputGroupAddon>
+                    <User />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
+              {errors.name && (
+                <p className="text-xs text-rose-500">{errors.name.message}</p>
+              )}
+            </Field>
+            <Field className="gap-3">
+              <FieldLabel htmlFor="document">Documento</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="document"
+                    placeholder="Insira o documento"
+                    inputMode="numeric"
+                    aria-invalid={Boolean(errors.document)}
+                    aria-required={true}
+                    {...register("document", {
+                      onChange: (event) =>
+                        setValue("document", maskRg(event.target.value)),
+                    })}
+                  />
+                  <InputGroupAddon>
+                    <Mail />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
+              {errors.document && (
+                <p className="text-xs text-rose-500">
+                  {errors.document.message}
+                </p>
+              )}
+            </Field>
+            <Field className="gap-3">
+              <FieldLabel htmlFor="phone">Telefone</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="phone"
+                    placeholder="Insira o telefone"
+                    aria-invalid={Boolean(errors.phone)}
+                    {...register("phone", {
+                      onChange: (event) =>
+                        setValue("phone", maskPhone(event.target.value)),
+                    })}
+                  />
+                  <InputGroupAddon>
+                    <Phone />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
+              {errors.phone && (
+                <p className="text-xs text-rose-500">{errors.phone.message}</p>
+              )}
+            </Field>
             <div className="grid gap-3">
               <Label htmlFor="visitReason">Motivo da visita</Label>
               <Textarea

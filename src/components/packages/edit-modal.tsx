@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Edit, Package } from "lucide-react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type FieldErrors } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { patchPackage } from "@/api/patch-package";
 import type { PackageType } from "@/api/get-packages";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -36,11 +36,12 @@ import {
 } from "../ui/select";
 import { SelectResident } from "../select-resident";
 import { ImageManager } from "@/components/images/image-manager";
+import { formatFieldErrors } from "@/utils/form-errors";
 
 const editPackageFormSchema = z.object({
-  residentId: z.string({ message: "O destinatário é obrigatório" }),
-  carrier: z.string({ message: "O remetente é obrigatório" }),
-  description: z.string({ message: "A descrição é obrigatória" }),
+  residentId: z.string().min(1, "O destinatário é obrigatório"),
+  carrier: z.string().min(1, "O remetente é obrigatório"),
+  description: z.string().min(3, "A descrição é obrigatória"),
   type: z.enum(["box", "envelope", "food", "others"], {
     message: "O tipo é obrigatório",
   }),
@@ -70,7 +71,13 @@ export function EditModal({
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { register, control, handleSubmit, reset } = useForm<EditPackageFormData>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<EditPackageFormData>({
     resolver: zodResolver(editPackageFormSchema),
     defaultValues: {
       residentId,
@@ -98,22 +105,23 @@ export function EditModal({
     }
   }, [carrier, description, isOpen, residentId, reset, type]);
 
+  const fieldLabels = {
+    residentId: "Destinatário",
+    carrier: "Remetente",
+    description: "Descrição",
+    type: "Tipo",
+  };
+
+  function handleInvalidForm(formErrors: FieldErrors<EditPackageFormData>) {
+    toast.error(formatFieldErrors(formErrors, fieldLabels));
+  }
+
   async function handleEditPackage({
     residentId: selectedResidentId,
     carrier: selectedCarrier,
     description: selectedDescription,
     type: selectedType,
   }: EditPackageFormData) {
-    if (
-      !selectedResidentId ||
-      !selectedCarrier ||
-      !selectedDescription ||
-      !selectedType
-    ) {
-      toast.error("Preencha todos os campos");
-      return;
-    }
-
     try {
       await mutatePackage({
         id,
@@ -123,6 +131,12 @@ export function EditModal({
         type: selectedType,
       });
 
+      reset({
+        residentId: selectedResidentId,
+        carrier: selectedCarrier,
+        description: selectedDescription,
+        type: selectedType,
+      });
       toast.success("Encomenda atualizada com sucesso!");
       setIsOpen(false);
     } catch {
@@ -148,92 +162,105 @@ export function EditModal({
         <form
           id="edit-package-form"
           className="grid gap-4"
-          onSubmit={handleSubmit(handleEditPackage)}
+          onSubmit={handleSubmit(handleEditPackage, handleInvalidForm)}
         >
-          <div className="grid gap-3">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="residentId"
-            >
-              Destinatário
-            </Label>
-            <Controller
-              name="residentId"
-              control={control}
-              render={({ field }) => (
-                <SelectResident
-                  inputId="residentId"
-                  value={field.value}
-                  onChange={field.onChange}
-                  selectedLabel={residentName}
+          <Field className="gap-3">
+            <FieldLabel htmlFor="residentId">Destinatário</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="residentId"
+                control={control}
+                render={({ field }) => (
+                  <SelectResident
+                    inputId="residentId"
+                    value={field.value}
+                    onChange={field.onChange}
+                    selectedLabel={residentName}
+                    invalid={Boolean(errors.residentId)}
+                    required
+                  />
+                )}
+              />
+            </FieldContent>
+            {errors.residentId && (
+              <p className="text-xs text-rose-500">
+                {errors.residentId.message}
+              </p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="carrier">Remetente</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="carrier"
+                  placeholder="Insira o remetente"
+                  aria-invalid={Boolean(errors.carrier)}
+                  aria-required={true}
+                  {...register("carrier")}
                 />
-              )}
-            />
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="carrier"
-            >
-              Remetente
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="carrier"
-                placeholder="Insira o remetente"
-                {...register("carrier")}
+                <InputGroupAddon>
+                  <Package />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.carrier && (
+              <p className="text-xs text-rose-500">{errors.carrier.message}</p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="description">Descrição</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupTextarea
+                  id="description"
+                  placeholder="Insira a descrição do item."
+                  maxLength={120}
+                  aria-invalid={Boolean(errors.description)}
+                  aria-required={true}
+                  {...register("description")}
+                />
+                <InputGroupAddon align="block-end">
+                  máximo de 120 caracteres
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.description && (
+              <p className="text-xs text-rose-500">
+                {errors.description.message}
+              </p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="type">Tipo</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      aria-invalid={Boolean(errors.type)}
+                      aria-required={true}
+                    >
+                      <SelectValue placeholder="Selecione um tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="box">Caixa</SelectItem>
+                        <SelectItem value="envelope">Envelope</SelectItem>
+                        <SelectItem value="food">Comida</SelectItem>
+                        <SelectItem value="others">Outros</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
               />
-              <InputGroupAddon>
-                <Package />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="description"
-            >
-              Descrição
-            </Label>
-            <InputGroup>
-              <InputGroupTextarea
-                id="description"
-                placeholder="Insira a descrição do item."
-                maxLength={120}
-                {...register("description")}
-              />
-              <InputGroupAddon align="block-end">
-                máximo de 120 caracteres
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="type"
-            >
-              Tipo
-            </Label>
-            <Controller
-              name="type"
-              control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="box">Caixa</SelectItem>
-                      <SelectItem value="envelope">Envelope</SelectItem>
-                      <SelectItem value="food">Comida</SelectItem>
-                      <SelectItem value="others">Outros</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
+            </FieldContent>
+            {errors.type && (
+              <p className="text-xs text-rose-500">{errors.type.message}</p>
+            )}
+          </Field>
           <ImageManager
             entityType="package"
             entityId={id}

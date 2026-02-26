@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -77,45 +77,57 @@ export function ResetPassword() {
           </div>
 
           <form onSubmit={handleSubmit(handleReset)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">Nova senha</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="password"
-                  type="password"
-                  placeholder="********"
-                  {...register("password")}
-                  disabled={isSubmitting || !token}
-                />
-                <InputGroupAddon>
-                  <SquareAsterisk />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="password">Nova senha</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="password"
+                    type="password"
+                    placeholder="********"
+                    aria-invalid={Boolean(errors.password)}
+                    aria-required={true}
+                    {...register("password")}
+                    disabled={isSubmitting || !token}
+                  />
+                  <InputGroupAddon>
+                    <SquareAsterisk />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.password && (
-                <p className="text-xs text-rose-500">{errors.password.message}</p>
+                <p className="text-xs text-rose-500">
+                  {errors.password.message}
+                </p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar senha</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="********"
-                  {...register("confirmPassword")}
-                  disabled={isSubmitting || !token}
-                />
-                <InputGroupAddon>
-                  <KeyRound />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="confirmPassword">
+                Confirmar senha
+              </FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="********"
+                    aria-invalid={Boolean(errors.confirmPassword)}
+                    aria-required={true}
+                    {...register("confirmPassword")}
+                    disabled={isSubmitting || !token}
+                  />
+                  <InputGroupAddon>
+                    <KeyRound />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.confirmPassword && (
                 <p className="text-xs text-rose-500">
                   {errors.confirmPassword.message}
                 </p>
               )}
-            </div>
+            </Field>
 
             <Button className="w-full" type="submit" disabled={isSubmitting || !token}>
               {isSubmitting ? "Salvando..." : "Redefinir senha"}

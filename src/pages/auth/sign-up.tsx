@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { useCreateCondominiumRequest } from "@/api/post-condominium-request";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -93,124 +93,153 @@ export function SignUp() {
           </div>
 
           <form onSubmit={handleSubmit(handleSignUp)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome do condomínio</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="name"
-                  type="text"
-                  placeholder="Ex: Residencial Aurora"
-                  {...register("name")}
-                />
-                <InputGroupAddon>
-                  <Building2 />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="name">Nome do condomínio</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="name"
+                    type="text"
+                    placeholder="Ex: Residencial Aurora"
+                    aria-invalid={Boolean(errors.name)}
+                    aria-required={true}
+                    {...register("name")}
+                  />
+                  <InputGroupAddon>
+                    <Building2 />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.name && (
                 <p className="text-xs text-rose-500">{errors.name.message}</p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="code">Código do condomínio</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="code"
-                  type="text"
-                  placeholder="Ex: aurora"
-                  {...register("code")}
-                />
-                <InputGroupAddon>
-                  <Hash />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="code">Código do condomínio</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="code"
+                    type="text"
+                    placeholder="Ex: aurora"
+                    aria-invalid={Boolean(errors.code)}
+                    aria-required={true}
+                    {...register("code")}
+                  />
+                  <InputGroupAddon>
+                    <Hash />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.code && (
                 <p className="text-xs text-rose-500">{errors.code.message}</p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="adminName">Nome do administrador</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="adminName"
-                  type="text"
-                  placeholder="Insira o nome completo"
-                  {...register("adminName")}
-                />
-                <InputGroupAddon>
-                  <User />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="adminName">Nome do administrador</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="adminName"
+                    type="text"
+                    placeholder="Insira o nome completo"
+                    aria-invalid={Boolean(errors.adminName)}
+                    aria-required={true}
+                    {...register("adminName")}
+                  />
+                  <InputGroupAddon>
+                    <User />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.adminName && (
                 <p className="text-xs text-rose-500">
                   {errors.adminName.message}
                 </p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="adminEmail">E-mail do administrador</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="adminEmail"
-                  type="email"
-                  placeholder="email@dominio.com"
-                  {...register("adminEmail")}
-                />
-                <InputGroupAddon>
-                  <Mail />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="adminEmail">
+                E-mail do administrador
+              </FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="adminEmail"
+                    type="email"
+                    placeholder="email@dominio.com"
+                    aria-invalid={Boolean(errors.adminEmail)}
+                    aria-required={true}
+                    {...register("adminEmail")}
+                  />
+                  <InputGroupAddon>
+                    <Mail />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.adminEmail && (
                 <p className="text-xs text-rose-500">
                   {errors.adminEmail.message}
                 </p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="adminPhone">Telefone do administrador</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="adminPhone"
-                  type="text"
-                  placeholder="(00) 00000-0000"
-                  {...register("adminPhone", {
-                    onChange: (event) =>
-                      setValue("adminPhone", maskPhone(event.target.value)),
-                  })}
-                />
-                <InputGroupAddon>
-                  <Phone />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="adminPhone">
+                Telefone do administrador
+              </FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="adminPhone"
+                    type="text"
+                    placeholder="(00) 00000-0000"
+                    aria-invalid={Boolean(errors.adminPhone)}
+                    {...register("adminPhone", {
+                      onChange: (event) =>
+                        setValue("adminPhone", maskPhone(event.target.value)),
+                    })}
+                  />
+                  <InputGroupAddon>
+                    <Phone />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.adminPhone && (
                 <p className="text-xs text-rose-500">
                   {errors.adminPhone.message}
                 </p>
               )}
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="adminPassword">Senha do administrador</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="adminPassword"
-                  type="password"
-                  placeholder="Defina uma senha"
-                  {...register("adminPassword")}
-                />
-                <InputGroupAddon>
-                  <SquareAsterisk />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="adminPassword">
+                Senha do administrador
+              </FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="adminPassword"
+                    type="password"
+                    placeholder="Defina uma senha"
+                    aria-invalid={Boolean(errors.adminPassword)}
+                    aria-required={true}
+                    {...register("adminPassword")}
+                  />
+                  <InputGroupAddon>
+                    <SquareAsterisk />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.adminPassword && (
                 <p className="text-xs text-rose-500">
                   {errors.adminPassword.message}
                 </p>
               )}
-            </div>
+            </Field>
 
             <Button
               className="w-full"

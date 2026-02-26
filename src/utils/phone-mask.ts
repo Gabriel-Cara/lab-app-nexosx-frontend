@@ -33,9 +33,12 @@ export function sanitizePhone(value?: string | null) {
     return "";
   }
 
-  const local = rawDigits.startsWith("55") ? rawDigits.slice(2) : rawDigits;
+  const local =
+    rawDigits.startsWith("55") && rawDigits.length > 11
+      ? rawDigits.slice(2)
+      : rawDigits;
 
-  if (local.length !== 11) {
+  if (local.length !== 10 && local.length !== 11) {
     return "";
   }
 

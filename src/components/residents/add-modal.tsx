@@ -12,7 +12,7 @@ import {
   User,
 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, type FieldErrors } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,6 +23,7 @@ import {
   InputGroupInput,
 } from "../ui/input-group";
 import { Button } from "@/components/ui/button";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -38,6 +39,7 @@ import {
 
 import { postResident } from "@/api/post-resident";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
+import { formatFieldErrors } from "@/utils/form-errors";
 
 const vehicleSchema = z
   .object({
@@ -56,10 +58,10 @@ const vehicleSchema = z
   });
 
 const createResidentFormSchema = z.object({
-  name: z.string({ message: "O nome é obrigatório" }),
-  email: z.email({ message: "O email é obrigatório" }),
-  phone: z.string({ message: "O telefone é obrigatório" }),
-  apartment: z.string({ message: "O apartamento é obrigatório" }),
+  name: z.string().min(1, "O nome é obrigatório"),
+  email: z.string().min(1, "O email é obrigatório").email("Informe um e-mail válido"),
+  phone: z.string().min(1, "O telefone é obrigatório"),
+  apartment: z.string().min(1, "O apartamento é obrigatório"),
   building: z.string().optional(),
   vehicles: z.array(vehicleSchema).optional(),
   emergencyContact: z.string().optional(),
@@ -76,6 +78,7 @@ export function AddModal() {
     handleSubmit,
     reset,
     setValue,
+    setError,
     control,
     formState: { errors },
   } = useForm<CreateResidentForm>({
@@ -103,12 +106,29 @@ export function AddModal() {
     },
   });
 
+  const fieldLabels = {
+    name: "Nome",
+    email: "E-mail",
+    phone: "Telefone",
+    apartment: "Apartamento",
+    vehicles: "Veículos",
+  };
+
+  function handleInvalidForm(formErrors: FieldErrors<CreateResidentForm>) {
+    toast.error(formatFieldErrors(formErrors, fieldLabels));
+  }
+
   async function handleCreateResident(data: CreateResidentForm) {
     try {
       const phone = sanitizePhone(data.phone);
 
       if (!phone) {
-        throw toast.error("Telefone inválido. Use DDD + número.");
+        setError("phone", {
+          type: "manual",
+          message: "Telefone inválido. Use DDD + número.",
+        });
+        toast.error("Campo inválido: Telefone.");
+        return;
       }
 
       await mutateResident({
@@ -160,110 +180,124 @@ export function AddModal() {
         <form
           id="create-resident-form"
           className="grid grid-cols-2 gap-4"
-          onSubmit={handleSubmit(handleCreateResident)}
+          onSubmit={handleSubmit(handleCreateResident, handleInvalidForm)}
         >
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="name"
-            >
-              Nome
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="name"
-                placeholder="Insira o nome completo"
-                {...register("name")}
-              />
-              <InputGroupAddon>
-                <User />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="email"
-            >
-              E-mail
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="email"
-                type="email"
-                placeholder="Insira o e-mail"
-                {...register("email")}
-              />
-              <InputGroupAddon>
-                <Mail />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:text-lg after:-ml-1"
-              htmlFor="phone"
-            >
-              Telefone
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="phone"
-                placeholder="Insira o telefone"
-                {...register("phone", {
-                  onChange: (event) =>
-                    setValue("phone", maskPhone(event.target.value)),
-                })}
-              />
-              <InputGroupAddon>
-                <Phone />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-1 text-lg">
-            <Label
-              className="after:content-['*'] after:text-rose-500 after:-ml-1 after:text-lg"
-              htmlFor="apartment"
-            >
-              Apartamento
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="apartment"
-                placeholder="Insira o apartamento"
-                {...register("apartment")}
-              />
-              <InputGroupAddon>
-                <House />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-3 text-lg">
-            <Label htmlFor="emergencyContact">Nº de emergência</Label>
-            <InputGroup>
-              <InputGroupInput
-                id="emergencyContact"
-                placeholder="Contato de emergência"
-                {...register("emergencyContact")}
-              />
-              <InputGroupAddon>
-                <Phone />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-          <div className="grid col-span-2 sm:col-span-1 gap-3 text-lg">
-            <Label htmlFor="building">Torre</Label>
-            <InputGroup>
-              <InputGroupInput
-                id="building"
-                placeholder="Insira a torre"
-                {...register("building")}
-              />
-              <InputGroupAddon>
-                <Building />
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="name">Nome</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="name"
+                  placeholder="Insira o nome completo"
+                  aria-invalid={Boolean(errors.name)}
+                  aria-required={true}
+                  {...register("name")}
+                />
+                <InputGroupAddon>
+                  <User />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.name && (
+              <p className="text-xs text-rose-500">{errors.name.message}</p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="email">E-mail</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="email"
+                  type="email"
+                  placeholder="Insira o e-mail"
+                  aria-invalid={Boolean(errors.email)}
+                  aria-required={true}
+                  {...register("email")}
+                />
+                <InputGroupAddon>
+                  <Mail />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.email && (
+              <p className="text-xs text-rose-500">{errors.email.message}</p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="phone">Telefone</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="phone"
+                  placeholder="Insira o telefone"
+                  aria-invalid={Boolean(errors.phone)}
+                  aria-required={true}
+                  {...register("phone", {
+                    onChange: (event) =>
+                      setValue("phone", maskPhone(event.target.value)),
+                  })}
+                />
+                <InputGroupAddon>
+                  <Phone />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.phone && (
+              <p className="text-xs text-rose-500">{errors.phone.message}</p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="apartment">Apartamento</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="apartment"
+                  placeholder="Insira o apartamento"
+                  aria-invalid={Boolean(errors.apartment)}
+                  aria-required={true}
+                  {...register("apartment")}
+                />
+                <InputGroupAddon>
+                  <House />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+            {errors.apartment && (
+              <p className="text-xs text-rose-500">
+                {errors.apartment.message}
+              </p>
+            )}
+          </Field>
+          <Field className="col-span-2 gap-3 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="emergencyContact">Nº de emergência</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="emergencyContact"
+                  placeholder="Contato de emergência"
+                  {...register("emergencyContact")}
+                />
+                <InputGroupAddon>
+                  <Phone />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+          </Field>
+          <Field className="col-span-2 gap-3 text-lg sm:col-span-1">
+            <FieldLabel htmlFor="building">Torre</FieldLabel>
+            <FieldContent>
+              <InputGroup>
+                <InputGroupInput
+                  id="building"
+                  placeholder="Insira a torre"
+                  {...register("building")}
+                />
+                <InputGroupAddon>
+                  <Building />
+                </InputGroupAddon>
+              </InputGroup>
+            </FieldContent>
+          </Field>
           <div className="grid col-span-2 gap-3 text-lg">
             <div className="flex items-center justify-between">
               <Label>Veículos</Label>
@@ -304,70 +338,88 @@ export function AddModal() {
                       </Button>
                     </div>
                     <div className="grid gap-3 md:grid-cols-3">
-                      <div className="grid gap-1.5">
-                        <Label htmlFor={`vehicle-model-${field.id}`}>
+                      <Field className="gap-1.5">
+                        <FieldLabel htmlFor={`vehicle-model-${field.id}`}>
                           Modelo
-                        </Label>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={`vehicle-model-${field.id}`}
-                            placeholder="Ex: Civic"
-                            {...register(`vehicles.${index}.model`)}
-                          />
-                          <InputGroupAddon>
-                            <Car />
-                          </InputGroupAddon>
-                        </InputGroup>
+                        </FieldLabel>
+                        <FieldContent>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-model-${field.id}`}
+                              placeholder="Ex: Civic"
+                              aria-invalid={Boolean(
+                                errors.vehicles?.[index]?.model
+                              )}
+                              aria-required={true}
+                              {...register(`vehicles.${index}.model`)}
+                            />
+                            <InputGroupAddon>
+                              <Car />
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FieldContent>
                         {errors.vehicles?.[index]?.model && (
                           <p className="text-xs text-rose-500">
                             {errors.vehicles[index]?.model?.message}
                           </p>
                         )}
-                      </div>
-                      <div className="grid gap-1.5">
-                        <Label htmlFor={`vehicle-plate-${field.id}`}>
+                      </Field>
+                      <Field className="gap-1.5">
+                        <FieldLabel htmlFor={`vehicle-plate-${field.id}`}>
                           Placa
-                        </Label>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={`vehicle-plate-${field.id}`}
-                            placeholder="ABC-1234"
-                            {...register(`vehicles.${index}.plate`)}
-                          />
-                          <InputGroupAddon>
-                            <TextCursorInput />
-                          </InputGroupAddon>
-                        </InputGroup>
+                        </FieldLabel>
+                        <FieldContent>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-plate-${field.id}`}
+                              placeholder="ABC-1234"
+                              aria-invalid={Boolean(
+                                errors.vehicles?.[index]?.plate
+                              )}
+                              aria-required={true}
+                              {...register(`vehicles.${index}.plate`)}
+                            />
+                            <InputGroupAddon>
+                              <TextCursorInput />
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FieldContent>
                         {errors.vehicles?.[index]?.plate && (
                           <p className="text-xs text-rose-500">
                             {errors.vehicles[index]?.plate?.message}
                           </p>
                         )}
-                      </div>
-                      <div className="grid gap-1.5">
-                        <Label htmlFor={`vehicle-year-${field.id}`}>
+                      </Field>
+                      <Field className="gap-1.5">
+                        <FieldLabel htmlFor={`vehicle-year-${field.id}`}>
                           Ano do veículo
-                        </Label>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={`vehicle-year-${field.id}`}
-                            type="number"
-                            placeholder="2020"
-                            {...register(`vehicles.${index}.year`, {
-                              setValueAs: (value) =>
-                                value === "" ? undefined : Number(value),
-                            })}
-                          />
-                          <InputGroupAddon>
-                            <Calendar />
-                          </InputGroupAddon>
-                        </InputGroup>
+                        </FieldLabel>
+                        <FieldContent>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-year-${field.id}`}
+                              type="number"
+                              placeholder="2020"
+                              aria-invalid={Boolean(
+                                errors.vehicles?.[index]?.year
+                              )}
+                              aria-required={true}
+                              {...register(`vehicles.${index}.year`, {
+                                setValueAs: (value) =>
+                                  value === "" ? undefined : Number(value),
+                              })}
+                            />
+                            <InputGroupAddon>
+                              <Calendar />
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FieldContent>
                         {errors.vehicles?.[index]?.year && (
                           <p className="text-xs text-rose-500">
                             {errors.vehicles[index]?.year?.message}
                           </p>
                         )}
-                      </div>
+                      </Field>
                     </div>
                     {index < fields.length - 1 && <Separator />}
                   </div>

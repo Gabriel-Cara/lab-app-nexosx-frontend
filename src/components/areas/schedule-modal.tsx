@@ -4,6 +4,7 @@ import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 import { getAreaWeekSlots } from "@/api/get-area-week-slots";
 import { postReservation } from "@/api/post-reservation";
@@ -36,6 +37,7 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
   const [startSlotId, setStartSlotId] = useState<string | null>(null);
   const [endSlotId, setEndSlotId] = useState<string | null>(null);
   const [purpose, setPurpose] = useState("");
+  const [scheduleError, setScheduleError] = useState(false);
   const [blockedDatesMap, setBlockedDatesMap] = useState<Record<number, boolean>>({});
 
   const queryClient = useQueryClient();
@@ -119,6 +121,7 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
       setStartSlotId(null);
       setEndSlotId(null);
       setPurpose("");
+      setScheduleError(false);
     }
   }, [isOpen]);
 
@@ -157,7 +160,10 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
       timeToMinutes(selectedStartSlot.startsAt)
     ) {
       setEndSlotId(null);
+      setScheduleError(true);
+      return;
     }
+    setScheduleError(false);
   }, [selectedStartSlot, selectedEndSlot]);
 
   const formattedSelection = useMemo(() => {
@@ -173,7 +179,8 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!date || !startSlotId || !endSlotId) {
-      toast.error("Selecione data, início e fim para agendar.");
+      setScheduleError(true);
+      toast.error("Campos inválidos: Data, Início e Fim.");
       return;
     }
 
@@ -187,6 +194,11 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
       });
 
       toast.success("Agendamento enviado para aprovação!");
+      setDate(new Date());
+      setStartSlotId(null);
+      setEndSlotId(null);
+      setPurpose("");
+      setScheduleError(false);
       setIsOpen(false);
     } catch (error: unknown) {
       let message: string | null = null;
@@ -221,7 +233,12 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
           </DialogDescription>
         </DialogHeader>
         <form id="schedule-form" onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col md:flex-row border rounded-xl justify-around md:items-center">
+          <div
+            className={cn(
+              "flex flex-col md:flex-row border rounded-xl justify-around md:items-center",
+              scheduleError && "border-rose-500"
+            )}
+          >
             <SlotColumn
               title="Início"
               variant="start"

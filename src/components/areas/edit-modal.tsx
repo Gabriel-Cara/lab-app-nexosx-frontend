@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { getArea } from "@/api/get-area";
 import { patchArea } from "@/api/patch-area";
 import { queryClient } from "@/lib/react-query";
+import { cn } from "@/lib/utils";
 
 import {
   Dialog,
@@ -26,6 +29,7 @@ import {
 } from "../ui/input-group";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Field, FieldContent, FieldLabel } from "../ui/field";
 import { Label } from "../ui/label";
 import { SlotColumn } from "./slot-column";
 import { ImageManager } from "@/components/images/image-manager";
@@ -35,17 +39,31 @@ import {
   MIN_TIME,
   TIME_STEP_SECONDS,
 } from "@/utils/time-range";
+import { formatFieldErrors } from "@/utils/form-errors";
 
 interface EditModalProps {
   areaId: string;
 }
 
-interface EditAreaFormData {
-  name: string;
-  description: string;
-  capacity: number;
-  available: boolean;
-}
+const editAreaFormSchema = z.object({
+  name: z.string().min(2, "Informe o nome do local."),
+  description: z.string().optional(),
+  capacity: z.preprocess(
+    (value) => {
+      if (value === "" || value === null || value === undefined) {
+        return undefined;
+      }
+      if (typeof value === "number" && Number.isNaN(value)) {
+        return undefined;
+      }
+      return value;
+    },
+    z.number().int().positive("Informe uma capacidade válida.").optional()
+  ),
+  available: z.boolean().optional(),
+});
+
+type EditAreaFormData = z.infer<typeof editAreaFormSchema>;
 
 const SLOT_STEP_MINUTES = TIME_STEP_SECONDS / 60;
 
@@ -53,8 +71,22 @@ export function EditModal({ areaId }: EditModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [startSlotId, setStartSlotId] = useState<string | null>(null);
   const [endSlotId, setEndSlotId] = useState<string | null>(null);
+  const [scheduleError, setScheduleError] = useState(false);
 
-  const { handleSubmit, register } = useForm<EditAreaFormData>();
+  const {
+    handleSubmit,
+    register,
+    reset,
+    formState: { errors },
+  } = useForm<EditAreaFormData>({
+    resolver: zodResolver(editAreaFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      capacity: undefined,
+      available: false,
+    },
+  });
 
   const { data: areaData } = useQuery({
     queryKey: ["area-details", areaId],
@@ -77,7 +109,17 @@ export function EditModal({ areaId }: EditModalProps) {
     if (!isOpen) {
       setStartSlotId(null);
       setEndSlotId(null);
+      setScheduleError(false);
       return;
+    }
+
+    if (areaData) {
+      reset({
+        name: areaData.name ?? "",
+        description: areaData.description ?? "",
+        capacity: areaData.capacity ?? undefined,
+        available: areaData.available ?? false,
+      });
     }
 
     if (!areaData?.timeSlots?.length) return;
@@ -99,7 +141,7 @@ export function EditModal({ areaId }: EditModalProps) {
 
     setStartSlotId(startSlot?.id ?? null);
     setEndSlotId(endSlot?.id ?? null);
-  }, [areaData, isOpen, slots]);
+  }, [areaData, isOpen, reset, slots]);
 
   useEffect(() => {
     if (!selectedStartSlot || !selectedEndSlot) return;
@@ -109,8 +151,21 @@ export function EditModal({ areaId }: EditModalProps) {
       timeToMinutes(selectedStartSlot.startsAt)
     ) {
       setEndSlotId(null);
+      setScheduleError(true);
+      return;
     }
+    setScheduleError(false);
   }, [selectedStartSlot, selectedEndSlot]);
+
+  const fieldLabels = {
+    name: "Nome do local",
+    description: "Descrição",
+    capacity: "Capacidade",
+  };
+
+  function handleInvalidForm(formErrors: FieldErrors<EditAreaFormData>) {
+    toast.error(formatFieldErrors(formErrors, fieldLabels));
+  }
 
   async function handleEditArea({
     name,
@@ -119,11 +174,13 @@ export function EditModal({ areaId }: EditModalProps) {
     available,
   }: EditAreaFormData) {
     if (!areaData) {
-      throw toast.error("Não foi possível carregar os dados da área.");
+      toast.error("Não foi possível carregar os dados da área.");
+      return;
     }
 
     if (!selectedStartSlot || !selectedEndSlot) {
-      toast.error("Selecione o horário de início e fim.");
+      setScheduleError(true);
+      toast.error("Horário de funcionamento: selecione início e fim.");
       return;
     }
 
@@ -131,17 +188,23 @@ export function EditModal({ areaId }: EditModalProps) {
       timeToMinutes(selectedEndSlot.endsAt) <=
       timeToMinutes(selectedStartSlot.startsAt)
     ) {
-      toast.error("O horário final deve ser depois do inicial.");
+      setScheduleError(true);
+      toast.error("Horário de funcionamento: o fim deve ser depois do início.");
       return;
     }
 
     try {
+      const normalizedCapacity =
+        typeof capacity === "number" && !Number.isNaN(capacity)
+          ? capacity
+          : null;
+
       await updateArea({
         id: areaId,
-        name,
-        description,
-        capacity,
-        available,
+        name: name.trim(),
+        description: description?.trim() || null,
+        capacity: normalizedCapacity,
+        available: available ?? areaData.available,
         schedule: {
           start: selectedStartSlot.startsAt,
           end: selectedEndSlot.endsAt,
@@ -155,9 +218,16 @@ export function EditModal({ areaId }: EditModalProps) {
       ]);
 
       toast.success("Área atualizada com sucesso!");
+      reset({
+        name: name.trim(),
+        description: description?.trim() || "",
+        capacity: normalizedCapacity ?? undefined,
+        available: available ?? areaData.available,
+      });
+      setScheduleError(false);
       setIsOpen(false);
     } catch {
-      throw toast.error("Não foi possível atualizar a área.");
+      toast.error("Não foi possível atualizar a área.");
     }
   }
 
@@ -185,17 +255,23 @@ export function EditModal({ areaId }: EditModalProps) {
         <form
           id="edit-form"
           className="space-y-4"
-          onSubmit={handleSubmit(handleEditArea)}
+          onSubmit={handleSubmit(handleEditArea, handleInvalidForm)}
         >
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome do local</Label>
-            <Input
-              id="name"
-              placeholder="Ex: Salão de Festas"
-              defaultValue={areaData?.name}
-              {...register("name")}
-            />
-          </div>
+          <Field className="gap-2">
+            <FieldLabel htmlFor="name">Nome do local</FieldLabel>
+            <FieldContent>
+              <Input
+                id="name"
+                placeholder="Ex: Salão de Festas"
+                aria-invalid={Boolean(errors.name)}
+                aria-required={true}
+                {...register("name")}
+              />
+            </FieldContent>
+            {errors.name && (
+              <p className="text-xs text-rose-500">{errors.name.message}</p>
+            )}
+          </Field>
 
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
@@ -203,7 +279,7 @@ export function EditModal({ areaId }: EditModalProps) {
               <InputGroupTextarea
                 id="description"
                 placeholder="Insira a descrição..."
-                defaultValue={areaData?.description || ""}
+                aria-invalid={Boolean(errors.description)}
                 maxLength={200}
                 {...register("description")}
               />
@@ -211,6 +287,11 @@ export function EditModal({ areaId }: EditModalProps) {
                 máximo de 200 caracteres
               </InputGroupAddon>
             </InputGroup>
+            {errors.description && (
+              <p className="text-xs text-rose-500">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <ImageManager
@@ -231,15 +312,28 @@ export function EditModal({ areaId }: EditModalProps) {
                 id="capacity"
                 type="number"
                 min={0}
-                defaultValue={areaData?.capacity || 0}
-                {...register("capacity", { valueAsNumber: true })}
+                aria-invalid={Boolean(errors.capacity)}
+                {...register("capacity", {
+                  setValueAs: (value) =>
+                    value === "" ? undefined : Number(value),
+                })}
               />
             </InputGroup>
+            {errors.capacity && (
+              <p className="text-xs text-rose-500">
+                {errors.capacity.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label>Horário de funcionamento</Label>
-            <div className="flex flex-col md:flex-row border rounded-xl justify-around md:items-center">
+            <div
+              className={cn(
+                "flex flex-col md:flex-row border rounded-xl justify-around md:items-center",
+                scheduleError && "border-rose-500"
+              )}
+            >
               <SlotColumn
                 title="Início"
                 variant="start"

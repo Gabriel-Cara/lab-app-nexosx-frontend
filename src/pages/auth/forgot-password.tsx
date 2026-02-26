@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -65,24 +65,28 @@ export function ForgotPassword() {
           </div>
 
           <form onSubmit={handleSubmit(handleForgot)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Seu e-mail</Label>
-              <InputGroup>
-                <InputGroupInput
-                  id="email"
-                  type="email"
-                  placeholder="example@email.com"
-                  {...register("email")}
-                  disabled={isSubmitting || submitted}
-                />
-                <InputGroupAddon>
-                  <Mail />
-                </InputGroupAddon>
-              </InputGroup>
+            <Field className="gap-2">
+              <FieldLabel htmlFor="email">Seu e-mail</FieldLabel>
+              <FieldContent>
+                <InputGroup>
+                  <InputGroupInput
+                    id="email"
+                    type="email"
+                    placeholder="example@email.com"
+                    aria-invalid={Boolean(errors.email)}
+                    aria-required={true}
+                    {...register("email")}
+                    disabled={isSubmitting || submitted}
+                  />
+                  <InputGroupAddon>
+                    <Mail />
+                  </InputGroupAddon>
+                </InputGroup>
+              </FieldContent>
               {errors.email && (
                 <p className="text-xs text-rose-500">{errors.email.message}</p>
               )}
-            </div>
+            </Field>
 
             <Button
               className="w-full"

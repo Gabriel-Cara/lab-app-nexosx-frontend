@@ -84,7 +84,7 @@ export function StaffInviteLinkModal({
       setHasAttempted(false);
       void handleGenerate();
     }
-  }, [isOpen]);
+  }, [isOpen, handleGenerate]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
