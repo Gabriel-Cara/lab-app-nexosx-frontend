@@ -58,10 +58,11 @@ const addAreaFormSchema = z.object({
       return value;
     },
     z.number().int().positive("Informe uma capacidade válida.").optional()
-  ),
+  ).optional(),
 });
 
-type AddAreaFormData = z.infer<typeof addAreaFormSchema>;
+type AddAreaFormInput = z.input<typeof addAreaFormSchema>;
+type AddAreaFormData = z.output<typeof addAreaFormSchema>;
 
 const SLOT_STEP_MINUTES = TIME_STEP_SECONDS / 60;
 
@@ -77,7 +78,7 @@ export function AddModal() {
     register,
     reset,
     formState: { errors },
-  } = useForm<AddAreaFormData>({
+  } = useForm<AddAreaFormInput, unknown, AddAreaFormData>({
     resolver: zodResolver(addAreaFormSchema),
     defaultValues: {
       name: "",
@@ -128,7 +129,7 @@ export function AddModal() {
     capacity: "Capacidade",
   };
 
-  function handleInvalidForm(formErrors: FieldErrors<AddAreaFormData>) {
+  function handleInvalidForm(formErrors: FieldErrors<AddAreaFormInput>) {
     toast.error(formatFieldErrors(formErrors, fieldLabels));
   }
 

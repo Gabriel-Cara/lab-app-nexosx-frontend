@@ -8,8 +8,31 @@ interface PostPackageBody {
   type: PackageType;
 }
 
-export async function postPackage({ residentId, description, carrier, type }: PostPackageBody)  {
-  const response = await api.post<Package>("/packages", {
+type NotificationStatus = "sent" | "skipped" | "failed";
+type NotificationFailureReason =
+  | "missing_phone"
+  | "no_external_provider"
+  | "twilio_not_configured"
+  | "twilio_from_missing"
+  | "twilio_error";
+
+type NotificationResult = {
+  status: NotificationStatus;
+  reason?: NotificationFailureReason;
+  message?: string;
+};
+
+type PostPackageResponse = Package & {
+  notification?: NotificationResult;
+};
+
+export async function postPackage({
+  residentId,
+  description,
+  carrier,
+  type,
+}: PostPackageBody) {
+  const response = await api.post<PostPackageResponse>("/packages", {
     residentId,
     description,
     carrier,

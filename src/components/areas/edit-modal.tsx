@@ -59,11 +59,12 @@ const editAreaFormSchema = z.object({
       return value;
     },
     z.number().int().positive("Informe uma capacidade válida.").optional()
-  ),
+  ).optional(),
   available: z.boolean().optional(),
 });
 
-type EditAreaFormData = z.infer<typeof editAreaFormSchema>;
+type EditAreaFormInput = z.input<typeof editAreaFormSchema>;
+type EditAreaFormData = z.output<typeof editAreaFormSchema>;
 
 const SLOT_STEP_MINUTES = TIME_STEP_SECONDS / 60;
 
@@ -78,7 +79,7 @@ export function EditModal({ areaId }: EditModalProps) {
     register,
     reset,
     formState: { errors },
-  } = useForm<EditAreaFormData>({
+  } = useForm<EditAreaFormInput, unknown, EditAreaFormData>({
     resolver: zodResolver(editAreaFormSchema),
     defaultValues: {
       name: "",
@@ -163,7 +164,7 @@ export function EditModal({ areaId }: EditModalProps) {
     capacity: "Capacidade",
   };
 
-  function handleInvalidForm(formErrors: FieldErrors<EditAreaFormData>) {
+  function handleInvalidForm(formErrors: FieldErrors<EditAreaFormInput>) {
     toast.error(formatFieldErrors(formErrors, fieldLabels));
   }
 

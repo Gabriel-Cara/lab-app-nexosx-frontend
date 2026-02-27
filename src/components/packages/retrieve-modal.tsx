@@ -23,10 +23,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Types
 import z from "zod";
@@ -100,12 +100,19 @@ export function RetrieveModal({ id }: RetrieveModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <CircleCheckBig />
-          Resgatar encomenda
-        </Button>
-      </DialogTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsOpen(true)}
+            aria-label="Resgatar encomenda"
+          >
+            <CircleCheckBig className="text-emerald-500" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Resgatar encomenda</TooltipContent>
+      </Tooltip>
       <DialogContent>
         <DialogHeader className="sr-only">
           <DialogTitle>Resgatar encomenda</DialogTitle>

@@ -111,6 +111,10 @@ export function AddModal() {
         description,
         type,
       });
+      const notificationError =
+        created.notification && created.notification.status !== "sent"
+          ? `Encomenda criada, mas ${created.notification.message ?? "não foi possível enviar o código ao morador."}`
+          : null;
 
       const imageFile = imageFiles[0];
       if (imageFile) {
@@ -127,7 +131,11 @@ export function AddModal() {
         }
       }
 
-      toast.success("Encomenda criada com sucesso!");
+      if (notificationError) {
+        toast.error(notificationError);
+      } else {
+        toast.success("Encomenda criada com sucesso!");
+      }
       await queryClient.invalidateQueries({ queryKey: ["packages"] });
       reset();
       setImageFiles([]);

@@ -6,6 +6,7 @@ import { RetrieveModal } from "./retrieve-modal";
 import { useAuth } from "@/hooks/use-auth";
 import { EditModal } from "./edit-modal";
 import { DeleteModal } from "./delete-modal";
+import { ResendCodeButton } from "./resend-code-button";
 
 type TableRowPackagesProps = {
   pkg: Package;
@@ -31,8 +32,9 @@ export function TableRowPackages({ pkg }: TableRowPackagesProps) {
       </TableCell>
       <TableCell className="text-center">
         {canManage && (
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             {canRetrieve && <RetrieveModal id={pkg.id} />}
+            {canRetrieve && <ResendCodeButton packageId={pkg.id} />}
             <EditModal
               id={pkg.id}
               residentId={pkg.residentId}

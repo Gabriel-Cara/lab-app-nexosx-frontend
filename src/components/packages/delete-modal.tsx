@@ -11,10 +11,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { deletePackage } from "@/api/delete-package";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type DeleteModalProps = {
   id: string;
@@ -49,11 +49,19 @@ export function DeleteModal({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost">
-          <Trash2 className="text-rose-500" />
-        </Button>
-      </AlertDialogTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setOpen(true)}
+            aria-label="Excluir encomenda"
+          >
+            <Trash2 className="text-rose-500" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Excluir encomenda</TooltipContent>
+      </Tooltip>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
