@@ -1,16 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
-import {
-  Table,
-  TableCell,
-  TableBody,
-  TableCaption,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
-
 import { TableRowVisitor } from "./table-row-visitor";
 
 import { getVisitors } from "@/api/get-visitors";
@@ -27,7 +17,11 @@ type TableVisitorsProps = {
 };
 
 export function TableVisitors({ filters }: TableVisitorsProps) {
-  const { data: visitorsData = [], isLoading } = useQuery<VisitorsResponse[]>({
+  const {
+    data: visitorsData = [],
+    isLoading,
+    isError,
+  } = useQuery<VisitorsResponse[]>({
     queryKey: ["visitors"],
     queryFn: getVisitors,
   });
@@ -98,35 +92,28 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
     setPerPage(value);
   };
 
+  const emptyMessage =
+    normalizedSearch || statusFilter !== "all"
+      ? "Nenhum visitante encontrado com os filtros aplicados."
+      : "Nenhum visitante cadastrado ainda.";
+
   return (
     <div className="space-y-4">
-      <Table>
-        <TableCaption>Lista de visitantes</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="font-bold">Nome</TableHead>
-            <TableHead className="font-bold">Documento</TableHead>
-            <TableHead className="font-bold">Morador</TableHead>
-            <TableHead className="text-center font-bold">Status</TableHead>
-            <TableHead className="text-center font-bold">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            <TableVisitorsSkeleton />
-          ) : totalItems === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center text-muted-foreground">
-                Nenhum visitante cadastrado ainda.
-              </TableCell>
-            </TableRow>
-          ) : (
-            visibleVisitors.map((log) => (
-              <TableRowVisitor key={log.id} log={log} />
-            ))
-          )}
-        </TableBody>
-      </Table>
+      {isLoading ? (
+        <TableVisitorsSkeleton />
+      ) : isError ? (
+        <p className="text-sm text-destructive">
+          Não foi possível carregar os visitantes. Tente novamente.
+        </p>
+      ) : totalItems === 0 ? (
+        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+      ) : (
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          {visibleVisitors.map((log) => (
+            <TableRowVisitor key={log.id} log={log} />
+          ))}
+        </section>
+      )}
 
       {totalItems > 0 && (
         <VisitorsPagination

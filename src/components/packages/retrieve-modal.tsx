@@ -139,7 +139,7 @@ export function RetrieveModal({ id }: RetrieveModalProps) {
                     <FieldLabel htmlFor="code" className="sr-only">
                       Código de verificação
                     </FieldLabel>
-                    <FieldContent>
+                    <FieldContent className="justify-center">
                       <InputOTP
                         maxLength={6}
                         id="code"
