@@ -77,14 +77,37 @@ export function StaffInviteLinkModal({
   }
 
   useEffect(() => {
-    if (isOpen) {
-      setInviteUrl(null);
-      setExpiresAt(null);
-      setCondominiumLabel(null);
-      setHasAttempted(false);
-      void handleGenerate();
-    }
-  }, [isOpen, handleGenerate]);
+    if (!isOpen) return;
+
+    let isActive = true;
+
+    setInviteUrl(null);
+    setExpiresAt(null);
+    setCondominiumLabel(null);
+    setHasAttempted(false);
+
+    void (async () => {
+      try {
+        const data = await mutateAsync();
+        if (!isActive) return;
+        setInviteUrl(data.inviteUrl);
+        setExpiresAt(data.expiresAt);
+        setCondominiumLabel(`${data.condominium.name} (${data.condominium.code})`);
+      } catch {
+        if (isActive) {
+          toast.error("Não foi possível gerar o link de cadastro.");
+        }
+      } finally {
+        if (isActive) {
+          setHasAttempted(true);
+        }
+      }
+    })();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isOpen, mutateAsync]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
