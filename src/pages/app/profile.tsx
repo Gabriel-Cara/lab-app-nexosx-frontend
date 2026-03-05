@@ -29,6 +29,7 @@ import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 import { ImageManager } from "@/components/images/image-manager";
 import { ProfileSkeleton } from "@/pages/app/profile-skeleton";
 import { Car, Plus, Trash2 } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 
 const vehicleSchema = z
   .object({
@@ -150,16 +151,12 @@ export function Profile() {
         <title>Perfil</title>
       </Helmet>
 
-      <main className="flex min-h-svh flex-col gap-8">
-        <header className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Meu perfil</h1>
-            <p className="text-muted-foreground">
-              Visualize e mantenha seus dados pessoais atualizados.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {isEditing ? (
+      <main className="flex min-h-0 flex-1 flex-col gap-8">
+        <PageHeader
+          title="Meu perfil"
+          description="Visualize e mantenha seus dados pessoais atualizados."
+          actions={
+            isEditing ? (
               <>
                 <Button type="button" variant="outline" onClick={handleCancelEdit}>
                   Cancelar
@@ -172,9 +169,9 @@ export function Profile() {
               <Button type="button" onClick={() => setIsEditing(true)}>
                 Editar
               </Button>
-            )}
-          </div>
-        </header>
+            )
+          }
+        />
 
         {!userId ? (
           <p className="text-sm text-muted-foreground">

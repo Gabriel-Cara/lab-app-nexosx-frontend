@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -13,6 +13,8 @@ import { Helmet } from "@dr.pogodin/react-helmet";
 import { getResidents } from "@/api/get-residents";
 import { ResidentsPagination } from "@/components/residents/pagination";
 import { ResidentsPageSkeleton } from "@/pages/app/residents-skeleton";
+import { EmptyState } from "@/components/ui/empty";
+import { PageHeader } from "@/components/layout/page-header";
 
 export function Residents() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -82,21 +84,17 @@ export function Residents() {
         <title>Moradores</title>
       </Helmet>
 
-      <main className="flex min-h-svh flex-col gap-8">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl text-foreground font-bold tracking-tight">
-              Moradores
-            </h1>
-            <p className="text-muted-foreground sr-only md:not-sr-only">
-              Gerencie os moradores do condomínio
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <main className="flex min-h-0 flex-1 flex-col gap-8">
+        <PageHeader
+          title="Moradores"
+          description="Gerencie os moradores do condomínio"
+          actions={
+            <>
             <ResidentInviteLinkModal />
             <AddModal />
-          </div>
-        </header>
+            </>
+          }
+        />
 
         <InputGroup>
           <InputGroupInput
@@ -116,9 +114,16 @@ export function Residents() {
             Não foi possível carregar os moradores. Tente novamente.
           </p>
         ) : filteredResidents.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nenhum morador encontrado.
-          </p>
+          <EmptyState
+            icon={Users}
+            title="Nenhum morador encontrado"
+            description={
+              searchTerm.trim()
+                ? "Tente ajustar os filtros ou buscar por outro termo."
+                : "Quando houver moradores cadastrados, eles aparecerão aqui."
+            }
+            size="sm"
+          />
         ) : (
           <section className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

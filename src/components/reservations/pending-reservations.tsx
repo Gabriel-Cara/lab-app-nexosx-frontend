@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 
 import { getReservations, type Reservation } from "@/api/get-reservations";
@@ -12,6 +13,7 @@ import {
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { PendingReservationsSkeleton } from "@/components/reservations/pending-reservations-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 export function PendingReservations() {
   const queryClient = useQueryClient();
@@ -84,9 +86,12 @@ export function PendingReservations() {
 
   if (reservations.length === 0) {
     return (
-      <div className="rounded-xl border p-6 text-center text-sm text-muted-foreground">
-        Nenhum agendamento pendente de aprovação.
-      </div>
+      <EmptyState
+        icon={CalendarDays}
+        title="Nenhuma solicitação pendente"
+        description="Quando houver pedidos de reserva aguardando aprovação, eles aparecerão aqui."
+        size="sm"
+      />
     );
   }
 

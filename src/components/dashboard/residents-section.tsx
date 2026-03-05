@@ -27,6 +27,7 @@ import {
   ResidentsCoverageSkeleton,
   ResidentsRecentSkeleton,
 } from "@/components/dashboard/residents-section-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 type ResidentsChartPoint = {
   key: "apartments" | "emergency";
@@ -128,7 +129,13 @@ export function ResidentsSection({
                 Não foi possível carregar os moradores.
               </p>
             ) : residents.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Os cadastros aparecerão aqui.</p>
+              <EmptyState
+                icon={Users}
+                title="Sem cadastros recentes"
+                description="Os novos moradores aparecerão aqui assim que forem registrados."
+                size="sm"
+                className="min-h-44"
+              />
             ) : (
               <Table>
                 <TableHeader>

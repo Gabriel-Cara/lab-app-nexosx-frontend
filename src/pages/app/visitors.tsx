@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/layout/page-header";
 
 const statusOptions = [
   { label: "Todos", value: "all" },
@@ -53,18 +54,12 @@ export function Visitors() {
         <title>Visitantes</title>
       </Helmet>
 
-      <main className="flex min-h-svh flex-col gap-8">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl text-foreground font-bold tracking-tight">
-              Visitantes
-            </h1>
-            <p className="text-muted-foreground sr-only md:not-sr-only">
-              Gerencie os visitantes do condomínio
-            </p>
-          </div>
-          <AddModal />
-        </header>
+      <main className="flex min-h-0 flex-1 flex-col gap-8">
+        <PageHeader
+          title="Visitantes"
+          description="Gerencie os visitantes do condomínio"
+          actions={<AddModal />}
+        />
 
         <section className="grid gap-4 md:grid-cols-[4fr_1fr]">
           <InputGroup>

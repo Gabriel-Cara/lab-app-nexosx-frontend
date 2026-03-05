@@ -27,6 +27,7 @@ import {
   ReservationsStatusSkeleton,
   ReservationsUpcomingSkeleton,
 } from "@/components/dashboard/reservations-section-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 type ReservationStatus = Reservation["status"];
 
@@ -126,9 +127,13 @@ export function ReservationsSection({
                 Não foi possível carregar os agendamentos.
               </p>
             ) : upcomingReservations.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Não há reservas futuras cadastradas.
-              </p>
+              <EmptyState
+                icon={CalendarDays}
+                title="Sem reservas futuras"
+                description="As próximas reservas confirmadas aparecerão aqui."
+                size="sm"
+                className="min-h-44"
+              />
             ) : (
               <Table>
                 <TableHeader>

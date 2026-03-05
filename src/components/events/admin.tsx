@@ -16,6 +16,8 @@ import {
 } from "@/components/events/events-admin-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty";
+import { PageHeader } from "@/components/layout/page-header";
 
 const formatDate = (value: string) =>
   format(parseISO(value), "dd/MM/yyyy HH:mm", { locale: ptBR });
@@ -54,68 +56,61 @@ export function EventsAdmin() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="rounded-3xl border bg-background p-6 inset-shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Eventos do condomínio
-            </h1>
-            <p className="text-muted-foreground">
-              Planeje eventos, comunique mudanças e gerencie inscrições.
+    <div className="flex flex-1 flex-col gap-6">
+      <PageHeader
+        title="Eventos do condomínio"
+        description="Planeje eventos, comunique mudanças e gerencie inscrições."
+        actions={<AddModal />}
+      />
+
+      {isLoading ? (
+        <EventsAdminSummarySkeleton />
+      ) : !isError && events.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border bg-muted/40 p-4">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Eventos ativos
+            </p>
+            <p className="text-2xl font-semibold text-foreground">{summary.total}</p>
+            <p className="text-xs text-muted-foreground">
+              Total cadastrados
             </p>
           </div>
-          <AddModal />
-        </div>
-        {isLoading ? (
-          <EventsAdminSummarySkeleton />
-        ) : !isError && events.length > 0 ? (
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border bg-muted/40 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Eventos ativos
-              </p>
-              <p className="text-2xl font-semibold text-foreground">{summary.total}</p>
-              <p className="text-xs text-muted-foreground">
-                Total cadastrados
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-muted/40 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Agendáveis
-              </p>
-              <p className="text-2xl font-semibold text-foreground">
-                {summary.bookable}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Com inscrições abertas
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-muted/40 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Informativos
-              </p>
-              <p className="text-2xl font-semibold text-foreground">
-                {summary.informative}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Sem agendamento
-              </p>
-            </div>
-            <div className="rounded-2xl border bg-muted/40 p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Inscrições
-              </p>
-              <p className="text-2xl font-semibold text-foreground">
-                {summary.totalBookings}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Total de participantes
-              </p>
-            </div>
+          <div className="rounded-2xl border bg-muted/40 p-4">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Agendáveis
+            </p>
+            <p className="text-2xl font-semibold text-foreground">
+              {summary.bookable}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Com inscrições abertas
+            </p>
           </div>
-        ) : null}
-      </header>
+          <div className="rounded-2xl border bg-muted/40 p-4">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Informativos
+            </p>
+            <p className="text-2xl font-semibold text-foreground">
+              {summary.informative}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Sem agendamento
+            </p>
+          </div>
+          <div className="rounded-2xl border bg-muted/40 p-4">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Inscrições
+            </p>
+            <p className="text-2xl font-semibold text-foreground">
+              {summary.totalBookings}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Total de participantes
+            </p>
+          </div>
+        </div>
+      ) : null}
 
       {isLoading ? (
         <EventsAdminListSkeleton />
@@ -124,9 +119,13 @@ export function EventsAdmin() {
           Não foi possível carregar os eventos.
         </p>
       ) : events.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Nenhum evento cadastrado ainda.
-        </p>
+        <EmptyState
+          icon={CalendarDays}
+          title="Nenhum evento cadastrado"
+          description="Crie um novo evento para começar a divulgar no condomínio."
+          size="sm"
+          className="flex-1 min-h-0"
+        />
       ) : (
         <div className="space-y-4">
           {events.map((event) => {

@@ -14,6 +14,7 @@ import { queryClient } from "@/lib/react-query";
 import { Button } from "@/components/ui/button";
 import { BookingsModal } from "@/components/events/bookings-modal";
 import { EventsFeedSkeleton } from "@/components/events/events-feed-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 const formatDate = (value: string) =>
   format(parseISO(value), "dd/MM/yyyy HH:mm", { locale: ptBR });
@@ -103,14 +104,18 @@ export function EventsFeed() {
 
   if (events.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        Nenhum evento publicado ainda.
-      </p>
+      <EmptyState
+        icon={CalendarDays}
+        title="Nenhum evento publicado"
+        description="Assim que novos eventos forem publicados, eles aparecerão aqui."
+        size="sm"
+        className="flex-1 min-h-0"
+      />
     );
   }
 
   return (
-    <div className="space-y-5 px-4 sm:px-6 md:px-10 lg:px-14">
+    <div className="flex flex-1 flex-col gap-5 px-4 sm:px-6 md:px-10 lg:px-14">
       <div className="hidden items-center justify-end gap-2 md:flex">
         <Button
           type="button"

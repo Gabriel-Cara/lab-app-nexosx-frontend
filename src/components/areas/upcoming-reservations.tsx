@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, format, startOfWeek } from "date-fns";
+import { CalendarDays } from "lucide-react";
 import { getReservations, type Reservation } from "@/api/get-reservations";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UpcomingReservationsSkeleton } from "@/components/areas/upcoming-reservations-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 interface UpcomingReservationsProps {
   withContainer?: boolean;
@@ -73,9 +75,12 @@ export function UpcomingReservations({
 
   if (visibleReservations.length === 0) {
     return (
-      <div className={cn(placeholderClass, "text-muted-foreground")}>
-        Nenhum agendamento aprovado para esta semana.
-      </div>
+      <EmptyState
+        icon={CalendarDays}
+        title="Nenhum agendamento esta semana"
+        description="Quando houver reservas aprovadas, elas aparecerão aqui."
+        size="sm"
+      />
     );
   }
 

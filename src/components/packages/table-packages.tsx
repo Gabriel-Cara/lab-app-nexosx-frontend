@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import { Package as PackageIcon } from "lucide-react";
 
 import { TableRowPackages } from "./table-row-packages";
 import { getPackages, type Package } from "@/api/get-packages";
 import { TablePackagesSkeleton } from "@/components/packages/table-packages-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 export function TablePackages() {
   const {
@@ -28,9 +30,12 @@ export function TablePackages() {
 
   if (packages.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        Nenhuma encomenda registrada ainda.
-      </p>
+      <EmptyState
+        icon={PackageIcon}
+        title="Nenhuma encomenda registrada"
+        description="Quando novas encomendas chegarem, elas aparecerão aqui."
+        size="sm"
+      />
     );
   }
 

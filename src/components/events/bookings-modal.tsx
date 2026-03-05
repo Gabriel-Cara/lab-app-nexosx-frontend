@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Users } from "lucide-react";
 
 import { getEventBookings } from "@/api/get-event-bookings";
 import type { Event } from "@/api/get-events";
@@ -18,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EventBookingsSkeleton } from "@/components/events/events-bookings-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 type BookingsModalProps = {
   event: Event | null;
@@ -55,9 +57,13 @@ export function BookingsModal({
             Não foi possível carregar os inscritos.
           </p>
         ) : bookings.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nenhum morador inscrito ainda.
-          </p>
+          <EmptyState
+            icon={Users}
+            title="Sem inscritos até agora"
+            description="As inscrições dos moradores aparecerão aqui."
+            size="sm"
+            className="min-h-40"
+          />
         ) : (
           <Table>
             <TableHeader>

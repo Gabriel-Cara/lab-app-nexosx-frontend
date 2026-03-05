@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "@dr.pogodin/react-helmet";
@@ -14,6 +14,8 @@ import { StaffInviteLinkModal } from "@/components/staff/invite-link-modal";
 import { StaffPagination } from "@/components/staff/pagination";
 import { ResidentsPageSkeleton } from "@/pages/app/residents-skeleton";
 import { getStaff } from "@/api/get-staff";
+import { EmptyState } from "@/components/ui/empty";
+import { PageHeader } from "@/components/layout/page-header";
 
 export function Staff() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,21 +80,17 @@ export function Staff() {
         <title>Equipe</title>
       </Helmet>
 
-      <main className="flex min-h-svh flex-col gap-8">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl text-foreground font-bold tracking-tight">
-              Equipe
-            </h1>
-            <p className="text-muted-foreground sr-only md:not-sr-only">
-              Gerencie os funcionários do condomínio
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <main className="flex min-h-0 flex-1 flex-col gap-8">
+        <PageHeader
+          title="Equipe"
+          description="Gerencie os funcionários do condomínio"
+          actions={
+            <>
             <StaffInviteLinkModal />
             <AddStaffModal />
-          </div>
-        </header>
+            </>
+          }
+        />
 
         <InputGroup>
           <InputGroupInput
@@ -112,9 +110,16 @@ export function Staff() {
             Não foi possível carregar a equipe. Tente novamente.
           </p>
         ) : filteredStaff.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nenhum funcionário encontrado.
-          </p>
+          <EmptyState
+            icon={Users}
+            title="Nenhum funcionário encontrado"
+            description={
+              searchTerm.trim()
+                ? "Tente ajustar os filtros ou buscar por outro termo."
+                : "Quando houver funcionários cadastrados, eles aparecerão aqui."
+            }
+            size="sm"
+          />
         ) : (
           <section className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

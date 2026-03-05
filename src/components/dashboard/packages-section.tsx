@@ -34,6 +34,7 @@ import {
   PackagesTrendSkeleton,
   PackagesTypeSkeleton,
 } from "@/components/dashboard/packages-section-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 const packageTrendChartConfig: ChartConfig = {
   received: {
@@ -216,7 +217,13 @@ export function PackagesSection({
               Não foi possível carregar os registros.
             </p>
           ) : pendingPackages.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Não há pendências por aqui 🎉</p>
+            <EmptyState
+              icon={Package}
+              title="Nenhuma pendência no momento"
+              description="As encomendas aguardando retirada aparecerão aqui."
+              size="sm"
+              className="min-h-44"
+            />
           ) : (
             <Table>
               <TableHeader>

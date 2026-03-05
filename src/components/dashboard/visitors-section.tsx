@@ -28,6 +28,7 @@ import {
   VisitorsRecentSkeleton,
   VisitorsStatusSkeleton,
 } from "@/components/dashboard/visitors-section-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 type VisitorStatus = VisitorsResponse["status"];
 
@@ -139,7 +140,13 @@ export function VisitorsSection({
                 Não foi possível carregar os visitantes.
               </p>
             ) : recentVisitors.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhuma visita registrada ainda.</p>
+              <EmptyState
+                icon={UserRoundCheck}
+                title="Nenhuma visita registrada"
+                description="Os últimos registros de visitantes serão exibidos aqui."
+                size="sm"
+                className="min-h-44"
+              />
             ) : (
               <Table>
                 <TableHeader>

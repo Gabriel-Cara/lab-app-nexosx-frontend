@@ -3,6 +3,7 @@ import { AreasAvailable } from "@/components/areas/areas-available";
 import { UpcomingReservations } from "@/components/areas/upcoming-reservations";
 import { useAuth } from "@/hooks/use-auth";
 import { Helmet } from "@dr.pogodin/react-helmet";
+import { PageHeader } from "@/components/layout/page-header";
 
 export function Areas() {
   const { session } = useAuth();
@@ -12,21 +13,12 @@ export function Areas() {
       <Helmet>
         <title>Áreas de lazer</title>
       </Helmet>
-      <main className="flex min-h-svh flex-col gap-8">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl text-foreground font-bold tracking-tight">
-              Áreas de Lazer
-            </h1>
-            <p className="text-muted-foreground sr-only md:not-sr-only">
-              Agende as áreas comuns do condomínio.
-            </p>
-          </div>
-
-          {session?.user.role !== "resident" && (
-            <AddModal />
-          )}
-        </header>
+      <main className="flex min-h-0 flex-1 flex-col gap-8">
+        <PageHeader
+          title="Áreas de Lazer"
+          description="Agende as áreas comuns do condomínio."
+          actions={session?.user.role !== "resident" ? <AddModal /> : undefined}
+        />
 
         {session?.user.role === "resident" && (
           <section className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">

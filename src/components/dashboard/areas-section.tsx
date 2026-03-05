@@ -20,6 +20,7 @@ import {
   AreasAvailabilitySkeleton,
   AreasQuickMapSkeleton,
 } from "@/components/dashboard/areas-section-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 type AreasChartPoint = {
   key: "available" | "blocked";
@@ -108,9 +109,13 @@ export function AreasSection({
             ) : isError ? (
               <p className="text-sm text-destructive">Não foi possível carregar as áreas.</p>
             ) : areas.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Cadastre suas áreas para visualizá-las aqui.
-              </p>
+              <EmptyState
+                icon={Volleyball}
+                title="Nenhuma área cadastrada"
+                description="Cadastre áreas para visualizá-las rapidamente neste painel."
+                size="sm"
+                className="min-h-44"
+              />
             ) : (
               areas.slice(0, 6).map((area) => (
                 <div

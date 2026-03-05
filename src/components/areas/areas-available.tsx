@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Volleyball } from "lucide-react";
 import { getAreas } from "@/api/get-areas";
 
 import { ScheduleCard } from "./schedule-card";
 import { AreasAvailableSkeleton } from "@/components/areas/areas-available-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 export function AreasAvailable() {
   const { data, isLoading, isError, error } = useQuery({
@@ -31,11 +33,13 @@ export function AreasAvailable() {
 
   if (areas.length === 0) {
     return (
-      <div className="flex w-auto min-h-60 flex-wrap gap-4 rounded-xl border p-4 mt-2">
-        <p className="text-sm text-muted-foreground">
-          Nenhuma área cadastrada até o momento.
-        </p>
-      </div>
+      <EmptyState
+        icon={Volleyball}
+        title="Nenhuma área cadastrada"
+        description="Cadastre uma área para começar a receber reservas."
+        size="sm"
+        className="mt-2 min-h-60"
+      />
     );
   }
 

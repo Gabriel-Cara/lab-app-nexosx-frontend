@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { Users } from "lucide-react";
 
 import { TableRowVisitor } from "./table-row-visitor";
 
@@ -8,6 +9,7 @@ import type { VisitorsResponse } from "@/api/get-visitors";
 import { VisitorsPagination } from "./pagination";
 import { useAuth } from "@/hooks/use-auth";
 import { TableVisitorsSkeleton } from "@/components/visitors/table-visitors-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 type TableVisitorsProps = {
   filters?: {
@@ -96,9 +98,13 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
     normalizedSearch || statusFilter !== "all"
       ? "Nenhum visitante encontrado com os filtros aplicados."
       : "Nenhum visitante cadastrado ainda.";
+  const emptyTitle =
+    normalizedSearch || statusFilter !== "all"
+      ? "Nenhum visitante encontrado"
+      : "Nenhum visitante cadastrado";
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-1 flex-col gap-4">
       {isLoading ? (
         <TableVisitorsSkeleton />
       ) : isError ? (
@@ -106,7 +112,13 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
           Não foi possível carregar os visitantes. Tente novamente.
         </p>
       ) : totalItems === 0 ? (
-        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        <EmptyState
+          icon={Users}
+          title={emptyTitle}
+          description={emptyMessage}
+          size="sm"
+          className="flex-1 min-h-0"
+        />
       ) : (
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
           {visibleVisitors.map((log) => (

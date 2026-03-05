@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Helmet } from "@dr.pogodin/react-helmet";
+import { PageHeader } from "@/components/layout/page-header";
 
 export function Reservations() {
   return (
@@ -18,17 +19,11 @@ export function Reservations() {
       <Helmet>
         <title>Agendamentos</title>
       </Helmet>
-      <main className="flex min-h-svh flex-col gap-8">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl text-foreground font-bold tracking-tight">
-              Agendamentos
-            </h1>
-            <p className="text-muted-foreground sr-only md:not-sr-only">
-              Administre os agendamentos das áreas comuns do condomínio.
-            </p>
-          </div>
-        </header>
+      <main className="flex min-h-0 flex-1 flex-col gap-8">
+        <PageHeader
+          title="Agendamentos"
+          description="Administre os agendamentos das áreas comuns do condomínio."
+        />
 
         <section className="grid gap-6">
           <ReservationsOverview />

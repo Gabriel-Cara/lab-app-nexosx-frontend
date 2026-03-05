@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { CalendarDays } from "lucide-react";
 import { getReservations, type Reservation } from "@/api/get-reservations";
 import {
   Table,
@@ -11,6 +12,7 @@ import {
 } from "../ui/table";
 import { Badge } from "../ui/badge";
 import { ReservationsTableSkeleton } from "@/components/reservations/reservations-table-skeleton";
+import { EmptyState } from "@/components/ui/empty";
 
 const statusLabels: Record<Reservation["status"], string> = {
   pending: "Pendente",
@@ -49,9 +51,12 @@ export function ReservationsTable() {
 
   if (!data || data.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-        Nenhum agendamento encontrado.
-      </div>
+      <EmptyState
+        icon={CalendarDays}
+        title="Nenhum agendamento encontrado"
+        description="Os agendamentos aparecerão aqui assim que forem criados."
+        size="sm"
+      />
     );
   }
 
