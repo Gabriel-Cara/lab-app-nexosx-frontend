@@ -10,10 +10,6 @@ import {
 
 const ROW_COUNT = 4;
 
-export function ReservationsStatusSkeleton() {
-  return <Skeleton className="aspect-[16/8] w-full rounded-xl" />;
-}
-
 export function ReservationsUpcomingSkeleton() {
   return (
     <Table>

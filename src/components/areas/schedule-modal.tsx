@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, type ReactElement, useEffect, useMemo, useState } from "react";
 import { addDays, format, isSameDay, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
@@ -29,9 +29,10 @@ import type { AreaSlot } from "@/api/get-area-slots";
 interface ScheduleModalProps {
   areaId: string;
   status: "available" | "scheduled" | "pending" | "confirmed" | "denied";
+  trigger?: ReactElement;
 }
 
-export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
+export function ScheduleModal({ areaId, status, trigger }: ScheduleModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [startSlotId, setStartSlotId] = useState<string | null>(null);
@@ -222,7 +223,11 @@ export function ScheduleModal({ areaId, status }: ScheduleModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button disabled={isPending || status === "denied"} className="cursor-pointer">Agendar</Button>
+        {trigger ?? (
+          <Button disabled={isPending || status === "denied"} className="cursor-pointer">
+            Agendar
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-h-[90%] overflow-y-auto">
         <DialogHeader>

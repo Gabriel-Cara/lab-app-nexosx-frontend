@@ -39,7 +39,7 @@ const colorClasses = {
 
 export function OverviewCards({ cards }: OverviewCardsProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => {
         const Icon = card.icon;
         const colors = colorClasses[card.color as keyof typeof colorClasses];
@@ -52,19 +52,19 @@ export function OverviewCards({ cards }: OverviewCardsProps) {
             <div
               className={`absolute top-0 right-0 w-32 h-32 bg-linear-to-br ${colors.bg} opacity-10 rounded-full transform translate-x-12 -translate-y-12 group-hover:scale-110 transition-transform duration-300`}
             />
-            <CardContent className="p-6 relative">
+            <CardContent className="relative p-5">
               <div className="flex justify-between items-start mb-4">
                 <p className="text-sm font-medium text-foreground">
                   {card.title}
                 </p>
                 <div
-                  className={`p-3 rounded-xl ${colors.light} group-hover:scale-110 transition-transform duration-300`}
+                  className={`rounded-xl p-2.5 ${colors.light} group-hover:scale-110 transition-transform duration-300`}
                 >
                   <Icon className={`w-5 h-5 ${colors.text}`} />
                 </div>
               </div>
               <div className="mb-3">
-                <h3 className="text-3xl font-bold text-foreground">
+                <h3 className="text-2xl font-bold text-foreground">
                   {card.value}
                 </h3>
               </div>

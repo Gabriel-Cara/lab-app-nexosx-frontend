@@ -6,7 +6,11 @@ import { getPackages, type Package } from "@/api/get-packages";
 import { TablePackagesSkeleton } from "@/components/packages/table-packages-skeleton";
 import { EmptyState } from "@/components/ui/empty";
 
-export function TablePackages() {
+type TablePackagesProps = {
+  pendingOnly?: boolean;
+};
+
+export function TablePackages({ pendingOnly = false }: TablePackagesProps) {
   const {
     data: packages = [],
     isLoading,
@@ -28,12 +32,20 @@ export function TablePackages() {
     );
   }
 
-  if (packages.length === 0) {
+  const filteredPackages = pendingOnly
+    ? packages.filter((item) => item.status === "pending" || item.status === "delayed")
+    : packages;
+
+  if (filteredPackages.length === 0) {
     return (
       <EmptyState
         icon={PackageIcon}
-        title="Nenhuma encomenda registrada"
-        description="Quando novas encomendas chegarem, elas aparecerão aqui."
+        title={pendingOnly ? "Nenhuma encomenda pendente" : "Nenhuma encomenda registrada"}
+        description={
+          pendingOnly
+            ? "Assim que houver pendências de retirada, elas aparecerão aqui."
+            : "Quando novas encomendas chegarem, elas aparecerão aqui."
+        }
         size="sm"
       />
     );
@@ -41,7 +53,7 @@ export function TablePackages() {
 
   return (
     <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {packages.map((packageItem) => (
+      {filteredPackages.map((packageItem) => (
         <TableRowPackages key={packageItem.id} pkg={packageItem} />
       ))}
     </section>

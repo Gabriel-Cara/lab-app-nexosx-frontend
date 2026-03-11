@@ -12,9 +12,9 @@ const QUEUE_ROWS = 4;
 
 export function PackagesTrendSkeleton() {
   return (
-    <div className="space-y-6">
-      <Skeleton className="aspect-[16/8] w-full rounded-xl" />
-      <div className="grid gap-4 sm:grid-cols-3">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+      <Skeleton className="h-56 w-full rounded-xl sm:h-60 lg:h-64" />
+      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
         {Array.from({ length: 3 }).map((_, index) => (
           <div key={`package-stat-${index}`} className="rounded-lg border p-3">
             <Skeleton className="h-3 w-24" />
@@ -22,15 +22,6 @@ export function PackagesTrendSkeleton() {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-export function PackagesTypeSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="aspect-square w-full rounded-xl" />
-      <Skeleton className="h-3 w-40" />
     </div>
   );
 }

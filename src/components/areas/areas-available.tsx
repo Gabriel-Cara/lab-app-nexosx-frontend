@@ -22,7 +22,7 @@ export function AreasAvailable() {
 
   if (isError) {
     return (
-      <div className="flex w-auto min-h-60 flex-wrap gap-4 rounded-xl border p-4 mt-2">
+      <div className="flex w-auto min-h-60 flex-wrap gap-4 rounded-xl border p-4">
         <p className="text-sm text-destructive">
           Não foi possível carregar as áreas.{" "}
           {error instanceof Error ? error.message : ""}

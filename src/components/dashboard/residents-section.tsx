@@ -1,5 +1,4 @@
 import { Users } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 
 import { SectionHeader } from "./section-header";
 import {
@@ -10,11 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
   Table,
   TableBody,
   TableCell,
@@ -24,36 +18,15 @@ import {
 } from "@/components/ui/table";
 import type { Resident } from "@/api/get-residents";
 import {
-  ResidentsCoverageSkeleton,
   ResidentsRecentSkeleton,
 } from "@/components/dashboard/residents-section-skeleton";
 import { EmptyState } from "@/components/ui/empty";
-
-type ResidentsChartPoint = {
-  key: "apartments" | "emergency";
-  label: string;
-  value: number;
-};
 
 type ResidentsSectionProps = {
   accessLabel: string;
   isLoading: boolean;
   isError: boolean;
   residents: Resident[];
-  chartData: ResidentsChartPoint[];
-  residentsWithApartment: number;
-  residentsWithEmergencyContacts: number;
-};
-
-const residentsChartConfig = {
-  apartments: {
-    label: "Responsáveis por apto",
-    color: "hsl(262 83% 68%)",
-  },
-  emergency: {
-    label: "Contato de emergência",
-    color: "hsl(347 82% 62%)",
-  },
 };
 
 export function ResidentsSection({
@@ -61,104 +34,57 @@ export function ResidentsSection({
   isLoading,
   isError,
   residents,
-  chartData,
-  residentsWithApartment,
-  residentsWithEmergencyContacts,
 }: ResidentsSectionProps) {
   return (
     <section className="space-y-4">
       <SectionHeader
         title="Moradores"
-        description="Cobertura de cadastros e contatos críticos."
+        description="Acompanhe os moradores cadastrados mais recentemente."
         icon={Users}
         accessLabel={accessLabel}
       />
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Cobertura do cadastro</CardTitle>
-            <CardDescription>
-              Comparativo entre responsáveis e contatos de emergência.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <ResidentsCoverageSkeleton />
-            ) : isError ? (
-              <p className="text-sm text-destructive">
-                Não foi possível carregar os moradores.
-              </p>
-            ) : (
-              <>
-                <ChartContainer config={residentsChartConfig} className="aspect-[16/8] w-full">
-                  <BarChart data={chartData} barSize={40}>
-                    <CartesianGrid strokeDasharray="4 4" vertical={false} />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
-                    <ChartTooltip
-                      content={
-                        <ChartTooltipContent labelFormatter={(value) => `Indicador: ${value}`} />
-                      }
-                    />
-                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                      {chartData.map((item) => (
-                        <Cell key={item.key} fill={`var(--color-${item.key})`} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ChartContainer>
-                <p className="mt-4 text-sm text-muted-foreground">
-                  {residentsWithApartment} moradores vinculados a unidades e{" "}
-                  {residentsWithEmergencyContacts} com contatos de emergência.
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Últimos cadastrados</CardTitle>
-            <CardDescription>Destaque para novos moradores no sistema.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <ResidentsRecentSkeleton />
-            ) : isError ? (
-              <p className="text-sm text-destructive">
-                Não foi possível carregar os moradores.
-              </p>
-            ) : residents.length === 0 ? (
-              <EmptyState
-                icon={Users}
-                title="Sem cadastros recentes"
-                description="Os novos moradores aparecerão aqui assim que forem registrados."
-                size="sm"
-                className="min-h-44"
-              />
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Apart.</TableHead>
-                    <TableHead>Email</TableHead>
+      <Card>
+        <CardHeader>
+          <CardTitle>Últimos cadastrados</CardTitle>
+          <CardDescription>Destaque para novos moradores no sistema.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <ResidentsRecentSkeleton />
+          ) : isError ? (
+            <p className="text-sm text-destructive">
+              Não foi possível carregar os moradores.
+            </p>
+          ) : residents.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="Sem cadastros recentes"
+              description="Os novos moradores aparecerão aqui assim que forem registrados."
+              size="sm"
+              className="min-h-44"
+            />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Apart.</TableHead>
+                  <TableHead>Email</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {residents.slice(0, 5).map((resident) => (
+                  <TableRow key={resident.id}>
+                    <TableCell className="font-medium">{resident.name}</TableCell>
+                    <TableCell>{resident.apartment ?? "—"}</TableCell>
+                    <TableCell className="truncate">{resident.email ?? "—"}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {residents.slice(0, 5).map((resident) => (
-                    <TableRow key={resident.id}>
-                      <TableCell className="font-medium">{resident.name}</TableCell>
-                      <TableCell>{resident.apartment ?? "—"}</TableCell>
-                      <TableCell className="truncate">{resident.email ?? "—"}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </section>
   );
 }

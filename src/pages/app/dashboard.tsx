@@ -13,7 +13,7 @@ import {
 } from "date-fns";
 
 import { useAuth } from "@/hooks/use-auth";
-import { DashboardHero } from "@/components/dashboard/hero";
+import { DashboardQuickActions } from "@/components/dashboard/quick-actions";
 import {
   OverviewCards,
   type OverviewCard,
@@ -54,19 +54,6 @@ const roleLabel: Record<Role, string> = {
   resident: "Morador(a)",
 };
 
-const userRoleLabel: Record<UserRole, string> = {
-  ...roleLabel,
-  master: "Master",
-};
-
-const quickLinkDescriptions: Record<string, string> = {
-  packages: "Registrar recebimentos e retiradas",
-  visitors: "Autorize ou negue acessos",
-  residents: "Atualize dados cadastrais",
-  areas: "Gerencie espaços comuns",
-  reservations: "Organize agendamentos",
-};
-
 const sectionOrder = [
   "packages",
   "visitors",
@@ -83,14 +70,6 @@ const sectionAccess: Record<(typeof sectionOrder)[number], Role[]> = {
   reservations: ["admin", "staff"],
 };
 
-const sectionLabels: Record<(typeof sectionOrder)[number], string> = {
-  packages: "Encomendas",
-  visitors: "Visitantes",
-  residents: "Moradores",
-  areas: "Áreas de lazer",
-  reservations: "Reservas",
-};
-
 const visitorStatuses: VisitorStatus[] = ["pending", "authorized", "entry", "left", "denied"];
 
 const visitorStatusConfig: Record<VisitorStatus, { label: string; className: string }> = {
@@ -100,13 +79,6 @@ const visitorStatusConfig: Record<VisitorStatus, { label: string; className: str
   left: { label: "Saiu", className: "bg-muted text-muted-foreground" },
   denied: { label: "Negado", className: "bg-rose-100 text-rose-900" },
 };
-
-const reservationStatuses: ReservationStatus[] = [
-  "pending",
-  "approved",
-  "rejected",
-  "cancelled",
-];
 
 const reservationStatusConfig: Record<ReservationStatus, { label: string; className: string }> = {
   pending: { label: "Pendente", className: "bg-amber-100 text-amber-900" },
@@ -191,7 +163,7 @@ function getAccessLabel(routeId: (typeof sectionOrder)[number]) {
 export function Dashboard() {
   const { session } = useAuth();
   const role = session?.user.role ?? "resident";
-  const userName = session?.user.name ?? "Morador(a)";
+  const showOverview = role === "admin" || role === "staff";
 
   const visibleSections = useMemo(
     () =>
@@ -278,16 +250,6 @@ export function Dashboard() {
     [pendingPackages],
   );
 
-  const packageTypeChartData = useMemo(
-    () =>
-      (Object.keys(packageTypeLabels) as PackageType[]).map((type) => ({
-        type,
-        label: packageTypeLabels[type],
-        total: packages.filter((pkg) => pkg.type === type).length,
-      })),
-    [packages],
-  );
-
   const activeVisitors = useMemo(
     () => visitors.filter((visitor) => ["pending", "authorized", "entry"].includes(visitor.status)).length,
     [visitors],
@@ -333,14 +295,6 @@ export function Dashboard() {
 
   const areasAvailable = areas.filter((area) => area.available);
 
-  const areasChartData = useMemo(() => {
-    const blocked = Math.max(areas.length - areasAvailable.length, 0);
-    return [
-      { key: "available" as const, label: "Disponíveis", value: areasAvailable.length },
-      { key: "blocked" as const, label: "Indisponíveis", value: blocked },
-    ];
-  }, [areas.length, areasAvailable.length]);
-
   const upcomingReservations = useMemo(() => {
     return reservations
       .slice()
@@ -369,34 +323,7 @@ export function Dashboard() {
     [reservations],
   );
 
-  const reservationChartData = useMemo(
-    () =>
-      reservationStatuses.map((status) => ({
-        status,
-        label: reservationStatusConfig[status].label,
-        value: reservationStatusTotals[status] ?? 0,
-      })),
-    [reservationStatusTotals],
-  );
-
   const residentsWithApartment = residents.filter((resident) => resident.apartment).length;
-  const residentsWithEmergencyContacts = residents.filter((resident) => resident.emergencyContact).length;
-
-  const residentsChartData = useMemo(
-    () => [
-      {
-        key: "apartments" as const,
-        label: "Com apartamento",
-        value: residentsWithApartment,
-      },
-      {
-        key: "emergency" as const,
-        label: "Contato de emergência",
-        value: residentsWithEmergencyContacts,
-      },
-    ],
-    [residentsWithApartment, residentsWithEmergencyContacts],
-  );
 
   const overviewCards: OverviewCard[] = [
     {
@@ -440,15 +367,30 @@ export function Dashboard() {
       </Helmet>
 
       <main className="flex min-h-svh flex-col gap-8">
-        <header className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-          <DashboardHero
-            userName={userName}
-            roleLabel={userRoleLabel[role]}
-            visibleSections={visibleSections as string[]}
-            sectionLabels={sectionLabels}
-            quickLinkDescriptions={quickLinkDescriptions}
-          />
-          <OverviewCards cards={overviewCards} />
+        <header className="space-y-6">
+          <section className="space-y-3">
+            <div>
+              <p className="text-lg font-semibold leading-tight">Quick actions</p>
+              <p className="text-muted-foreground text-sm">Ações diretas para o dia a dia.</p>
+            </div>
+            <DashboardQuickActions
+              role={role}
+              activeVisitorsCount={activeVisitors}
+              pendingPackagesCount={pendingPackages.length}
+              availableAreasCount={areasAvailable.length}
+              defaultAreaId={areasAvailable[0]?.id ?? null}
+            />
+          </section>
+
+          {showOverview && (
+            <section className="space-y-3">
+              <div>
+                <p className="text-lg font-semibold leading-tight">Visão geral</p>
+                <p className="text-muted-foreground text-sm">Resumo rápido dos indicadores.</p>
+              </div>
+              <OverviewCards cards={overviewCards} />
+            </section>
+          )}
         </header>
 
         {visibleSections.includes("packages") && (
@@ -460,7 +402,6 @@ export function Dashboard() {
             packageStatuses={packageStatuses}
             pendingPackages={pendingPackages}
             topPendingPackages={topPendingPackages}
-            packageTypeDistribution={packageTypeChartData}
             typeLabels={packageTypeLabels}
           />
         )}
@@ -484,9 +425,6 @@ export function Dashboard() {
             isLoading={isLoadingResidents}
             isError={isErrorResidents}
             residents={residents}
-            chartData={residentsChartData}
-            residentsWithApartment={residentsWithApartment}
-            residentsWithEmergencyContacts={residentsWithEmergencyContacts}
           />
         )}
 
@@ -497,7 +435,6 @@ export function Dashboard() {
             isError={isErrorAreas}
             areas={areas}
             availableAreas={areasAvailable}
-            chartData={areasChartData}
           />
         )}
 
@@ -506,7 +443,6 @@ export function Dashboard() {
             accessLabel={getAccessLabel("reservations")}
             isLoading={isLoadingReservations}
             isError={isErrorReservations}
-            chartData={reservationChartData}
             upcomingReservations={upcomingReservations}
             statusConfig={reservationStatusConfig}
             formatDate={formatDateWithTime}

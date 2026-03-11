@@ -10,15 +10,6 @@ import {
 
 const ROW_COUNT = 5;
 
-export function ResidentsCoverageSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="aspect-[16/8] w-full rounded-xl" />
-      <Skeleton className="h-3 w-3/4" />
-    </div>
-  );
-}
-
 export function ResidentsRecentSkeleton() {
   return (
     <Table>

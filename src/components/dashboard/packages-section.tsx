@@ -1,9 +1,6 @@
 import { Package } from "lucide-react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
   Line,
   LineChart,
   XAxis,
@@ -32,7 +29,6 @@ import type { Package as PackageModel, PackageType } from "@/api/get-packages";
 import {
   PackagesQueueSkeleton,
   PackagesTrendSkeleton,
-  PackagesTypeSkeleton,
 } from "@/components/dashboard/packages-section-skeleton";
 import { EmptyState } from "@/components/ui/empty";
 
@@ -47,23 +43,10 @@ const packageTrendChartConfig: ChartConfig = {
   },
 };
 
-const packageTypeChartConfig: ChartConfig = {
-  box: { label: "Caixa", color: "hsl(221 83% 53%)" },
-  envelope: { label: "Envelope", color: "hsl(281 89% 65%)" },
-  food: { label: "Comida", color: "hsl(31 97% 62%)" },
-  others: { label: "Outros", color: "hsl(12 89% 65%)" },
-};
-
 type PackageTrendPoint = {
   day: string;
   received: number;
   retrieved: number;
-};
-
-type PackageTypeDistribution = {
-  type: PackageType;
-  label: string;
-  total: number;
 };
 
 type PackagesSectionProps = {
@@ -74,7 +57,6 @@ type PackagesSectionProps = {
   packageStatuses: Record<PackageModel["status"], number>;
   pendingPackages: PackageModel[];
   topPendingPackages: PackageModel[];
-  packageTypeDistribution: PackageTypeDistribution[];
   typeLabels: Record<PackageType, string>;
 };
 
@@ -86,7 +68,6 @@ export function PackagesSection({
   packageStatuses,
   pendingPackages,
   topPendingPackages,
-  packageTypeDistribution,
   typeLabels,
 }: PackagesSectionProps) {
   return (
@@ -97,112 +78,71 @@ export function PackagesSection({
         icon={Package}
         accessLabel={accessLabel}
       />
-      <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recebidas x Retiradas</CardTitle>
-            <CardDescription>Evolução diária dos últimos 7 dias.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <PackagesTrendSkeleton />
-            ) : isError ? (
-              <p className="text-sm text-destructive">
-                Não foi possível carregar as encomendas.
-              </p>
-            ) : (
-              <div className="space-y-6">
-                <ChartContainer config={packageTrendChartConfig} className="aspect-[16/8] w-full">
-                  <LineChart data={trendData}>
-                    <CartesianGrid vertical={false} strokeDasharray="4 4" />
-                    <XAxis dataKey="day" tickLine={false} axisLine={false} dy={6} />
-                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
-                    <ChartTooltip
-                      content={<ChartTooltipContent hideIndicator indicator="line" />}
-                    />
-                    <ChartLegend content={<ChartLegendContent />} />
-                    <Line
-                      type="monotone"
-                      dataKey="received"
-                      stroke="var(--color-received)"
-                      strokeWidth={3}
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="retrieved"
-                      stroke="var(--color-retrieved)"
-                      strokeWidth={3}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ChartContainer>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recebidas x Retiradas</CardTitle>
+          <CardDescription>Evolução diária dos últimos 7 dias.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <PackagesTrendSkeleton />
+          ) : isError ? (
+            <p className="text-sm text-destructive">
+              Não foi possível carregar as encomendas.
+            </p>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+              <ChartContainer
+                config={packageTrendChartConfig}
+                className="h-56 w-full sm:h-60 lg:h-64"
+              >
+                <LineChart data={trendData}>
+                  <CartesianGrid vertical={false} strokeDasharray="4 4" />
+                  <XAxis dataKey="day" tickLine={false} axisLine={false} dy={6} />
+                  <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
+                  <ChartTooltip
+                    content={<ChartTooltipContent hideIndicator indicator="line" />}
+                  />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Line
+                    type="monotone"
+                    dataKey="received"
+                    stroke="var(--color-received)"
+                    strokeWidth={3}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="retrieved"
+                    stroke="var(--color-retrieved)"
+                    strokeWidth={3}
+                    dot={false}
+                  />
+                </LineChart>
+              </ChartContainer>
 
-                <dl className="grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-lg border bg-secondary/20 p-3">
-                    <dt className="text-xs uppercase text-muted-foreground">Pendentes</dt>
-                    <dd className="text-xl font-semibold">{pendingPackages.length}</dd>
-                  </div>
-                  <div className="rounded-lg border bg-secondary/20 p-3">
-                    <dt className="text-xs uppercase text-muted-foreground">Retiradas</dt>
-                    <dd className="text-xl font-semibold">{packageStatuses.retrieved ?? 0}</dd>
-                  </div>
-                  <div className="rounded-lg border bg-secondary/20 p-3">
-                    <dt className="text-xs uppercase text-muted-foreground">
-                      Canceladas/Atrasadas
-                    </dt>
-                    <dd className="text-xl font-semibold">
-                      {(packageStatuses.cancelled ?? 0) + (packageStatuses.delayed ?? 0)}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Distribuição por tipo</CardTitle>
-            <CardDescription>Categorias recebidas recentemente.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <PackagesTypeSkeleton />
-            ) : isError ? (
-              <p className="text-sm text-destructive">
-                Não foi possível carregar as categorias.
-              </p>
-            ) : (
-              <>
-                <ChartContainer
-                  config={packageTypeChartConfig}
-                  className="aspect-square max-h-[320px] w-full"
-                >
-                  <BarChart data={packageTypeDistribution} barSize={32}>
-                    <CartesianGrid strokeDasharray="4 4" vertical={false} />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
-                    <ChartTooltip
-                      content={
-                        <ChartTooltipContent labelFormatter={(value) => `Tipo: ${value}`} />
-                      }
-                    />
-                    <Bar dataKey="total" radius={[8, 8, 0, 0]}>
-                      {packageTypeDistribution.map((item) => (
-                        <Cell key={item.type} fill={`var(--color-${item.type})`} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ChartContainer>
-                <div className="mt-4 text-sm text-muted-foreground">
-                  {pendingPackages.length} encomendas aguardando retirada.
+              <dl className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                <div className="rounded-lg border bg-secondary/20 p-3">
+                  <dt className="text-xs uppercase text-muted-foreground">Pendentes</dt>
+                  <dd className="text-xl font-semibold">{pendingPackages.length}</dd>
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                <div className="rounded-lg border bg-secondary/20 p-3">
+                  <dt className="text-xs uppercase text-muted-foreground">Retiradas</dt>
+                  <dd className="text-xl font-semibold">{packageStatuses.retrieved ?? 0}</dd>
+                </div>
+                <div className="rounded-lg border bg-secondary/20 p-3">
+                  <dt className="text-xs uppercase text-muted-foreground">
+                    Canceladas/Atrasadas
+                  </dt>
+                  <dd className="text-xl font-semibold">
+                    {(packageStatuses.cancelled ?? 0) + (packageStatuses.delayed ?? 0)}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

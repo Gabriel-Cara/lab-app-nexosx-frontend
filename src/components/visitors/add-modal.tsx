@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 
 // Icons
 import { Mail, Phone, Plus, User } from "lucide-react";
@@ -61,7 +61,11 @@ const createVisitorFormSchema = z.object({
 
 type CreateVisitorForm = z.infer<typeof createVisitorFormSchema>;
 
-export function AddModal() {
+type AddModalProps = {
+  trigger?: ReactElement;
+};
+
+export function AddModal({ trigger }: AddModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const queryClient = useQueryClient();
@@ -180,10 +184,12 @@ export function AddModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus />
-          Novo visitante
-        </Button>
+        {trigger ?? (
+          <Button>
+            <Plus />
+            Novo visitante
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

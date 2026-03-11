@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactElement, useEffect, useMemo, useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { useForm, type FieldErrors } from "react-hook-form";
@@ -66,7 +66,11 @@ type AddAreaFormData = z.output<typeof addAreaFormSchema>;
 
 const SLOT_STEP_MINUTES = TIME_STEP_SECONDS / 60;
 
-export function AddModal() {
+type AddModalProps = {
+  trigger?: ReactElement;
+};
+
+export function AddModal({ trigger }: AddModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [startSlotId, setStartSlotId] = useState<string | null>(null);
   const [endSlotId, setEndSlotId] = useState<string | null>(null);
@@ -208,10 +212,12 @@ export function AddModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Plus />
-          Nova Área de Lazer
-        </Button>
+        {trigger ?? (
+          <Button variant="outline">
+            <Plus />
+            Nova Área de Lazer
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-h-[90%] overflow-y-auto">
         <DialogHeader>

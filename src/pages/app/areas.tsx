@@ -23,12 +23,12 @@ export function Areas() {
         {session?.user.role === "resident" && (
           <section className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
             <aside className="h-fit">
-              <h3>Áreas disponíveis</h3>
+              <h3 className="mb-2">Áreas disponíveis</h3>
 
               <AreasAvailable />
             </aside>
             <aside className="h-fit">
-              <h3>Próximos agendamentos</h3>
+              <h3 className="mb-2">Próximos agendamentos</h3>
 
               <UpcomingReservations />
             </aside>

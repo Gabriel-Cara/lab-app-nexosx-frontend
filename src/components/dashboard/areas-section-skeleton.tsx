@@ -2,15 +2,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const LIST_COUNT = 4;
 
-export function AreasAvailabilitySkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="aspect-[16/8] w-full rounded-xl" />
-      <Skeleton className="h-3 w-40" />
-    </div>
-  );
-}
-
 export function AreasQuickMapSkeleton() {
   return (
     <div className="space-y-3">

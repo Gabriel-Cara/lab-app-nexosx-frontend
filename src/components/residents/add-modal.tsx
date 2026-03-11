@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactElement, useState } from "react";
 import {
   Building,
   Calendar,
@@ -69,7 +69,11 @@ const createResidentFormSchema = z.object({
 
 type CreateResidentForm = z.infer<typeof createResidentFormSchema>;
 
-export function AddModal() {
+type AddModalProps = {
+  trigger?: ReactElement;
+};
+
+export function AddModal({ trigger }: AddModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -164,10 +168,12 @@ export function AddModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus />
-          Novo morador
-        </Button>
+        {trigger ?? (
+          <Button>
+            <Plus />
+            Novo morador
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
