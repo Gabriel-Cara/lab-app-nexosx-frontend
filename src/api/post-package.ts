@@ -1,5 +1,6 @@
 import { api } from "@/lib/axios";
 import type { Package, PackageType } from "@/api/get-packages";
+import type { NotificationResult } from "@/api/notification-types";
 
 interface PostPackageBody {
   residentId: string;
@@ -7,20 +8,6 @@ interface PostPackageBody {
   carrier: string;
   type: PackageType;
 }
-
-type NotificationStatus = "sent" | "skipped" | "failed";
-type NotificationFailureReason =
-  | "missing_phone"
-  | "no_external_provider"
-  | "twilio_not_configured"
-  | "twilio_from_missing"
-  | "twilio_error";
-
-type NotificationResult = {
-  status: NotificationStatus;
-  reason?: NotificationFailureReason;
-  message?: string;
-};
 
 type PostPackageResponse = Package & {
   notification?: NotificationResult;

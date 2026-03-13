@@ -13,7 +13,6 @@ import { z } from "zod";
 import { SelectResident } from "../select-resident";
 import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
-import { Label } from "@/components/ui/label";
 import {
   InputGroup,
   InputGroupAddon,
@@ -22,7 +21,6 @@ import {
 } from "../ui/input-group";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -50,6 +48,7 @@ import { fileToDataUrl } from "@/utils/image-utils";
 
 import { ImageDropzone } from "@/components/images/image-dropzone";
 import { formatFieldErrors } from "@/utils/form-errors";
+import { getNotificationFeedback } from "@/utils/notification-feedback";
 
 const createPackageFormSchema = z.object({
   residentId: z.string().min(1, "O destinatário é obrigatório"),
@@ -66,8 +65,13 @@ export function AddModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
-  const { register, control, handleSubmit, reset, formState: { errors } } =
-    useForm<CreatePackageFormData>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CreatePackageFormData>({
     resolver: zodResolver(createPackageFormSchema),
     defaultValues: {
       residentId: "",
@@ -111,10 +115,6 @@ export function AddModal() {
         description,
         type,
       });
-      const notificationError =
-        created.notification && created.notification.status !== "sent"
-          ? `Encomenda criada, mas ${created.notification.message ?? "não foi possível enviar o código ao morador."}`
-          : null;
 
       const imageFile = imageFiles[0];
       if (imageFile) {
@@ -131,11 +131,16 @@ export function AddModal() {
         }
       }
 
-      if (notificationError) {
-        toast.error(notificationError);
-      } else {
-        toast.success("Encomenda criada com sucesso!");
+      toast.success("Encomenda criada com sucesso!");
+
+      const feedback = getNotificationFeedback(created.notification);
+      if (feedback?.successMessage) {
+        toast.success(feedback.successMessage);
       }
+      if (feedback?.errorMessage) {
+        toast.error(feedback.errorMessage);
+      }
+
       await queryClient.invalidateQueries({ queryKey: ["packages"] });
       reset();
       setImageFiles([]);
@@ -164,31 +169,28 @@ export function AddModal() {
           className="grid gap-4"
           onSubmit={handleSubmit(handleCreatePackage, handleInvalidForm)}
         >
-          {
-            <Field className="gap-3">
-              <FieldLabel htmlFor="residentId">Destinatário</FieldLabel>
-              <FieldContent>
-                <Controller
-                  name="residentId"
-                  control={control}
-                  render={({ field }) => (
-                    <SelectResident
-                      inputId="residentId"
-                      value={field.value}
-                      onChange={field.onChange}
-                      invalid={Boolean(errors.residentId)}
-                      required
-                    />
-                  )}
-                />
-              </FieldContent>
-              {errors.residentId && (
-                <p className="text-xs text-rose-500">
-                  {errors.residentId.message}
-                </p>
-              )}
-            </Field>
-          }
+          <Field className="gap-3">
+            <FieldLabel htmlFor="residentId">Destinatário</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="residentId"
+                control={control}
+                render={({ field }) => (
+                  <SelectResident
+                    inputId="residentId"
+                    value={field.value}
+                    onChange={field.onChange}
+                    invalid={Boolean(errors.residentId)}
+                    required
+                  />
+                )}
+              />
+            </FieldContent>
+            {errors.residentId && (
+              <p className="text-xs text-rose-500">{errors.residentId.message}</p>
+            )}
+          </Field>
+
           <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
             <FieldLabel htmlFor="carrier">Remetente</FieldLabel>
             <FieldContent>
@@ -209,6 +211,7 @@ export function AddModal() {
               <p className="text-xs text-rose-500">{errors.carrier.message}</p>
             )}
           </Field>
+
           <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
             <FieldLabel htmlFor="description">Descrição</FieldLabel>
             <FieldContent>
@@ -227,11 +230,10 @@ export function AddModal() {
               </InputGroup>
             </FieldContent>
             {errors.description && (
-              <p className="text-xs text-rose-500">
-                {errors.description.message}
-              </p>
+              <p className="text-xs text-rose-500">{errors.description.message}</p>
             )}
           </Field>
+
           <Field className="col-span-2 gap-1 text-lg sm:col-span-1">
             <FieldLabel htmlFor="type">Tipo</FieldLabel>
             <FieldContent>
@@ -262,26 +264,22 @@ export function AddModal() {
               <p className="text-xs text-rose-500">{errors.type.message}</p>
             )}
           </Field>
-          <div className="grid col-span-2 gap-2">
-            <Label>Imagem (opcional)</Label>
-            <ImageDropzone
-              value={imageFiles}
-              onChange={setImageFiles}
-              maxFiles={1}
-              maxSizeMB={4}
-            />
-          </div>
+
+          <Field className="col-span-2 gap-1">
+            <FieldLabel>Imagem da encomenda</FieldLabel>
+            <FieldContent>
+              <ImageDropzone
+                value={imageFiles}
+                onChange={setImageFiles}
+                maxFiles={1}
+              />
+            </FieldContent>
+          </Field>
         </form>
+
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancelar</Button>
-          </DialogClose>
-          <Button
-            form="create-package-form"
-            type="submit"
-            disabled={isPending}
-          >
-            {isPending ? "Registrando..." : "Registrar"}
+          <Button type="submit" form="create-package-form" disabled={isPending}>
+            {isPending ? "Salvando..." : "Salvar"}
           </Button>
         </DialogFooter>
       </DialogContent>
