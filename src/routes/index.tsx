@@ -54,8 +54,8 @@ export function Routes() {
   const { session, isLoading } = useAuth();
 
   const resolveDefaultPath = useCallback((role?: Role) => {
-    if (role === "master") {
-      return "/master/requests";
+    if (role === "admin") {
+      return "/admin/requests";
     }
 
     return "/dashboard";
@@ -105,6 +105,7 @@ export function Routes() {
             { path: "esqueci-senha", element: withSuspense(<ForgotPassword />) },
             { path: "redefinir-senha", element: withSuspense(<ResetPassword />) },
             { path: "primeiro-acesso", element: withSuspense(<FirstAccess />) },
+            { path: "cadastro-portaria", element: withSuspense(<StaffSignUp />) },
             { path: "cadastro-equipe", element: withSuspense(<StaffSignUp />) },
             { path: "cadastro-morador", element: withSuspense(<ResidentSignUp />) },
           ],

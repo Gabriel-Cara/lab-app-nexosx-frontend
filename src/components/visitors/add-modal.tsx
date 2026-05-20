@@ -49,17 +49,42 @@ import { formatFieldErrors } from "@/utils/form-errors";
 
 import { ImageDropzone } from "@/components/images/image-dropzone";
 
+const createVisitorFormSchema = z
+  .object({
+    name: z.string().min(1, "Nome é obrigatório"),
+    document: z.string().min(4, "Documento é obrigatório"),
+    phone: z.string().optional(),
+    visitReason: z.string().optional(),
+    hostId: z.string().min(1, "Morador é obrigatório"),
+    unlimitedAccess: z.boolean().default(false),
+    allowedHours: z.preprocess((value) => {
+      if (value === "" || value === null || value === undefined) {
+        return undefined;
+      }
 
+      if (typeof value === "string") {
+        const normalizedValue = Number(value);
 
-const createVisitorFormSchema = z.object({
-  name: z.string().min(1, "Nome é obrigatório"),
-  document: z.string().min(4, "Documento é obrigatório"),
-  phone: z.string().optional(),
-  visitReason: z.string().optional(),
-  hostId: z.string().min(1, "Morador é obrigatório"),
-});
+        if (!Number.isNaN(normalizedValue)) {
+          return normalizedValue;
+        }
+      }
 
-type CreateVisitorForm = z.infer<typeof createVisitorFormSchema>;
+      return value;
+    }, z.number().int("Informe uma quantidade inteira de horas.").positive("Informe ao menos 1 hora.").max(999, "Informe no máximo 999 horas.").optional()),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.unlimitedAccess && data.allowedHours === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["allowedHours"],
+        message: "Informe quantas horas o visitante pode permanecer.",
+      });
+    }
+  });
+
+type CreateVisitorFormInput = z.input<typeof createVisitorFormSchema>;
+type CreateVisitorFormData = z.output<typeof createVisitorFormSchema>;
 
 type AddModalProps = {
   trigger?: ReactElement;
@@ -80,18 +105,22 @@ export function AddModal({ trigger }: AddModalProps) {
     reset,
     setValue,
     setError,
+    clearErrors,
+    watch,
     formState: { errors },
-  } =
-    useForm<CreateVisitorForm>({
-      resolver: zodResolver(createVisitorFormSchema),
-      defaultValues: {
-        name: "",
-        document: "",
-        phone: "",
-        visitReason: "",
-        hostId: isResident ? residentHostId : "",
-      },
-    });
+  } = useForm<CreateVisitorFormInput, unknown, CreateVisitorFormData>({
+    resolver: zodResolver(createVisitorFormSchema),
+    defaultValues: {
+      name: "",
+      document: "",
+      phone: "",
+      visitReason: "",
+      hostId: isResident ? residentHostId : "",
+      unlimitedAccess: false,
+      allowedHours: undefined,
+    },
+  });
+  const unlimitedAccess = watch("unlimitedAccess");
 
   useEffect(() => {
     if (isResident && residentHostId) {
@@ -117,13 +146,14 @@ export function AddModal({ trigger }: AddModalProps) {
     name: "Nome",
     document: "Documento",
     phone: "Telefone",
+    allowedHours: "Horas permitidas",
   };
 
-  function handleInvalidForm(formErrors: FieldErrors<CreateVisitorForm>) {
+  function handleInvalidForm(formErrors: FieldErrors<CreateVisitorFormInput>) {
     toast.error(formatFieldErrors(formErrors, fieldLabels));
   }
 
-  async function handleCreateVisitor(data: CreateVisitorForm) {
+  async function handleCreateVisitor(data: CreateVisitorFormData) {
     try {
       const hostId = isResident ? residentHostId : data.hostId;
       const phone = sanitizePhone(data.phone);
@@ -141,6 +171,7 @@ export function AddModal({ trigger }: AddModalProps) {
         ...data,
         phone: phone || undefined,
         hostId,
+        allowedHours: data.unlimitedAccess ? undefined : data.allowedHours,
       });
 
       const imageFile = imageFiles[0];
@@ -166,6 +197,8 @@ export function AddModal({ trigger }: AddModalProps) {
         phone: "",
         visitReason: "",
         hostId: isResident ? residentHostId : "",
+        unlimitedAccess: false,
+        allowedHours: undefined,
       });
 
       setImageFiles([]);
@@ -283,6 +316,58 @@ export function AddModal({ trigger }: AddModalProps) {
                 </p>
               )}
             </Field>
+            <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
+              <div className="space-y-2">
+                <Label htmlFor="allowedHours">Permanência máxima</Label>
+                <InputGroup>
+                  <InputGroupInput
+                    id="allowedHours"
+                    type="number"
+                    min={1}
+                    disabled={unlimitedAccess}
+                    placeholder={unlimitedAccess ? "Sem limite" : "Ex: 4"}
+                    aria-invalid={Boolean(errors.allowedHours)}
+                    {...register("allowedHours", {
+                      setValueAs: (value) =>
+                        value === "" ? undefined : Number(value),
+                    })}
+                  />
+                  <InputGroupAddon>horas</InputGroupAddon>
+                </InputGroup>
+                {errors.allowedHours && (
+                  <p className="text-xs text-rose-500">
+                    {errors.allowedHours.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="unlimitedAccess"
+                  className="flex flex-col items-start"
+                >
+                  VIP
+                  <div className="relative mt-2 inline-block h-5 w-10 cursor-pointer rounded-full bg-zinc-900 transition [-webkit-tap-highlight-color:transparent] has-checked:bg-[#1976D2]">
+                    <input
+                      type="checkbox"
+                      id="unlimitedAccess"
+                      className="peer sr-only"
+                      {...register("unlimitedAccess", {
+                        onChange: (event) => {
+                          if (event.target.checked) {
+                            setValue("allowedHours", undefined, {
+                              shouldValidate: true,
+                            });
+                            clearErrors("allowedHours");
+                          }
+                        },
+                      })}
+                    />
+                    <span className="absolute inset-y-0 start-0 m-1 size-3 rounded-full bg-zinc-900 ring-2 ring-inset ring-white transition-all peer-checked:start-6 peer-checked:w-1 peer-checked:bg-white peer-checked:ring-transparent" />
+                  </div>
+                </Label>
+              </div>
+            </div>
             <Field className="gap-3">
               <FieldLabel htmlFor="phone">Telefone</FieldLabel>
               <FieldContent>

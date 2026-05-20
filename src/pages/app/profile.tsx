@@ -28,13 +28,20 @@ import { toast } from "sonner";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 import { ImageManager } from "@/components/images/image-manager";
 import { ProfileSkeleton } from "@/pages/app/profile-skeleton";
-import { Car, Plus, Trash2 } from "lucide-react";
+import { Building, Car, Plus, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
+import {
+  formatParkingSpot,
+  formatVehiclePlate,
+  sanitizeParkingSpot,
+  sanitizeVehiclePlate,
+} from "@/utils/vehicle-plate";
 
 const vehicleSchema = z
   .object({
     model: z.string().min(1, "Informe o modelo"),
     plate: z.string().min(1, "Informe a placa"),
+    parkingSpot: z.string().min(1, "Informe a vaga"),
     year: z.number().int().optional(),
   })
   .superRefine((value, ctx) => {
@@ -102,7 +109,12 @@ export function Profile() {
         document: data.document ?? undefined,
         apartment: data.apartment ?? undefined,
         building: data.building ?? undefined,
-        vehicles: data.vehicles ?? [],
+        vehicles:
+          data.vehicles?.map((vehicle) => ({
+            ...vehicle,
+            plate: formatVehiclePlate(vehicle.plate),
+            parkingSpot: formatParkingSpot(vehicle.parkingSpot),
+          })) ?? [],
         emergencyContact: data.emergencyContact ?? undefined,
       });
     }
@@ -117,7 +129,16 @@ export function Profile() {
         return;
       }
 
-      console.log({ ...values, phone: sanitizedPhone || undefined });
+      console.log({
+        ...values,
+        phone: sanitizedPhone || undefined,
+        vehicles:
+          values.vehicles?.map((vehicle) => ({
+            ...vehicle,
+            plate: sanitizeVehiclePlate(vehicle.plate),
+            parkingSpot: sanitizeParkingSpot(vehicle.parkingSpot),
+          })) ?? [],
+      });
       toast.success("Dados atualizados com sucesso (mock)!");
       setIsEditing(false);
     } catch (error) {
@@ -126,7 +147,7 @@ export function Profile() {
     }
   });
 
-  const canShowExtendedSections = data?.role !== "staff";
+  const canShowExtendedSections = data?.role !== "doorman";
 
   function handleCancelEdit() {
     if (data) {
@@ -137,7 +158,12 @@ export function Profile() {
         document: data.document ?? undefined,
         apartment: data.apartment ?? undefined,
         building: data.building ?? undefined,
-        vehicles: data.vehicles ?? [],
+        vehicles:
+          data.vehicles?.map((vehicle) => ({
+            ...vehicle,
+            plate: formatVehiclePlate(vehicle.plate),
+            parkingSpot: formatParkingSpot(vehicle.parkingSpot),
+          })) ?? [],
         emergencyContact: data.emergencyContact ?? undefined,
       });
     }
@@ -178,7 +204,7 @@ export function Profile() {
             Aguarde o carregamento do usuário para editar o perfil.
           </p>
         ) : isLoading ? (
-          <ProfileSkeleton showExtended={session?.user.role !== "staff"} />
+          <ProfileSkeleton showExtended={session?.user.role !== "doorman"} />
         ) : isError || !data ? (
           <p className="text-sm text-destructive">
             Não foi possível carregar seus dados. Tente novamente.
@@ -310,7 +336,14 @@ export function Profile() {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => append({ model: "", plate: "", year: undefined })}
+                          onClick={() =>
+                            append({
+                              model: "",
+                              plate: "",
+                              parkingSpot: "",
+                              year: undefined,
+                            })
+                          }
                           disabled={!isEditing}
                         >
                           <Plus />
@@ -341,7 +374,7 @@ export function Profile() {
                                   <Trash2 />
                                 </Button>
                               </div>
-                              <div className="grid gap-4 md:grid-cols-3">
+                              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                                 <Field className="gap-1.5">
                                   <FieldLabel htmlFor={`vehicle-model-${field.id}`}>
                                     Modelo
@@ -370,9 +403,15 @@ export function Profile() {
                                       <InputGroupInput
                                         id={`vehicle-plate-${field.id}`}
                                         disabled={!isEditing}
-                                        placeholder="ABC-1234"
+                                        placeholder="ABC-1234 ou ABC1D23"
                                         aria-required={true}
-                                        {...form.register(`vehicles.${index}.plate`)}
+                                        {...form.register(`vehicles.${index}.plate`, {
+                                          onChange: (event) =>
+                                            form.setValue(
+                                              `vehicles.${index}.plate`,
+                                              formatVehiclePlate(event.target.value)
+                                            ),
+                                        })}
                                       />
                                       <InputGroupAddon>
                                         <Car />
@@ -381,8 +420,33 @@ export function Profile() {
                                   </FieldContent>
                                 </Field>
                                 <Field className="gap-1.5">
+                                  <FieldLabel htmlFor={`vehicle-parking-spot-${field.id}`}>
+                                    Vaga
+                                  </FieldLabel>
+                                  <FieldContent>
+                                    <InputGroup>
+                                      <InputGroupInput
+                                        id={`vehicle-parking-spot-${field.id}`}
+                                        disabled={!isEditing}
+                                        placeholder="Ex: G2-14"
+                                        aria-required={true}
+                                        {...form.register(`vehicles.${index}.parkingSpot`, {
+                                          onChange: (event) =>
+                                            form.setValue(
+                                              `vehicles.${index}.parkingSpot`,
+                                              formatParkingSpot(event.target.value)
+                                            ),
+                                        })}
+                                      />
+                                      <InputGroupAddon>
+                                        <Building />
+                                      </InputGroupAddon>
+                                    </InputGroup>
+                                  </FieldContent>
+                                </Field>
+                                <Field className="gap-1.5">
                                   <FieldLabel htmlFor={`vehicle-year-${field.id}`}>
-                                    Ano do veículo
+                                    Ano
                                   </FieldLabel>
                                   <FieldContent>
                                     <InputGroup>

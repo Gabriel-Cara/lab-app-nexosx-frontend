@@ -166,7 +166,7 @@ export function CondominiumRequests() {
           <TableHeader>
             <TableRow>
               <TableHead>Condomínio</TableHead>
-              <TableHead>Administrador</TableHead>
+              <TableHead>Gestor</TableHead>
               <TableHead>Contato</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Solicitado em</TableHead>

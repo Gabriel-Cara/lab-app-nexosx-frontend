@@ -10,7 +10,7 @@ export type StaffSignupPayload = {
 };
 
 export async function postStaffSignup(payload: StaffSignupPayload) {
-  const response = await api.post("/auth/staff-signup", {
+  const response = await api.post("/auth/doorman-signup", {
     token: payload.token,
     name: payload.name,
     email: payload.email,

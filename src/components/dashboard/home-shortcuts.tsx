@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/card";
 import type { UserRole } from "@/types/auth";
 
-type AppRole = Exclude<UserRole, "master">;
+type AppRole = Exclude<UserRole, "admin">;
 
 type Shortcut = {
   id: string;
@@ -36,16 +36,16 @@ type Shortcut = {
 };
 
 const roleLabel: Record<AppRole, string> = {
-  admin: "Administrador(a)",
-  staff: "Equipe",
+  manager: "Gestor(a)",
+  doorman: "Portaria",
   resident: "Morador(a)",
 };
 
 const roleDescription: Record<AppRole, string> = {
-  admin:
+  manager:
     "Acesse rapidamente os fluxos mais críticos para operação do condomínio.",
-  staff:
-    "Atalhos para tarefas operacionais do dia a dia e atendimento ao morador.",
+  doorman:
+    "Atalhos para tarefas operacionais da portaria e atendimento ao morador.",
   resident:
     "Acesse seus recursos principais para organizar visitas, encomendas e reservas.",
 };
@@ -58,16 +58,16 @@ const shortcuts: Shortcut[] = [
     href: "/residents",
     cta: "Abrir moradores",
     icon: Users,
-    roles: ["admin", "staff"],
+    roles: ["manager", "doorman"],
   },
   {
-    id: "staff",
-    title: "Equipe e permissões",
-    description: "Gerencie o quadro de funcionários e acompanhe responsáveis.",
-    href: "/staff",
-    cta: "Abrir equipe",
+    id: "doorman",
+    title: "Portaria e permissões",
+    description: "Gerencie a equipe da portaria e acompanhe responsáveis.",
+    href: "/doorman",
+    cta: "Abrir portaria",
     icon: UserCog,
-    roles: ["admin"],
+    roles: ["manager"],
   },
   {
     id: "visitors",
@@ -76,7 +76,7 @@ const shortcuts: Shortcut[] = [
     href: "/visitors",
     cta: "Abrir visitantes",
     icon: UserRoundCheck,
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
   },
   {
     id: "packages",
@@ -85,7 +85,7 @@ const shortcuts: Shortcut[] = [
     href: "/packages",
     cta: "Abrir encomendas",
     icon: Package,
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
   },
   {
     id: "areas",
@@ -94,7 +94,7 @@ const shortcuts: Shortcut[] = [
     href: "/areas",
     cta: "Abrir áreas",
     icon: Volleyball,
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
   },
   {
     id: "reservations",
@@ -103,7 +103,7 @@ const shortcuts: Shortcut[] = [
     href: "/reservations",
     cta: "Abrir agendamentos",
     icon: CalendarDays,
-    roles: ["admin", "staff"],
+    roles: ["manager", "doorman"],
   },
   {
     id: "events",
@@ -112,7 +112,7 @@ const shortcuts: Shortcut[] = [
     href: "/events",
     cta: "Abrir eventos",
     icon: PartyPopper,
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
   },
   {
     id: "profile",
@@ -121,7 +121,7 @@ const shortcuts: Shortcut[] = [
     href: "/profile",
     cta: "Abrir perfil",
     icon: User,
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
   },
 ];
 

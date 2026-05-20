@@ -36,12 +36,22 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
   const normalizedSearch = (filters?.searchTerm ?? "").trim().toLowerCase();
   const statusFilter = filters?.status ?? "all";
 
-  const filteredVisitors = useMemo(() => {
-    const scopedVisitors =
+  const scopedVisitors = useMemo(
+    () =>
       isResident && residentId
         ? visitorsData.filter((log) => log.hostId === residentId)
-        : visitorsData;
+        : visitorsData,
+    [visitorsData, isResident, residentId],
+  );
 
+  const latestLogIdByVisitor = useMemo(() => {
+    return scopedVisitors.reduce<Record<string, string>>((acc, log) => {
+      acc[log.visitorId] ??= log.id;
+      return acc;
+    }, {});
+  }, [scopedVisitors]);
+
+  const filteredVisitors = useMemo(() => {
     return scopedVisitors.filter((log) => {
       const { visitor, host, status } = log;
       const matchesStatus =
@@ -68,7 +78,7 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
 
       return haystack.includes(normalizedSearch);
     });
-  }, [visitorsData, normalizedSearch, statusFilter, isResident, residentId]);
+  }, [scopedVisitors, normalizedSearch, statusFilter]);
 
   const totalItems = filteredVisitors.length;
   const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / perPage);
@@ -122,7 +132,11 @@ export function TableVisitors({ filters }: TableVisitorsProps) {
       ) : (
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
           {visibleVisitors.map((log) => (
-            <TableRowVisitor key={log.id} log={log} />
+            <TableRowVisitor
+              key={log.id}
+              log={log}
+              isLatestForVisitor={latestLogIdByVisitor[log.visitorId] === log.id}
+            />
           ))}
         </section>
       )}

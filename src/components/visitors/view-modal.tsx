@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { VisitorAccessBadge } from "./access-badge";
 import { Status } from "./status";
 
 import type { VisitorsResponse } from "@/api/get-visitors";
@@ -38,11 +39,31 @@ export function ViewVisitorModal({
   open,
   onOpenChange,
 }: ViewVisitorModalProps) {
-  const { visitor, host, handledBy, entryTime, exitTime, status } = log;
+  const {
+    visitor,
+    host,
+    handledBy,
+    entryTime,
+    exitTime,
+    expectedExitTime,
+    status,
+    unlimitedAccess,
+    allowedHours,
+  } = log;
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const canManageImage =
     session?.user.role !== "resident" || log.hostId === session?.user.id;
+  const allowedHoursLabel = unlimitedAccess
+    ? "Sem limite de horas"
+    : allowedHours === null
+      ? "Não informada"
+      : `${allowedHours} ${allowedHours === 1 ? "hora" : "horas"}`;
+  const expectedExitLabel = unlimitedAccess
+    ? "Sem limite"
+    : expectedExitTime === null || expectedExitTime === ""
+      ? "Será calculada na entrada"
+      : format(expectedExitTime, "dd/MM/yyyy HH:mm", { locale: ptBR });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -59,7 +80,13 @@ export function ViewVisitorModal({
                   Visitante
                 </TableHead>
                 <TableHead className="flex justify-end">
-                  <Status variant={status} />
+                  <div className="flex items-center justify-end gap-2">
+                    <VisitorAccessBadge
+                      unlimitedAccess={unlimitedAccess}
+                      allowedHours={allowedHours}
+                    />
+                    <Status variant={status} />
+                  </div>
                 </TableHead>
               </TableHeader>
               <TableBody>
@@ -81,6 +108,12 @@ export function ViewVisitorModal({
                     <Badge variant="outline">
                       {visitor.phone === "" ? "Sem telefone" : visitor.phone}
                     </Badge>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Permanência</TableCell>
+                  <TableCell className="text-end">
+                    <Badge variant="outline">{allowedHoursLabel}</Badge>
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -118,6 +151,12 @@ export function ViewVisitorModal({
                   </TableCell>
                 </TableRow>
                 <TableRow>
+                  <TableCell>Saída prevista</TableCell>
+                  <TableCell className="text-end">
+                    <Badge variant="outline">{expectedExitLabel}</Badge>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
                   <TableCell>Responsável</TableCell>
                   <TableCell className="text-end">
                     <Badge variant="outline">
@@ -127,6 +166,16 @@ export function ViewVisitorModal({
                     </Badge>
                   </TableCell>
                 </TableRow>
+                {unlimitedAccess ? (
+                  <TableRow>
+                    <TableCell>Acesso livre</TableCell>
+                    <TableCell className="text-end">
+                      <Badge variant="outline">
+                        Sem aprovação, com múltiplas entradas e saídas
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ) : null}
               </TableBody>
             </Table>
           </div>

@@ -122,7 +122,7 @@ export function StaffSignUp() {
   return (
     <>
       <Helmet>
-        <title>Cadastro de equipe</title>
+        <title>Cadastro da portaria</title>
       </Helmet>
 
       <div className="p-8">
@@ -133,7 +133,7 @@ export function StaffSignUp() {
         <div className="flex w-full md:w-[380px] flex-col justify-center gap-6">
           <div className="flex flex-col gap-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
-              Cadastro de equipe
+              Cadastro da portaria
             </h1>
             <p className="text-sm text-muted-foreground">
               Complete seus dados para acessar o painel

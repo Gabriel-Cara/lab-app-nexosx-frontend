@@ -23,7 +23,7 @@ export function Staff() {
   const [perPage, setPerPage] = useState(10);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["staff"],
+    queryKey: ["doorman"],
     queryFn: () => getStaff(),
   });
 
@@ -77,13 +77,13 @@ export function Staff() {
   return (
     <>
       <Helmet>
-        <title>Equipe</title>
+        <title>Portaria</title>
       </Helmet>
 
       <main className="flex min-h-0 flex-1 flex-col gap-8">
         <PageHeader
-          title="Equipe"
-          description="Gerencie os funcionários do condomínio"
+          title="Portaria"
+          description="Gerencie a equipe da portaria do condomínio"
           actions={
             <>
             <StaffInviteLinkModal />
@@ -96,7 +96,7 @@ export function Staff() {
           <InputGroupInput
             value={searchTerm}
             onChange={handleSearch}
-            placeholder="Buscar funcionário"
+            placeholder="Buscar portaria"
           />
           <InputGroupAddon>
             <Search />
@@ -107,16 +107,16 @@ export function Staff() {
           <ResidentsPageSkeleton />
         ) : isError ? (
           <p className="text-sm text-destructive">
-            Não foi possível carregar a equipe. Tente novamente.
+            Não foi possível carregar a portaria. Tente novamente.
           </p>
         ) : filteredStaff.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="Nenhum funcionário encontrado"
+            title="Nenhum porteiro encontrado"
             description={
               searchTerm.trim()
                 ? "Tente ajustar os filtros ou buscar por outro termo."
-                : "Quando houver funcionários cadastrados, eles aparecerão aqui."
+                : "Quando houver integrantes da portaria cadastrados, eles aparecerão aqui."
             }
             size="sm"
           />

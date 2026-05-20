@@ -43,14 +43,14 @@ import {
 } from "@/api/get-reservations";
 import type { UserRole } from "@/types/auth";
 
-type Role = Exclude<UserRole, "master">;
+type Role = Exclude<UserRole, "admin">;
 
 type VisitorStatus = VisitorsResponse["status"];
 type ReservationStatus = Reservation["status"];
 
 const roleLabel: Record<Role, string> = {
-  admin: "Administrador(a)",
-  staff: "Equipe",
+  manager: "Gestor(a)",
+  doorman: "Portaria",
   resident: "Morador(a)",
 };
 
@@ -63,11 +63,11 @@ const sectionOrder = [
 ] as const;
 
 const sectionAccess: Record<(typeof sectionOrder)[number], Role[]> = {
-  packages: ["admin", "staff", "resident"],
-  visitors: ["admin", "staff", "resident"],
-  residents: ["admin", "staff"],
-  areas: ["admin", "staff", "resident"],
-  reservations: ["admin", "staff"],
+  packages: ["manager", "doorman", "resident"],
+  visitors: ["manager", "doorman", "resident"],
+  residents: ["manager", "doorman"],
+  areas: ["manager", "doorman", "resident"],
+  reservations: ["manager", "doorman"],
 };
 
 const visitorStatuses: VisitorStatus[] = ["pending", "authorized", "entry", "left", "denied"];
@@ -87,7 +87,7 @@ const reservationStatusConfig: Record<ReservationStatus, { label: string; classN
   cancelled: { label: "Cancelada", className: "bg-slate-200 text-slate-700" },
 };
 
-const isAppRole = (value: UserRole): value is Role => value !== "master";
+const isAppRole = (value: UserRole): value is Role => value !== "admin";
 
 const packageTypeLabels: Record<PackageType, string> = {
   box: "Caixa",
@@ -162,24 +162,38 @@ function getAccessLabel(routeId: (typeof sectionOrder)[number]) {
 
 export function Dashboard() {
   const { session } = useAuth();
-  const role = session?.user.role ?? "resident";
-  const showOverview = role === "admin" || role === "staff";
+  const role = session?.user.role;
+  const showOverview = role === "manager" || role === "doorman";
+  const dashboardResidentsPage = 1;
+  const dashboardResidentsLimit = 100;
+  const dashboardResidentsSearch = "";
+  const isAuthenticated = Boolean(session?.token);
 
   const visibleSections = useMemo(
     () =>
-      isAppRole(role)
+      role && isAppRole(role)
         ? sectionOrder.filter((section) => sectionAccess[section].includes(role))
         : [],
     [role],
   );
+  const canLoadPackages = isAuthenticated && visibleSections.includes("packages");
+  const canLoadResidents =
+    isAuthenticated &&
+    (showOverview || visibleSections.includes("residents"));
+  const canLoadVisitors = isAuthenticated && visibleSections.includes("visitors");
+  const canLoadAreas = isAuthenticated && visibleSections.includes("areas");
+  const canLoadReservations =
+    isAuthenticated &&
+    (showOverview || visibleSections.includes("reservations"));
 
   const {
     data: packages = [],
     isLoading: isLoadingPackages,
     isError: isErrorPackages,
   } = useQuery<PackageModel[]>({
-    queryKey: ["dashboard-packages"],
+    queryKey: ["packages"],
     queryFn: getPackages,
+    enabled: canLoadPackages,
   });
 
   const {
@@ -187,8 +201,19 @@ export function Dashboard() {
     isLoading: isLoadingResidents,
     isError: isErrorResidents,
   } = useQuery<GetResidentsResponse>({
-    queryKey: ["dashboard-residents", { limit: 100 }],
-    queryFn: () => getResidents({ limit: 100 }),
+    queryKey: [
+      "residents",
+      dashboardResidentsPage,
+      dashboardResidentsLimit,
+      dashboardResidentsSearch,
+    ],
+    queryFn: () =>
+      getResidents({
+        page: dashboardResidentsPage,
+        limit: dashboardResidentsLimit,
+        search: undefined,
+      }),
+    enabled: canLoadResidents,
   });
 
   const residents = residentsResponse?.data ?? [];
@@ -199,8 +224,9 @@ export function Dashboard() {
     isLoading: isLoadingVisitors,
     isError: isErrorVisitors,
   } = useQuery<VisitorsResponse[]>({
-    queryKey: ["dashboard-visitors"],
+    queryKey: ["visitors"],
     queryFn: getVisitors,
+    enabled: canLoadVisitors,
   });
 
   const {
@@ -208,8 +234,9 @@ export function Dashboard() {
     isLoading: isLoadingAreas,
     isError: isErrorAreas,
   } = useQuery<Area[]>({
-    queryKey: ["dashboard-areas"],
+    queryKey: ["areas"],
     queryFn: getAreas,
+    enabled: canLoadAreas,
   });
 
   const {
@@ -217,8 +244,9 @@ export function Dashboard() {
     isLoading: isLoadingReservations,
     isError: isErrorReservations,
   } = useQuery<Reservation[]>({
-    queryKey: ["dashboard-reservations"],
+    queryKey: ["reservations", "all"],
     queryFn: () => getReservations(),
+    enabled: canLoadReservations,
   });
 
   const packageStatuses = useMemo(
@@ -359,6 +387,10 @@ export function Dashboard() {
       trend: `${reservationStatusTotals.pending ?? 0} aguardando decisão`,
     },
   ];
+
+  if (!role) {
+    return null;
+  }
 
   return (
     <>

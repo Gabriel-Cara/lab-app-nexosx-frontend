@@ -61,7 +61,7 @@ export function AddStaffModal() {
   const { mutateAsync: mutateStaff, isPending } = useMutation({
     mutationFn: postStaff,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["staff"] });
+      await queryClient.invalidateQueries({ queryKey: ["doorman"] });
     },
   });
 
@@ -95,7 +95,7 @@ export function AddStaffModal() {
         shift: data.shift?.trim() || undefined,
       });
 
-      toast.success("Funcionário convidado com sucesso!");
+      toast.success("Porteiro convidado com sucesso!");
       reset({
         name: "",
         email: "",
@@ -104,7 +104,7 @@ export function AddStaffModal() {
       });
       setIsOpen(false);
     } catch {
-      toast.error("Não foi possível criar o funcionário. Tente novamente.");
+      toast.error("Não foi possível criar o porteiro. Tente novamente.");
     }
   }
 
@@ -113,14 +113,14 @@ export function AddStaffModal() {
       <DialogTrigger asChild>
         <Button>
           <Plus />
-          Novo funcionário
+          Novo porteiro
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Cadastrar funcionário</DialogTitle>
+          <DialogTitle>Cadastrar porteiro</DialogTitle>
           <DialogDescription>
-            Preencha os dados do novo funcionário. Um convite será enviado por e-mail.
+            Preencha os dados do novo porteiro. Um convite será enviado por e-mail.
           </DialogDescription>
         </DialogHeader>
 

@@ -1,11 +1,11 @@
 import { api } from "@/lib/axios";
 import type { UserRole } from "@/types/auth";
 
-export type MasterUser = {
+export type AdminUser = {
   id: string;
   name: string;
   email: string;
-  role: Exclude<UserRole, "master">;
+  role: Exclude<UserRole, "admin">;
   condominium?: {
     id: string;
     name: string;
@@ -13,7 +13,7 @@ export type MasterUser = {
   } | null;
 };
 
-export async function getMasterUsers() {
-  const response = await api.get<MasterUser[]>("/master/users");
+export async function getAdminUsers() {
+  const response = await api.get<AdminUser[]>("/admin/users");
   return response.data;
 }

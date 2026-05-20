@@ -13,7 +13,7 @@ export async function postStaff(payload: PostStaffPayload) {
     email: payload.email,
     phone: payload.phone ?? undefined,
     shift: payload.shift ?? undefined,
-    role: "staff",
+    role: "doorman",
   });
 
   return response.data;

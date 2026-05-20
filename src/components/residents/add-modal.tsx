@@ -40,11 +40,18 @@ import {
 import { postResident } from "@/api/post-resident";
 import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 import { formatFieldErrors } from "@/utils/form-errors";
+import {
+  formatParkingSpot,
+  formatVehiclePlate,
+  sanitizeParkingSpot,
+  sanitizeVehiclePlate,
+} from "@/utils/vehicle-plate";
 
 const vehicleSchema = z
   .object({
     model: z.string().min(1, "Informe o modelo"),
     plate: z.string().min(1, "Informe a placa"),
+    parkingSpot: z.string().min(1, "Informe a vaga"),
     year: z.number().int().optional(),
   })
   .superRefine((value, ctx) => {
@@ -142,7 +149,8 @@ export function AddModal({ trigger }: AddModalProps) {
         vehicles:
           data.vehicles?.map((vehicle) => ({
             model: vehicle.model.trim(),
-            plate: vehicle.plate.trim(),
+            plate: sanitizeVehiclePlate(vehicle.plate),
+            parkingSpot: sanitizeParkingSpot(vehicle.parkingSpot),
             year: vehicle.year!,
           })) ?? [],
         building: data.building || "",
@@ -274,6 +282,12 @@ export function AddModal({ trigger }: AddModalProps) {
               </p>
             )}
           </Field>
+          <div className="col-span-2 space-y-1">
+            <h3 className="text-sm font-medium">Informações adicionais</h3>
+            <p className="text-sm text-muted-foreground">
+              Inclua torre, contato de emergência, placa e vaga de cada veículo do morador.
+            </p>
+          </div>
           <Field className="col-span-2 gap-3 text-lg sm:col-span-1">
             <FieldLabel htmlFor="emergencyContact">Nº de emergência</FieldLabel>
             <FieldContent>
@@ -312,7 +326,12 @@ export function AddModal({ trigger }: AddModalProps) {
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  append({ model: "", plate: "", year: undefined })
+                  append({
+                    model: "",
+                    plate: "",
+                    parkingSpot: "",
+                    year: undefined,
+                  })
                 }
               >
                 <Plus />
@@ -343,7 +362,7 @@ export function AddModal({ trigger }: AddModalProps) {
                         <Trash2 />
                       </Button>
                     </div>
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                       <Field className="gap-1.5">
                         <FieldLabel htmlFor={`vehicle-model-${field.id}`}>
                           Modelo
@@ -378,12 +397,18 @@ export function AddModal({ trigger }: AddModalProps) {
                           <InputGroup>
                             <InputGroupInput
                               id={`vehicle-plate-${field.id}`}
-                              placeholder="ABC-1234"
+                              placeholder="ABC-1234 ou ABC1D23"
                               aria-invalid={Boolean(
                                 errors.vehicles?.[index]?.plate
                               )}
                               aria-required={true}
-                              {...register(`vehicles.${index}.plate`)}
+                              {...register(`vehicles.${index}.plate`, {
+                                onChange: (event) =>
+                                  setValue(
+                                    `vehicles.${index}.plate`,
+                                    formatVehiclePlate(event.target.value)
+                                  ),
+                              })}
                             />
                             <InputGroupAddon>
                               <TextCursorInput />
@@ -397,8 +422,40 @@ export function AddModal({ trigger }: AddModalProps) {
                         )}
                       </Field>
                       <Field className="gap-1.5">
+                        <FieldLabel htmlFor={`vehicle-parking-spot-${field.id}`}>
+                          Vaga
+                        </FieldLabel>
+                        <FieldContent>
+                          <InputGroup>
+                            <InputGroupInput
+                              id={`vehicle-parking-spot-${field.id}`}
+                              placeholder="Ex: G2-14"
+                              aria-invalid={Boolean(
+                                errors.vehicles?.[index]?.parkingSpot
+                              )}
+                              aria-required={true}
+                              {...register(`vehicles.${index}.parkingSpot`, {
+                                onChange: (event) =>
+                                  setValue(
+                                    `vehicles.${index}.parkingSpot`,
+                                    formatParkingSpot(event.target.value)
+                                  ),
+                              })}
+                            />
+                            <InputGroupAddon>
+                              <Calendar />
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </FieldContent>
+                        {errors.vehicles?.[index]?.parkingSpot && (
+                          <p className="text-xs text-rose-500">
+                            {errors.vehicles[index]?.parkingSpot?.message}
+                          </p>
+                        )}
+                      </Field>
+                      <Field className="gap-1.5">
                         <FieldLabel htmlFor={`vehicle-year-${field.id}`}>
-                          Ano do veículo
+                          Ano
                         </FieldLabel>
                         <FieldContent>
                           <InputGroup>

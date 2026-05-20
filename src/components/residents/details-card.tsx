@@ -1,10 +1,14 @@
-import { Home, Mail, Phone } from "lucide-react";
+import { Building, Car, Home, Mail, Phone } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
 import { EditModal } from "./edit-modal";
 import { DeleteModal } from "./delete-modal";
 import { ResendInviteButton } from "./resend-invite-button";
+import {
+  formatParkingSpot,
+  formatVehiclePlate,
+} from "@/utils/vehicle-plate";
 
 interface DetailsCardProps {
   id: string;
@@ -12,13 +16,15 @@ interface DetailsCardProps {
   apartment?: string | null;
   email?: string | null;
   phone?: string | null;
-  role: "admin" | "staff" | "resident";
+  role: "manager" | "doorman" | "resident";
   imageUrl?: string | null;
   password?: string;
   building?: string | null;
   vehicles?: {
+    id?: string;
     model: string;
     plate: string;
+    parkingSpot?: string | null;
     year: number;
   }[] | null;
   emergencyContact?: string | null;
@@ -64,7 +70,14 @@ export function DetailsCard(props: DetailsCardProps) {
               apartment={props.apartment ?? ""}
               password=""
               building={props.building ?? ""}
-              vehicles={props.vehicles ?? []}
+              vehicles={
+                props.vehicles?.map((vehicle) => ({
+                  model: vehicle.model,
+                  plate: vehicle.plate,
+                  parkingSpot: vehicle.parkingSpot ?? "",
+                  year: vehicle.year,
+                })) ?? []
+              }
               emergencyContact={props.emergencyContact ?? ""}
               imageUrl={props.imageUrl}
             />
@@ -87,6 +100,51 @@ export function DetailsCard(props: DetailsCardProps) {
             {props.phone ?? "Sem telefone"}
           </div>
         </div>
+
+        {(props.building || props.emergencyContact || props.vehicles?.length) ? (
+          <div className="mt-4 space-y-3 border-t pt-4">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Informações adicionais
+            </p>
+
+            {props.building && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Building className="w-4 h-4" />
+                Torre {props.building}
+              </div>
+            )}
+
+            {props.emergencyContact && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="w-4 h-4" />
+                {props.emergencyContact}
+              </div>
+            )}
+
+            {props.vehicles && props.vehicles.length > 0 && (
+              <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Car className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="flex flex-wrap gap-2">
+                  {props.vehicles.map((vehicle) => (
+                    <Badge
+                      key={
+                        vehicle.id ??
+                        `${vehicle.model}-${vehicle.plate}-${vehicle.year}`
+                      }
+                      variant="outline"
+                    >
+                      {vehicle.model ? `${vehicle.model} · ` : ""}
+                      {formatVehiclePlate(vehicle.plate)}
+                      {vehicle.parkingSpot
+                        ? ` · vaga ${formatParkingSpot(vehicle.parkingSpot)}`
+                        : ""}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );

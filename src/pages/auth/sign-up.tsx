@@ -20,7 +20,7 @@ import { maskPhone, sanitizePhone } from "@/utils/phone-mask";
 const signUpFormSchema = z.object({
   name: z.string().min(2, "Informe o nome do condomínio"),
   code: z.string().min(2, "Informe o código do condomínio"),
-  adminName: z.string().min(2, "Informe o nome do administrador"),
+  adminName: z.string().min(2, "Informe o nome do gestor"),
   adminEmail: z.email("Informe um e-mail válido"),
   adminPhone: z.string().optional(),
   adminPassword: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
@@ -60,7 +60,7 @@ export function SignUp() {
         adminPassword: data.adminPassword,
       });
 
-      toast.success("Solicitação enviada. Aguarde a aprovação do master.", {
+      toast.success("Solicitação enviada. Aguarde a aprovação do administrador da plataforma.", {
         action: {
           label: "Login",
           onClick: () => navigate("/sign-in"),
@@ -88,7 +88,7 @@ export function SignUp() {
               Solicitar cadastro
             </h1>
             <p className="text-sm text-muted-foreground">
-              Informe os dados do condomínio e do administrador
+              Informe os dados do condomínio e do gestor
             </p>
           </div>
 
@@ -138,7 +138,7 @@ export function SignUp() {
             </Field>
 
             <Field className="gap-2">
-              <FieldLabel htmlFor="adminName">Nome do administrador</FieldLabel>
+              <FieldLabel htmlFor="adminName">Nome do gestor</FieldLabel>
               <FieldContent>
                 <InputGroup>
                   <InputGroupInput
@@ -163,7 +163,7 @@ export function SignUp() {
 
             <Field className="gap-2">
               <FieldLabel htmlFor="adminEmail">
-                E-mail do administrador
+                E-mail do gestor
               </FieldLabel>
               <FieldContent>
                 <InputGroup>
@@ -189,7 +189,7 @@ export function SignUp() {
 
             <Field className="gap-2">
               <FieldLabel htmlFor="adminPhone">
-                Telefone do administrador
+                Telefone do gestor
               </FieldLabel>
               <FieldContent>
                 <InputGroup>
@@ -217,7 +217,7 @@ export function SignUp() {
 
             <Field className="gap-2">
               <FieldLabel htmlFor="adminPassword">
-                Senha do administrador
+                Senha do gestor
               </FieldLabel>
               <FieldContent>
                 <InputGroup>

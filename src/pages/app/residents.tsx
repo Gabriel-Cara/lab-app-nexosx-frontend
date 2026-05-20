@@ -1,5 +1,5 @@
 import { Search, Users } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   InputGroup,
@@ -20,36 +20,22 @@ export function Residents() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const normalizedSearchTerm = deferredSearchTerm.trim();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["residents"],
-    queryFn: () => getResidents(),
+    queryKey: ["residents", page, perPage, normalizedSearchTerm],
+    queryFn: () =>
+      getResidents({
+        page,
+        limit: perPage,
+        search: normalizedSearchTerm || undefined,
+      }),
+    placeholderData: (previousData) => previousData,
   });
-
-  const filteredResidents = useMemo(() => {
-    const normalized = searchTerm.trim().toLowerCase();
-    const residents = data?.data ?? [];
-
-    if (!normalized) {
-      return residents;
-    }
-
-    return residents.filter((resident) => {
-      const haystack = [
-        resident.name,
-        resident.apartment ?? "",
-        resident.email ?? "",
-        resident.phone ?? "",
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(normalized);
-    });
-  }, [data, searchTerm]);
-
-  const totalItems = filteredResidents.length;
-  const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / perPage);
+  const residents = data?.data ?? [];
+  const totalItems = data?.pagination.total ?? 0;
+  const totalPages = data?.pagination.totalPages ?? 1;
 
   useEffect(() => {
     setPage(1);
@@ -60,15 +46,6 @@ export function Residents() {
       setPage(totalPages);
     }
   }, [page, totalPages]);
-
-  const visibleResidents = useMemo(() => {
-    if (filteredResidents.length === 0) {
-      return [];
-    }
-
-    const start = (page - 1) * perPage;
-    return filteredResidents.slice(start, start + perPage);
-  }, [filteredResidents, page, perPage]);
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
     setSearchTerm(e.target.value);
@@ -100,7 +77,7 @@ export function Residents() {
           <InputGroupInput
             value={searchTerm}
             onChange={handleSearch}
-            placeholder="Buscar morador"
+            placeholder="Buscar morador, apartamento, placa ou vaga"
           />
           <InputGroupAddon>
             <Search />
@@ -113,7 +90,7 @@ export function Residents() {
           <p className="text-sm text-destructive">
             Não foi possível carregar os moradores. Tente novamente.
           </p>
-        ) : filteredResidents.length === 0 ? (
+        ) : residents.length === 0 ? (
           <EmptyState
             icon={Users}
             title="Nenhum morador encontrado"
@@ -127,7 +104,7 @@ export function Residents() {
         ) : (
           <section className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {visibleResidents.map((resident) => (
+              {residents.map((resident) => (
                 <DetailsCard
                   key={resident.id}
                   id={resident.id}

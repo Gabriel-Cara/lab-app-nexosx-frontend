@@ -1,5 +1,13 @@
 import { type FormEvent, type ReactElement, useEffect, useMemo, useState } from "react";
-import { addDays, format, isSameDay, startOfWeek } from "date-fns";
+import {
+  addMonths,
+  format,
+  isAfter,
+  isBefore,
+  isSameDay,
+  startOfDay,
+  startOfMonth,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,83 +43,84 @@ interface ScheduleModalProps {
 export function ScheduleModal({ areaId, status, trigger }: ScheduleModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [calendarMonth, setCalendarMonth] = useState<Date>(startOfMonth(new Date()));
   const [startSlotId, setStartSlotId] = useState<string | null>(null);
   const [endSlotId, setEndSlotId] = useState<string | null>(null);
   const [purpose, setPurpose] = useState("");
   const [scheduleError, setScheduleError] = useState(false);
-  const [blockedDatesMap, setBlockedDatesMap] = useState<Record<number, boolean>>({});
 
   const queryClient = useQueryClient();
 
-  const dateKey = date ? date.toISOString().slice(0, 10) : undefined;
-  const weekStart = useMemo(() => {
-    if (!date) return undefined;
-    const start = startOfWeek(date, { weekStartsOn: 1 });
-    start.setHours(0, 0, 0, 0);
-    return start;
-  }, [date]);
-  const weekEnd = useMemo(
-    () => (weekStart ? addDays(weekStart, 6) : undefined),
-    [weekStart]
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const reservationWindowEnd = useMemo(() => addMonths(today, 1), [today]);
+  const reservationWindowStartMonth = useMemo(() => startOfMonth(today), [today]);
+  const reservationWindowEndMonth = useMemo(
+    () => startOfMonth(reservationWindowEnd),
+    [reservationWindowEnd]
   );
-  const weekKey = weekStart ? weekStart.toISOString().slice(0, 10) : undefined;
-
-  const { data: weekData, isLoading } = useQuery({
-    queryKey: ["area-slots-week", areaId, weekKey],
+  const reservationWindowKey = `${today.toISOString().slice(0, 10)}:${reservationWindowEnd
+    .toISOString()
+    .slice(0, 10)}`;
+  const dateKey = date ? date.toISOString().slice(0, 10) : undefined;
+  const { data: windowData, isLoading } = useQuery({
+    queryKey: ["area-slots-window", areaId, reservationWindowKey],
     queryFn: () =>
       getAreaWeekSlots({
         areaId,
-        startDate: weekStart!.toISOString(),
-        endDate: weekEnd!.toISOString(),
+        startDate: today.toISOString(),
+        endDate: reservationWindowEnd.toISOString(),
       }),
-    enabled: Boolean(isOpen && weekStart && weekEnd),
+    enabled: isOpen,
     staleTime: 1000 * 60 * 5,
   });
 
   const { mutateAsync: createReservation, isPending } = useMutation({
     mutationFn: postReservation,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["area-slots-week", areaId] });
+      queryClient.invalidateQueries({ queryKey: ["area-slots-window", areaId] });
     },
   });
 
   const currentDay = useMemo(() => {
-    if (!weekData || !date) return null;
+    if (!windowData || !date) return null;
     return (
-      weekData.days.find((day) =>
+      windowData.days.find((day) =>
         isSameDay(new Date(day.date), date)
       ) ?? null
     );
-  }, [weekData, date]);
+  }, [windowData, date]);
   const slots = currentDay?.slots ?? [];
   const bookedDates = useMemo(() => {
-    return Object.entries(blockedDatesMap)
-      .filter(([, blocked]) => blocked)
-      .map(([timestamp]) => {
-        const date = new Date(Number(timestamp));
-        date.setHours(0, 0, 0, 0);
-        return date;
-      });
-  }, [blockedDatesMap]);
-
-  useEffect(() => {
-    if (!weekData) return;
-
-    const fullyBookedKeys = new Set(
-      weekData.fullyBookedDates.map((iso) => normalizeDateKey(iso))
+    return (windowData?.fullyBookedDates ?? []).map((value) =>
+      normalizeDateKey(value)
     );
+  }, [windowData]);
+  const firstAvailableDate = useMemo(() => {
+    if (!windowData) return today;
 
-    setBlockedDatesMap((prev) => {
-      const next = { ...prev };
+    const blockedKeys = new Set(bookedDates.map((value) => value.getTime()));
 
-      weekData.days.forEach((day) => {
-        const key = normalizeDateKey(day.date);
-        next[key] = fullyBookedKeys.has(key);
-      });
+    for (const day of windowData.days) {
+      const candidate = normalizeDateKey(day.date);
+      if (isBefore(candidate, today)) {
+        continue;
+      }
 
-      return next;
-    });
-  }, [weekData]);
+      if (!blockedKeys.has(candidate.getTime())) {
+        return candidate;
+      }
+    }
+
+    return today;
+  }, [bookedDates, today, windowData]);
+  const disabledDates = useMemo(
+    () => [
+      { before: today },
+      { after: reservationWindowEnd },
+      ...bookedDates,
+    ],
+    [bookedDates, reservationWindowEnd, today]
+  );
 
   const selectedStartSlot =
     slots.find((slot) => slot.id === startSlotId) ?? null;
@@ -123,8 +132,10 @@ export function ScheduleModal({ areaId, status, trigger }: ScheduleModalProps) {
       setEndSlotId(null);
       setPurpose("");
       setScheduleError(false);
+      setDate(today);
+      setCalendarMonth(reservationWindowStartMonth);
     }
-  }, [isOpen]);
+  }, [isOpen, reservationWindowStartMonth, today]);
 
   useEffect(() => {
     setStartSlotId(null);
@@ -132,26 +143,17 @@ export function ScheduleModal({ areaId, status, trigger }: ScheduleModalProps) {
   }, [dateKey]);
 
   useEffect(() => {
-    if (!weekStart || !weekEnd || !isOpen) return;
+    if (!isOpen || !windowData) return;
 
-    const prefetchWeek = (targetStart: Date) => {
-      const targetEnd = addDays(new Date(targetStart), 6);
-      const key = targetStart.toISOString().slice(0, 10);
-
-      queryClient.prefetchQuery({
-        queryKey: ["area-slots-week", areaId, key],
-        queryFn: () =>
-          getAreaWeekSlots({
-            areaId,
-            startDate: targetStart.toISOString(),
-            endDate: targetEnd.toISOString(),
-          }),
-      });
-    };
-
-    prefetchWeek(addDays(weekStart, 7));
-    prefetchWeek(addDays(weekStart, -7));
-  }, [weekStart, weekEnd, isOpen, areaId, queryClient]);
+    if (
+      !date ||
+      isBefore(startOfDay(date), today) ||
+      isAfter(startOfDay(date), reservationWindowEnd) ||
+      bookedDates.some((bookedDate) => isSameDay(bookedDate, date))
+    ) {
+      setDate(firstAvailableDate);
+    }
+  }, [bookedDates, date, firstAvailableDate, isOpen, reservationWindowEnd, today, windowData]);
 
   useEffect(() => {
     if (!selectedStartSlot || !selectedEndSlot) return;
@@ -195,7 +197,8 @@ export function ScheduleModal({ areaId, status, trigger }: ScheduleModalProps) {
       });
 
       toast.success("Agendamento enviado para aprovação!");
-      setDate(new Date());
+      setDate(today);
+      setCalendarMonth(reservationWindowStartMonth);
       setStartSlotId(null);
       setEndSlotId(null);
       setPurpose("");
@@ -233,8 +236,9 @@ export function ScheduleModal({ areaId, status, trigger }: ScheduleModalProps) {
         <DialogHeader>
           <DialogTitle>Agendar Área de Lazer</DialogTitle>
           <DialogDescription>
-            Escolha a data e defina os horários de início e fim para reservar a
-            área.
+            Escolha uma data disponível entre hoje e{" "}
+            {format(reservationWindowEnd, "dd/MM/yyyy")} e defina os horários
+            de início e fim para reservar a área.
           </DialogDescription>
         </DialogHeader>
         <form id="schedule-form" onSubmit={handleSubmit} className="space-y-6">
@@ -266,9 +270,15 @@ export function ScheduleModal({ areaId, status, trigger }: ScheduleModalProps) {
               mode="single"
               selected={date}
               onSelect={setDate}
+              month={calendarMonth}
+              onMonthChange={setCalendarMonth}
+              startMonth={reservationWindowStartMonth}
+              endMonth={reservationWindowEndMonth}
+              defaultMonth={reservationWindowStartMonth}
               locale={ptBR}
+              showOutsideDays
               className="border-y md:border-x md:border-y-0 max-w-full md:max-w-full w-auto h-auto"
-              disabled={bookedDates}
+              disabled={disabledDates}
               modifiers={{
                 booked: bookedDates,
               }}
@@ -380,5 +390,5 @@ function isApiError(error: unknown): error is ApiError {
 function normalizeDateKey(value: string | Date) {
   const date = typeof value === "string" ? new Date(value) : new Date(value);
   date.setHours(0, 0, 0, 0);
-  return date.getTime();
+  return date;
 }

@@ -10,6 +10,7 @@ export type ResidentSignupPayload = {
   vehicles?: {
     model: string;
     plate: string;
+    parkingSpot: string;
     year: number;
   }[];
   emergencyContact?: string;

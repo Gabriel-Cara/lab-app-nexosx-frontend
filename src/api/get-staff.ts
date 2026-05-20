@@ -6,7 +6,7 @@ export type StaffMember = {
   email?: string | null;
   phone?: string | null;
   shift?: string | null;
-  role: "admin" | "staff" | "resident";
+  role: "manager" | "doorman" | "resident";
   imageUrl?: string | null;
 };
 
@@ -36,7 +36,7 @@ export async function getStaff(
 ): Promise<GetStaffResponse> {
   const response = await api.get<StaffMember[]>("/auth/users", {
     params: {
-      role: "staff",
+      role: "doorman",
       limit: params?.limit,
       page: params?.page,
       search: params?.search,

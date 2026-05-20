@@ -1,12 +1,22 @@
 import { api } from "@/lib/axios";
 
+export type VisitorStatus =
+  | "pending"
+  | "authorized"
+  | "denied"
+  | "entry"
+  | "left";
+
 export type VisitorsResponse = {
   id: string;
-  status: "pending" | "authorized" | "denied" | "entry" | "left";
+  status: VisitorStatus;
   createdAt: string;
   imageUrl?: string | null;
   entryTime: string | null;
   exitTime: string | null;
+  expectedExitTime: string | null;
+  unlimitedAccess: boolean;
+  allowedHours: number | null;
   handledBy: {
     name: string;
   } | null;
@@ -22,7 +32,9 @@ export type VisitorsResponse = {
     id: string;
     name: string;
     phone?: string;
-    status: "pending" | "authorized" | "denied" | "entry" | "left";
+    status: VisitorStatus;
+    unlimitedAccess: boolean;
+    allowedHours: number | null;
     updatedAt: string;
     visitReason?: string;
   };

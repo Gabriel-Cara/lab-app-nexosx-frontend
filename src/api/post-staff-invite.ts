@@ -11,7 +11,7 @@ export type StaffInviteResponse = {
 };
 
 export async function createStaffInvite(condominiumId?: string) {
-  const response = await api.post<StaffInviteResponse>("/auth/staff-invites", {
+  const response = await api.post<StaffInviteResponse>("/auth/doorman-invites", {
     condominiumId,
   });
 

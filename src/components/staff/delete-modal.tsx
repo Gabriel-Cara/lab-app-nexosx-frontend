@@ -28,17 +28,17 @@ export function DeleteStaffModal({ id, name }: DeleteStaffModalProps) {
   const { mutateAsync: mutateDelete, isPending } = useMutation({
     mutationFn: deleteStaff,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["staff"] });
+      await queryClient.invalidateQueries({ queryKey: ["doorman"] });
     },
   });
 
   async function handleDelete() {
     try {
       await mutateDelete(id);
-      toast.success(`Funcionário ${name} removido com sucesso.`);
+      toast.success(`Porteiro ${name} removido com sucesso.`);
       setOpen(false);
     } catch {
-      toast.error("Não foi possível remover o funcionário. Tente novamente.");
+      toast.error("Não foi possível remover o porteiro. Tente novamente.");
     }
   }
 

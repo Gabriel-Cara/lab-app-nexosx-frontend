@@ -21,6 +21,12 @@ import type { UserRole } from "@/types/auth";
 const Dashboard = lazy(() =>
   import("@/pages/app/dashboard").then((module) => ({ default: module.Dashboard }))
 );
+const Blocks = lazy(() =>
+  import("@/pages/app/blocks").then((module) => ({ default: module.Blocks }))
+);
+const Residences = lazy(() =>
+  import("@/pages/app/residences").then((module) => ({ default: module.Residences }))
+);
 const Residents = lazy(() =>
   import("@/pages/app/residents").then((module) => ({ default: module.Residents }))
 );
@@ -46,18 +52,18 @@ const Events = lazy(() =>
   import("@/pages/app/events").then((module) => ({ default: module.Events }))
 );
 const CondominiumRequests = lazy(() =>
-  import("@/pages/master/condominium-requests").then((module) => ({
+  import("@/pages/admin/condominium-requests").then((module) => ({
     default: module.CondominiumRequests,
   }))
 );
-const MasterCondominiums = lazy(() =>
-  import("@/pages/master/condominiums").then((module) => ({
-    default: module.MasterCondominiums,
+const AdminCondominiums = lazy(() =>
+  import("@/pages/admin/condominiums").then((module) => ({
+    default: module.AdminCondominiums,
   }))
 );
-const MasterUsers = lazy(() =>
-  import("@/pages/master/users").then((module) => ({
-    default: module.MasterUsers,
+const AdminUsers = lazy(() =>
+  import("@/pages/admin/users").then((module) => ({
+    default: module.AdminUsers,
   }))
 );
 
@@ -82,8 +88,26 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     id: "dashboard",
     path: "dashboard",
     element: withSuspense(<Dashboard />),
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
     label: "Home",
+    icon: House,
+    showInSidebar: true,
+  },
+  {
+    id: "blocks",
+    path: "blocks",
+    element: withSuspense(<Blocks />),
+    roles: ["admin", "manager"],
+    label: "Blocos",
+    icon: Building2,
+    showInSidebar: true,
+  },
+  {
+    id: "residences",
+    path: "residences",
+    element: withSuspense(<Residences />),
+    roles: ["admin", "manager", "doorman", "resident"],
+    label: "Residências",
     icon: House,
     showInSidebar: true,
   },
@@ -91,17 +115,17 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     id: "residents",
     path: "residents",
     element: withSuspense(<Residents />, <ResidentsPageSkeleton />),
-    roles: ["admin", "staff"],
+    roles: ["manager", "doorman"],
     label: "Moradores",
     icon: Users,
     showInSidebar: true,
   },
   {
-    id: "staff",
-    path: "staff",
+    id: "doorman",
+    path: "doorman",
     element: withSuspense(<Staff />, <ResidentsPageSkeleton />),
-    roles: ["admin"],
-    label: "Equipe",
+    roles: ["manager"],
+    label: "Portaria",
     icon: UserCog,
     showInSidebar: true,
   },
@@ -109,7 +133,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     id: "visitors",
     path: "visitors",
     element: withSuspense(<Visitors />),
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
     label: "Visitantes",
     icon: UserRoundCheck,
     showInSidebar: true,
@@ -118,7 +142,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     id: "packages",
     path: "packages",
     element: withSuspense(<Packages />),
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
     label: "Encomendas",
     icon: Package,
     showInSidebar: true,
@@ -127,7 +151,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     id: "areas",
     path: "areas",
     element: withSuspense(<Areas />),
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
     label: "Áreas de Lazer",
     icon: Volleyball,
     showInSidebar: true,
@@ -136,7 +160,7 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     id: "reservations",
     path: "reservations",
     element: withSuspense(<Reservations />),
-    roles: ["admin", "staff"],
+    roles: ["manager", "doorman"],
     label: "Agendamentos",
     icon: CalendarDays,
     showInSidebar: true,
@@ -145,41 +169,41 @@ export const appRouteDefinitions: AppRouteDefinition[] = [
     id: "profile",
     path: "profile",
     element: withSuspense(<Profile />, <ProfileSkeleton showExtended />),
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
     showInSidebar: false,
   },
   {
     id: "events",
     path: "events",
     element: withSuspense(<Events />),
-    roles: ["admin", "staff", "resident"],
+    roles: ["manager", "doorman", "resident"],
     label: "Eventos",
     icon: PartyPopper,
     showInSidebar: true,
   },
   {
-    id: "master-requests",
-    path: "master/requests",
+    id: "admin-requests",
+    path: "admin/requests",
     element: withSuspense(<CondominiumRequests />),
-    roles: ["master"],
+    roles: ["admin"],
     label: "Solicitações",
     icon: ClipboardList,
     showInSidebar: true,
   },
   {
-    id: "master-condominiums",
-    path: "master/condominiums",
-    element: withSuspense(<MasterCondominiums />),
-    roles: ["master"],
+    id: "admin-condominiums",
+    path: "admin/condominiums",
+    element: withSuspense(<AdminCondominiums />),
+    roles: ["admin"],
     label: "Condomínios",
     icon: Building2,
     showInSidebar: true,
   },
   {
-    id: "master-users",
-    path: "master/users",
-    element: withSuspense(<MasterUsers />),
-    roles: ["master"],
+    id: "admin-users",
+    path: "admin/users",
+    element: withSuspense(<AdminUsers />),
+    roles: ["admin"],
     label: "Usuários",
     icon: UserCog,
     showInSidebar: true,

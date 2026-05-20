@@ -10,6 +10,6 @@ export type StaffInviteInfo = {
 };
 
 export async function getStaffInvite(token: string) {
-  const response = await api.get<StaffInviteInfo>(`/auth/staff-invites/${token}`);
+  const response = await api.get<StaffInviteInfo>(`/auth/doorman-invites/${token}`);
   return response.data;
 }

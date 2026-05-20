@@ -18,7 +18,7 @@ export function PageHeader({
   actionsClassName,
 }: PageHeaderProps) {
   return (
-    <header className={cn("rounded-3xl bg-background inset-shadow-sm", className)}>
+    <header className={cn("rounded-3xl bg-background", className)}>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>

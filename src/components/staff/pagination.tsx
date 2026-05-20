@@ -56,7 +56,7 @@ export function StaffPagination({
       </div>
 
       <div className="text-sm text-muted-foreground">
-        Página {page} de {totalPages} — {totalItems} funcionários
+        Página {page} de {totalPages} — {totalItems} porteiros
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

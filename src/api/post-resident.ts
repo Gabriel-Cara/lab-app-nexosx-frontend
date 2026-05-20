@@ -4,13 +4,14 @@ export type PostResidentPayload = {
   name: string;
   email: string;
   phone?: string;
-  role: "admin" | "staff" | "resident";
+  role: "manager" | "doorman" | "resident";
   apartment?: string;
   password?: string;
   building?: string;
   vehicles?: {
     model: string;
     plate: string;
+    parkingSpot: string;
     year: number;
   }[];
   emergencyContact?: string;

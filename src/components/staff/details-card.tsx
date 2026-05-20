@@ -46,7 +46,7 @@ export function StaffDetailsCard({
             <div>
               <h3 className="text-foreground">{name}</h3>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary">Equipe</Badge>
+                <Badge variant="secondary">Portaria</Badge>
               </div>
             </div>
           </div>

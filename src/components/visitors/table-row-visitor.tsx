@@ -6,6 +6,7 @@ import { CalendarClock, FileBadge2, Home } from "lucide-react";
 
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
+import { VisitorAccessBadge } from "./access-badge";
 import { Status } from "./status";
 import { ViewVisitorModal } from "./view-modal";
 
@@ -15,6 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 interface TableRowVisitorProps {
   log: VisitorsResponse;
+  isLatestForVisitor: boolean;
 }
 
 function formatCreatedAt(value: string) {
@@ -27,7 +29,10 @@ function formatCreatedAt(value: string) {
   return format(parsedDate, "dd/MM/yyyy HH:mm", { locale: ptBR });
 }
 
-export function TableRowVisitor({ log }: TableRowVisitorProps) {
+export function TableRowVisitor({
+  log,
+  isLatestForVisitor,
+}: TableRowVisitorProps) {
   const [isViewOpen, setIsViewOpen] = useState(false);
 
   const { session } = useAuth();
@@ -41,12 +46,20 @@ export function TableRowVisitor({ log }: TableRowVisitorProps) {
     },
   });
 
-  const { visitor, host, status } = log;
+  const { visitor, host, status, unlimitedAccess, allowedHours } = log;
   const visitorId = visitor.id;
-  const canManagePending = status === "pending";
-  const canMarkEntry = status === "authorized" && !isResident;
-  const canMarkExit = status === "entry" && !isResident;
+  const canManagePending =
+    status === "pending" && !unlimitedAccess && isLatestForVisitor;
+  const canMarkEntry =
+    !isResident &&
+    isLatestForVisitor &&
+    (status === "authorized" || (unlimitedAccess && status === "left"));
+  const canMarkExit = status === "entry" && !isResident && isLatestForVisitor;
   const showActions = canManagePending || canMarkEntry || canMarkExit;
+  const entryActionLabel =
+    unlimitedAccess && status === "left"
+      ? "Registrar nova entrada"
+      : "Marcar entrada";
 
   const handleRowClick = () => {
     setIsViewOpen(true);
@@ -69,7 +82,13 @@ export function TableRowVisitor({ log }: TableRowVisitorProps) {
         <CardContent className="space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="font-semibold text-foreground">{visitor.name}</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-semibold text-foreground">{visitor.name}</h3>
+                <VisitorAccessBadge
+                  unlimitedAccess={unlimitedAccess}
+                  allowedHours={allowedHours}
+                />
+              </div>
               <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                 <FileBadge2 className="h-4 w-4" />
                 {visitor.document}
@@ -122,7 +141,7 @@ export function TableRowVisitor({ log }: TableRowVisitorProps) {
                   disabled={isPending}
                   onClick={(event) => handleActionClick(event, "entry")}
                 >
-                  Marcar entrada
+                  {entryActionLabel}
                 </Button>
               ) : null}
 

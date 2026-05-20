@@ -121,7 +121,7 @@ export function StaffInviteLinkModal({
         <DialogHeader>
           <DialogTitle>Link de cadastro</DialogTitle>
           <DialogDescription>
-            Compartilhe o link para que a equipe crie o próprio acesso.
+            Compartilhe o link para que a portaria crie o próprio acesso.
           </DialogDescription>
         </DialogHeader>
 

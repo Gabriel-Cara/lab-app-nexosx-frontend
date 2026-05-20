@@ -6,7 +6,7 @@ export type Resident = {
   email?: string | null;
   phone?: string | null;
   apartment: string | null;
-  role: "admin" | "staff" | "resident";
+  role: "manager" | "doorman" | "resident";
   imageUrl?: string | null;
   building?: string | null;
   vehicles: ResidentVehicle[];
@@ -17,6 +17,7 @@ export type ResidentVehicle = {
   id: string;
   model: string;
   plate: string;
+  parkingSpot?: string | null;
   year: number;
 };
 

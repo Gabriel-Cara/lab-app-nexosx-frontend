@@ -5,7 +5,7 @@ export type PutResidentPayload = {
   name?: string;
   email?: string;
   phone?: string;
-  role?: "admin" | "staff" | "resident";
+  role?: "manager" | "doorman" | "resident";
   apartment?: string;
   shift?: string;
   password?: string;
@@ -13,6 +13,7 @@ export type PutResidentPayload = {
   vehicles?: {
     model: string;
     plate: string;
+    parkingSpot: string;
     year: number;
   }[];
   emergencyContact?: string;

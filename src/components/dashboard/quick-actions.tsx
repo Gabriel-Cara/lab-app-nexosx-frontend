@@ -201,8 +201,8 @@ export function DashboardQuickActions({
   defaultAreaId,
 }: DashboardQuickActionsProps) {
   const isResident = role === "resident";
-  const canCreateResident = role === "admin" || role === "staff" || role === "master";
-  const canCreateArea = role === "admin" || role === "staff" || role === "master";
+  const canCreateResident = role === "manager" || role === "doorman" || role === "admin";
+  const canCreateArea = role === "manager" || role === "doorman" || role === "admin";
 
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">

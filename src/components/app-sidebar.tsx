@@ -21,7 +21,8 @@ import { useAuth } from "@/hooks/use-auth";
 
 
 export function AppSidebar() {
-  const { session } = useAuth(); 
+  const { session } = useAuth();
+  const role = session?.user.role;
 
   return (
     <Sidebar variant="floating">
@@ -42,9 +43,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarMenuSub className="gap-2">
             {sidebarNavigation
-              .filter((item) =>
-                item.roles.includes(session?.user.role ?? "resident"),
-              )
+              .filter((item) => (role ? item.roles.includes(role) : false))
               .map((item) => (
                 <SidebarMenuSubItem key={item.id}>
                   <NavLink url={item.url} title={item.title} icon={item.icon} />

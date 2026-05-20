@@ -197,7 +197,7 @@ export function EventsAdmin() {
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <User className="size-3" />
-                        {event.createdBy?.name ?? "Equipe"}
+                        {event.createdBy?.name ?? "Portaria"}
                       </span>
                     </div>
 

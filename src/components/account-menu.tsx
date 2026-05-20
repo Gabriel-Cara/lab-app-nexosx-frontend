@@ -39,12 +39,12 @@ export function AccountMenu() {
     .slice(0, 2);
   const roleLabel = user
     ? user.role === "admin"
-      ? "Admin"
-      : user.role === "staff"
-      ? "Staff"
-      : user.role === "resident"
-      ? "Morador"
-      : "Master"
+      ? "Administrador"
+      : user.role === "manager"
+      ? "Gestor"
+      : user.role === "doorman"
+      ? "Portaria"
+      : "Morador"
     : "";
 
   return (
@@ -85,7 +85,7 @@ export function AccountMenu() {
 
         <DropdownMenuSeparator />
 
-        {user?.role !== "master" && (
+        {user?.role !== "admin" && (
           <DropdownMenuItem onClick={() => navigate("/profile")}>
             <UserCircle className="h-4 w-4" />
             <span>Perfil</span>

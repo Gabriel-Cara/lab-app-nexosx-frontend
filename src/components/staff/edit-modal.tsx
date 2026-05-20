@@ -66,7 +66,7 @@ export function EditStaffModal(props: EditStaffModalProps) {
   const { mutateAsync: mutateStaff, isPending } = useMutation({
     mutationFn: putResident,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["staff"] });
+      await queryClient.invalidateQueries({ queryKey: ["doorman"] });
     },
   });
 
@@ -112,7 +112,7 @@ export function EditStaffModal(props: EditStaffModalProps) {
         phone: phone || undefined,
         shift: data.shift?.trim() || undefined,
         password: data.password || undefined,
-        role: "staff",
+        role: "doorman",
       });
 
       reset();

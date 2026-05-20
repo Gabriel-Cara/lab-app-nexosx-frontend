@@ -20,6 +20,7 @@ export type ResidentVehicle = {
   id: string;
   model: string;
   plate: string;
+  parkingSpot?: string | null;
   year: number;
 };
 
