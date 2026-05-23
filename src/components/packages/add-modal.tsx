@@ -155,7 +155,7 @@ export function AddModal() {
       <DialogTrigger asChild>
         <Button>
           <Plus />
-          Registrar encomenda
+          Nova encomenda
         </Button>
       </DialogTrigger>
       <DialogContent>

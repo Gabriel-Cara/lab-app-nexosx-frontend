@@ -213,7 +213,7 @@ export function AddModal({ trigger }: AddModalProps) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button variant="outline">
+          <Button>
             <Plus />
             Nova Área de Lazer
           </Button>
