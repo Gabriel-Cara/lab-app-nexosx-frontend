@@ -29,6 +29,7 @@ import {
   VisitorsStatusSkeleton,
 } from "@/components/dashboard/visitors-section-skeleton";
 import { EmptyState } from "@/components/ui/empty";
+import { useAuth } from "@/hooks/use-auth";
 
 type VisitorStatus = VisitorsResponse["status"];
 
@@ -63,6 +64,8 @@ export function VisitorsSection({
   recentVisitors,
   formatDate,
 }: VisitorsSectionProps) {
+  const { session } = useAuth();
+
   return (
     <section className="space-y-4">
       <SectionHeader
@@ -71,115 +74,114 @@ export function VisitorsSection({
         icon={UserRoundCheck}
         accessLabel={accessLabel}
       />
-      <div className="grid gap-6 xl:grid-cols-[1fr_1.1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Status geral</CardTitle>
-            <CardDescription>Distribuição por etapa de acesso.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <VisitorsStatusSkeleton />
-            ) : isError ? (
-              <p className="text-sm text-destructive">
-                Não foi possível carregar os visitantes.
-              </p>
-            ) : (
-              <>
-                <ChartContainer
-                  config={visitorRadarConfig}
-                  className="mx-auto aspect-square max-h-[340px] w-full"
-                >
-                  <RadarChart data={chartData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="label" />
-                    <ChartTooltip
-                      cursor={false}
-                      content={
-                        <ChartTooltipContent
-                          labelFormatter={(value, payload) =>
-                            payload?.[0]?.payload.label ?? String(value ?? "")
-                          }
-                        />
-                      }
-                    />
-                    <Radar
-                      dataKey="value"
-                      stroke="var(--color-value)"
-                      fill="var(--color-value)"
-                      fillOpacity={0.55}
-                      dot={{ r: 4, fillOpacity: 1 }}
-                    />
-                  </RadarChart>
-                </ChartContainer>
-                <div className="mt-4 grid gap-2 text-sm">
-                  <p>
-                    <span className="font-medium">{activeVisitors}</span> acompanhamentos
-                    ativos no momento.
-                  </p>
-                  <p>
-                    <span className="font-medium">{visitorsToday}</span> visitas
-                    registradas hoje.
-                  </p>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Últimos registros</CardTitle>
-            <CardDescription>Visitantes mais recentes e seu status atual.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <VisitorsRecentSkeleton />
-            ) : isError ? (
-              <p className="text-sm text-destructive">
-                Não foi possível carregar os visitantes.
-              </p>
-            ) : recentVisitors.length === 0 ? (
-              <EmptyState
-                icon={UserRoundCheck}
-                title="Nenhuma visita registrada"
-                description="Os últimos registros de visitantes serão exibidos aqui."
-                size="sm"
-                className="min-h-44"
-              />
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Visitante</TableHead>
-                    <TableHead>Morador</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentVisitors.map((visitor) => (
-                    <TableRow key={visitor.id}>
-                      <TableCell className="font-medium">{visitor.visitor.name}</TableCell>
-                      <TableCell>
-                        {visitor.host.name}{" "}
-                        {visitor.host.apartment && (
-                          <span className="text-muted-foreground text-xs">
-                            · Apt {visitor.host.apartment}
-                          </span>
-                        )}
-                      </TableCell>
-                    <TableCell>{formatDate(visitor.createdAt)}</TableCell>
-                    <TableCell className="text-center">
-                        <VisitorStatusBadge variant={visitor.status} />
-                      </TableCell>
+      <div className="grid gap-6 xl:grid-cols-1fr">
+        {session?.user.role === "manager" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Status geral</CardTitle>
+              <CardDescription>
+                Distribuição por etapa de acesso.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <VisitorsStatusSkeleton />
+              ) : isError ? (
+                <p className="text-sm text-destructive">
+                  Não foi possível carregar os visitantes.
+                </p>
+              ) : (
+                <>
+                  <ChartContainer
+                    config={visitorRadarConfig}
+                    className="mx-auto aspect-square max-h-[340px] w-full"
+                  >
+                    <RadarChart data={chartData}>
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="label" />
+                      <ChartTooltip
+                        cursor={false}
+                        content={
+                          <ChartTooltipContent
+                            labelFormatter={(value, payload) =>
+                              payload?.[0]?.payload.label ?? String(value ?? "")
+                            }
+                          />
+                        }
+                      />
+                      <Radar
+                        dataKey="value"
+                        stroke="var(--color-value)"
+                        fill="var(--color-value)"
+                        fillOpacity={0.55}
+                        dot={{ r: 4, fillOpacity: 1 }}
+                      />
+                    </RadarChart>
+                  </ChartContainer>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        {session?.user.role !== "manager" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Últimos registros</CardTitle>
+              <CardDescription>
+                Visitantes mais recentes e seu status atual.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <VisitorsRecentSkeleton />
+              ) : isError ? (
+                <p className="text-sm text-destructive">
+                  Não foi possível carregar os visitantes.
+                </p>
+              ) : recentVisitors.length === 0 ? (
+                <EmptyState
+                  icon={UserRoundCheck}
+                  title="Nenhuma visita registrada"
+                  description="Os últimos registros de visitantes serão exibidos aqui."
+                  size="sm"
+                  className="min-h-44"
+                />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Visitante</TableHead>
+                      <TableHead>Morador</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {recentVisitors.map((visitor) => (
+                      <TableRow key={visitor.id}>
+                        <TableCell className="font-medium">
+                          {visitor.visitor.name}
+                        </TableCell>
+                        <TableCell>
+                          {visitor.host.name}{" "}
+                          {visitor.host.apartment && (
+                            <span className="text-muted-foreground text-xs">
+                              · Apt {visitor.host.apartment}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>{formatDate(visitor.createdAt)}</TableCell>
+                        <TableCell className="text-center">
+                          <VisitorStatusBadge variant={visitor.status} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </section>
   );

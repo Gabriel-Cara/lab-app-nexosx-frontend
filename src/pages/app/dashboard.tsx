@@ -1,7 +1,7 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, Package, UserRoundCheck, Users } from "lucide-react";
+import { CalendarDays, Package, UserRoundCheck } from "lucide-react";
 import {
   compareAsc,
   compareDesc,
@@ -20,7 +20,6 @@ import {
 } from "@/components/dashboard/overview-cards";
 import { PackagesSection } from "@/components/dashboard/packages-section";
 import { VisitorsSection } from "@/components/dashboard/visitors-section";
-import { ResidentsSection } from "@/components/dashboard/residents-section";
 import { AreasSection } from "@/components/dashboard/areas-section";
 import { ReservationsSection } from "@/components/dashboard/reservations-section";
 import {
@@ -28,10 +27,6 @@ import {
   type Package as PackageModel,
   type PackageType,
 } from "@/api/get-packages";
-import {
-  getResidents,
-  type GetResidentsResponse,
-} from "@/api/get-residents";
 import {
   getVisitors,
   type VisitorsResponse,
@@ -57,17 +52,15 @@ const roleLabel: Record<Role, string> = {
 const sectionOrder = [
   "packages",
   "visitors",
-  "residents",
   "areas",
   "reservations",
 ] as const;
 
 const sectionAccess: Record<(typeof sectionOrder)[number], Role[]> = {
-  packages: ["manager", "doorman", "resident"],
+  packages: ["manager", "resident"],
   visitors: ["manager", "doorman", "resident"],
-  residents: ["manager", "doorman"],
-  areas: ["manager", "doorman", "resident"],
-  reservations: ["manager", "doorman"],
+  areas: ["doorman", "resident"],
+  reservations: ["doorman"],
 };
 
 const visitorStatuses: VisitorStatus[] = ["pending", "authorized", "entry", "left", "denied"];
@@ -164,9 +157,6 @@ export function Dashboard() {
   const { session } = useAuth();
   const role = session?.user.role;
   const showOverview = role === "manager" || role === "doorman";
-  const dashboardResidentsPage = 1;
-  const dashboardResidentsLimit = 100;
-  const dashboardResidentsSearch = "";
   const isAuthenticated = Boolean(session?.token);
 
   const visibleSections = useMemo(
@@ -177,9 +167,6 @@ export function Dashboard() {
     [role],
   );
   const canLoadPackages = isAuthenticated && visibleSections.includes("packages");
-  const canLoadResidents =
-    isAuthenticated &&
-    (showOverview || visibleSections.includes("residents"));
   const canLoadVisitors = isAuthenticated && visibleSections.includes("visitors");
   const canLoadAreas = isAuthenticated && visibleSections.includes("areas");
   const canLoadReservations =
@@ -195,29 +182,6 @@ export function Dashboard() {
     queryFn: getPackages,
     enabled: canLoadPackages,
   });
-
-  const {
-    data: residentsResponse,
-    isLoading: isLoadingResidents,
-    isError: isErrorResidents,
-  } = useQuery<GetResidentsResponse>({
-    queryKey: [
-      "residents",
-      dashboardResidentsPage,
-      dashboardResidentsLimit,
-      dashboardResidentsSearch,
-    ],
-    queryFn: () =>
-      getResidents({
-        page: dashboardResidentsPage,
-        limit: dashboardResidentsLimit,
-        search: undefined,
-      }),
-    enabled: canLoadResidents,
-  });
-
-  const residents = residentsResponse?.data ?? [];
-  const residentsTotal = residentsResponse?.pagination.total ?? residents.length;
 
   const {
     data: visitors = [],
@@ -351,8 +315,6 @@ export function Dashboard() {
     [reservations],
   );
 
-  const residentsWithApartment = residents.filter((resident) => resident.apartment).length;
-
   const overviewCards: OverviewCard[] = [
     {
       id: "packages",
@@ -369,14 +331,6 @@ export function Dashboard() {
       icon: UserRoundCheck,
       color: "emerald",
       trend: `${visitorsToday} visitas registradas hoje`,
-    },
-    {
-      id: "residents",
-      title: "Moradores cadastrados",
-      value: residentsTotal,
-      icon: Users,
-      color: "indigo",
-      trend: `${residentsWithApartment} apartamentos com responsáveis`,
     },
     {
       id: "reservations",
@@ -448,15 +402,6 @@ export function Dashboard() {
             visitorsToday={visitorsToday}
             recentVisitors={recentVisitors}
             formatDate={(date) => formatDateWithTime(date)}
-          />
-        )}
-
-        {visibleSections.includes("residents") && (
-          <ResidentsSection
-            accessLabel={getAccessLabel("residents")}
-            isLoading={isLoadingResidents}
-            isError={isErrorResidents}
-            residents={residents}
           />
         )}
 
